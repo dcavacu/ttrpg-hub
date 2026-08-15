@@ -100,4 +100,12 @@ create table users (
   created_at timestamptz not null default now()
 );
 
+-- Unlike the content tables above, users stores password hashes — a
+-- different risk class that warrants defense-in-depth rather than relying
+-- solely on the app never shipping the anon key to the browser. RLS is
+-- enabled here (service_role still bypasses it regardless, so the app is
+-- unaffected) with no policies defined, which denies all access to any
+-- role other than service_role.
+alter table users enable row level security;
+
 grant all on users to service_role;

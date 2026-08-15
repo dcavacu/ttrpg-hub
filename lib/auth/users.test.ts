@@ -60,6 +60,24 @@ describe('verifyUserCredentials', () => {
     expect(result).toBeNull();
   });
 
+  it('still runs a bcrypt comparison on the not-found path, to avoid a timing side channel', async () => {
+    // If the "user not found" branch short-circuited without ever calling
+    // bcrypt.compare, it would return much faster than the "found, wrong
+    // password" branch — letting an attacker enumerate valid usernames by
+    // timing login attempts. Asserting the compare call happens here (rather
+    // than asserting on wall-clock timing, which would be flaky) proves the
+    // dummy-hash comparison in the not-found branch actually runs.
+    const compareSpy = vi.spyOn(bcrypt, 'compare');
+    const builder = createMockBuilder({ data: null, error: null });
+    const client = createMockClient(builder);
+
+    await verifyUserCredentials(client, 'nobody', 'anything');
+
+    expect(compareSpy).toHaveBeenCalledTimes(1);
+    expect(compareSpy).toHaveBeenCalledWith('anything', expect.any(String));
+    compareSpy.mockRestore();
+  });
+
   it('throws when the database returns an error', async () => {
     const builder = createMockBuilder({ data: null, error: { message: 'connection lost' } });
     const client = createMockClient(builder);
