@@ -33,7 +33,7 @@
 .form button {
   align-self: flex-start;
   background: var(--brass);
-  color: var(--ink);
+  color: var(--parchment);
   border: none;
   border-radius: 3px;
   padding: 10px 20px;

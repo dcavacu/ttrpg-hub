@@ -1,31 +1,27 @@
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-
-  /* Thumb Index palette (see the design preview artifact) — unused until
-     you apply them; swap --background/--foreground above or reference
-     these directly in your CSS modules. */
-  --ink: #14161f;
-  --ink-2: #1a1d29;
-  --panel: #1d2130;
-  --panel-2: #242939;
-  --parchment: #ede6d6;
-  --parchment-dim: #c9c2ae;
+  /* Thumb Index palette, light variant. Token names come from the
+     original dark "archive" concept (see the design preview artifact)
+     and are kept for continuity, but their roles are now inverted:
+     --ink holds the light page-ground color and --parchment holds the
+     dark ink-brown text color — background and text swapped materials.
+     --brass stays as a fill color (buttons/badges); --brass-dim is used
+     wherever brass appears as text/links, since raw --brass is too low
+     -contrast on a light ground. --seal-teal/--seal-crimson are
+     deepened slightly from the dark-theme values for the same reason. */
+  --ink: #f2ecde;
+  --ink-2: #ffffff;
+  --panel: #ffffff;
+  --panel-2: #f7f2e6;
+  --parchment: #221d15;
+  --parchment-dim: #6b6152;
   --brass: #c19a5b;
   --brass-dim: #8a6d3f;
-  --seal-teal: #4f8177;
-  --seal-teal-dim: #345a52;
-  --seal-crimson: #af4b4b;
+  --seal-teal: #3f6b62;
+  --seal-teal-dim: #2e504a;
+  --seal-crimson: #963f3f;
   --seal-crimson-dim: #7a3535;
-  --hairline: rgba(237, 230, 214, 0.14);
-  --hairline-strong: rgba(237, 230, 214, 0.26);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --hairline: rgba(34, 29, 21, 0.14);
+  --hairline-strong: rgba(34, 29, 21, 0.26);
 }
 
 body {
@@ -35,5 +31,5 @@ body {
 }
 
 a {
-  color: var(--brass);
+  color: var(--brass-dim);
 }
