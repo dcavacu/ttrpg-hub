@@ -81,3 +81,14 @@ create index rules_name_idx on rules using gin (to_tsvector('english', name));
 -- gate (see Global Constraints). The service-role key used by the app
 -- bypasses RLS regardless, so leaving policies undefined would be a
 -- false sense of security, not real protection.
+
+-- RLS bypass is a separate mechanism from table-level GRANTs: Postgres
+-- still requires explicit privileges on each table/sequence for the
+-- service_role, which Supabase does not always pre-grant for tables
+-- created via the SQL editor. Without these, every query fails with
+-- "permission denied for table ..." despite RLS being off.
+grant usage on schema public to service_role;
+grant all on all tables in schema public to service_role;
+grant all on all sequences in schema public to service_role;
+alter default privileges in schema public grant all on tables to service_role;
+alter default privileges in schema public grant all on sequences to service_role;
