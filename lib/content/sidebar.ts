@@ -26,9 +26,12 @@ export async function getCategoryCounts(client: SupabaseClient): Promise<Categor
   };
 }
 
-export async function listDistinctMonsterTags(client: SupabaseClient): Promise<string[]> {
-  const { data, error } = await client.from('monsters').select('tags');
-  if (error) throw new Error(`Failed to list monster tags: ${error.message}`);
+export async function listDistinctTags(
+  client: SupabaseClient,
+  table: 'monsters' | 'items' | 'spells' | 'rules',
+): Promise<string[]> {
+  const { data, error } = await client.from(table).select('tags');
+  if (error) throw new Error(`Failed to list ${table} tags: ${error.message}`);
   const tagSet = new Set<string>();
   for (const row of (data ?? []) as { tags: string[] }[]) {
     for (const tag of row.tags ?? []) tagSet.add(tag);

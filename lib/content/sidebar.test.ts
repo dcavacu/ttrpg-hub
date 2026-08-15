@@ -1,4 +1,4 @@
-import { getCategoryCounts, listDistinctMonsterTags } from './sidebar';
+import { getCategoryCounts, listDistinctTags } from './sidebar';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- minimal mock double, real typing adds no value here
 function createMockClient(resultsByTable: Record<string, any>) {
@@ -39,7 +39,7 @@ describe('getCategoryCounts', () => {
   });
 });
 
-describe('listDistinctMonsterTags', () => {
+describe('listDistinctTags', () => {
   it('returns deduplicated, sorted tags', async () => {
     const client = createMockClient({
       monsters: {
@@ -48,8 +48,9 @@ describe('listDistinctMonsterTags', () => {
       },
     });
 
-    const result = await listDistinctMonsterTags(client);
+    const result = await listDistinctTags(client, 'monsters');
 
+    expect(client.from).toHaveBeenCalledWith('monsters');
     expect(result).toEqual(['Aberration', 'Beast', 'Dragon']);
   });
 
@@ -58,7 +59,7 @@ describe('listDistinctMonsterTags', () => {
       monsters: { data: [], error: null },
     });
 
-    const result = await listDistinctMonsterTags(client);
+    const result = await listDistinctTags(client, 'monsters');
 
     expect(result).toEqual([]);
   });
@@ -68,6 +69,20 @@ describe('listDistinctMonsterTags', () => {
       monsters: { data: null, error: { message: 'boom' } },
     });
 
-    await expect(listDistinctMonsterTags(client)).rejects.toThrow('boom');
+    await expect(listDistinctTags(client, 'monsters')).rejects.toThrow('boom');
+  });
+
+  it('works against a different table name', async () => {
+    const client = createMockClient({
+      items: {
+        data: [{ tags: ['Weapon'] }, { tags: ['Weapon', 'Magic'] }],
+        error: null,
+      },
+    });
+
+    const result = await listDistinctTags(client, 'items');
+
+    expect(client.from).toHaveBeenCalledWith('items');
+    expect(result).toEqual(['Magic', 'Weapon']);
   });
 });

@@ -1,6 +1,6 @@
 import { createSupabaseClient } from '@/lib/supabase/client';
 import { listMonsters } from '@/lib/content/monsters';
-import { getCategoryCounts, listDistinctMonsterTags } from '@/lib/content/sidebar';
+import { getCategoryCounts, listDistinctTags } from '@/lib/content/sidebar';
 import { MonsterCard } from './MonsterCard';
 import { MonsterFilters } from './MonsterFilters';
 import { Sidebar } from '../Sidebar';
@@ -25,7 +25,7 @@ export default async function MonstersPage({
     client.from('systems').select('id, name').order('name'),
     listMonsters(client, filters),
     getCategoryCounts(client),
-    listDistinctMonsterTags(client),
+    listDistinctTags(client, 'monsters'),
   ]);
 
   return (
@@ -33,7 +33,7 @@ export default async function MonstersPage({
       <h1>Monsters</h1>
       <a href="/monsters/new">+ Add entry</a>
       <div className={styles.layout}>
-        <Sidebar counts={counts} tags={tags} initial={filters} />
+        <Sidebar counts={counts} tags={tags} initial={filters} category="monsters" />
         <div className={styles.content}>
           <MonsterFilters systems={(systems ?? []) as System[]} initial={filters} />
           {monsters.length === 0 ? (

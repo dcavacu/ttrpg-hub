@@ -44,25 +44,14 @@
   color: var(--brass-dim);
 }
 
-.categoryPending {
-  color: var(--parchment-dim);
+.categoryActive {
+  color: var(--brass-dim);
 }
 
 .count {
   font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
   font-size: 0.85em;
   color: var(--parchment-dim);
-}
-
-.soon {
-  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
-  font-size: 0.62rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--brass-dim);
-  border: 1px solid var(--hairline-strong);
-  border-radius: 999px;
-  padding: 1px 7px;
 }
 
 .tagLabel {

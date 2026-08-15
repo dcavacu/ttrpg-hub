@@ -23,6 +23,43 @@ export interface Monster {
   stats: Record<string, string>;
 }
 
+export interface Item {
+  id: string;
+  name: string;
+  system: System;
+  source: Source;
+  is_homebrew: boolean;
+  item_type: string | null;
+  rarity: string | null;
+  tags: string[];
+  description: string;
+  stats: Record<string, string>;
+}
+
+export interface Spell {
+  id: string;
+  name: string;
+  system: System;
+  source: Source;
+  is_homebrew: boolean;
+  level: string | null;
+  tags: string[];
+  description: string;
+  stats: Record<string, string>;
+}
+
+export interface Rule {
+  id: string;
+  name: string;
+  system: System;
+  source: Source;
+  is_homebrew: boolean;
+  category: string | null;
+  tags: string[];
+  description: string;
+  stats: Record<string, string>;
+}
+
 export interface ContentFilters {
   systemId?: string;
   sourceType?: SourceType;
