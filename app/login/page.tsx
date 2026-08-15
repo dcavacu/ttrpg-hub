@@ -12,10 +12,14 @@ export default function LoginPage({
       <form className={styles.form} action={login}>
         <input type="hidden" name="redirectTo" value={searchParams.redirectTo ?? '/monsters'} />
         <label>
-          Password
-          <input type="password" name="password" required autoFocus />
+          Username
+          <input type="text" name="username" required autoFocus autoComplete="username" />
         </label>
-        {searchParams.error && <p role="alert">That password isn&apos;t right. Try again.</p>}
+        <label>
+          Password
+          <input type="password" name="password" required autoComplete="current-password" />
+        </label>
+        {searchParams.error && <p role="alert">That username or password isn&apos;t right. Try again.</p>}
         <button type="submit">Enter</button>
       </form>
     </main>

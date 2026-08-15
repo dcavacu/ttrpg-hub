@@ -92,3 +92,12 @@ grant all on all tables in schema public to service_role;
 grant all on all sequences in schema public to service_role;
 alter default privileges in schema public grant all on tables to service_role;
 alter default privileges in schema public grant all on sequences to service_role;
+
+create table users (
+  id uuid primary key default gen_random_uuid(),
+  username text not null unique,
+  password_hash text not null,
+  created_at timestamptz not null default now()
+);
+
+grant all on users to service_role;

@@ -17,3 +17,22 @@
   text-decoration: none;
   border-bottom: 1px solid var(--brass-dim);
 }
+
+.logoutForm {
+  margin-top: 32px;
+}
+
+.logoutForm button {
+  background: none;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 3px;
+  color: var(--parchment-dim);
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.logoutForm button:hover {
+  border-color: var(--brass-dim);
+  color: var(--parchment);
+}

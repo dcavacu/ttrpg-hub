@@ -1,3 +1,4 @@
+import { logout } from './login/actions';
 import styles from './page.module.css';
 
 export default function Page() {
@@ -7,6 +8,9 @@ export default function Page() {
       <p>
         <a href="/monsters">Browse monsters</a>
       </p>
+      <form action={logout} className={styles.logoutForm}>
+        <button type="submit">Log out</button>
+      </form>
     </main>
   );
 }

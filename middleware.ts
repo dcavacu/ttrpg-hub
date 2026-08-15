@@ -8,7 +8,8 @@ export async function middleware(request: NextRequest) {
   const token = request.cookies.get(SESSION_COOKIE_NAME)?.value;
   const secret = process.env.SITE_PASSWORD ?? '';
 
-  if (!(await verifySessionToken(token, secret))) {
+  const session = await verifySessionToken(token, secret);
+  if (!session) {
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('redirectTo', pathname);
     return NextResponse.redirect(loginUrl);
