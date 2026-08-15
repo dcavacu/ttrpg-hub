@@ -2,7 +2,7 @@ import { createSupabaseClient } from '../lib/supabase/client';
 import { createMonster } from '../lib/content/monsters';
 import { mapOpen5eMonsterToRow, type Open5eMonster } from '../lib/content/open5e-mapper';
 
-const OPEN5E_URL = 'https://api.open5e.com/v1/monsters/?limit=1000';
+const OPEN5E_URL = 'https://api.open5e.com/v1/monsters/?document__slug=wotc-srd&limit=1000';
 
 async function main() {
   const client = createSupabaseClient();
@@ -24,6 +24,16 @@ async function main() {
     .single();
   if (sourceError || !source) {
     throw new Error('Run once with an "SRD" row in sources (system D&D 5e, is_homebrew=false) before seeding.');
+  }
+
+  // Idempotency guard: prevent re-seeding if SRD monsters already exist
+  const { data: existing, error: existingError } = await client
+    .from('monsters')
+    .select('id')
+    .eq('source_id', source.id)
+    .limit(1);
+  if (existing && existing.length > 0) {
+    throw new Error('SRD monsters already seeded. Delete existing SRD-sourced rows before re-running this script.');
   }
 
   const response = await fetch(OPEN5E_URL);
