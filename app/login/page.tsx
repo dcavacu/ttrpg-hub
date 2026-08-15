@@ -1,4 +1,5 @@
 import { login } from './actions';
+import styles from './page.module.css';
 
 export default function LoginPage({
   searchParams,
@@ -6,9 +7,9 @@ export default function LoginPage({
   searchParams: { error?: string; redirectTo?: string };
 }) {
   return (
-    <main>
+    <main className={styles.page}>
       <h1>Enter the compendium</h1>
-      <form action={login}>
+      <form className={styles.form} action={login}>
         <input type="hidden" name="redirectTo" value={searchParams.redirectTo ?? '/monsters'} />
         <label>
           Password

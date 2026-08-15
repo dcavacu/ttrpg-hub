@@ -1,4 +1,5 @@
 import type { Monster, System } from '@/lib/content/types';
+import styles from './MonsterForm.module.css';
 
 export function MonsterForm({
   action,
@@ -12,7 +13,7 @@ export function MonsterForm({
   error?: string;
 }) {
   return (
-    <form action={action}>
+    <form className={styles.form} action={action}>
       {error && <p role="alert">{error}</p>}
       <label htmlFor="name">
         Name

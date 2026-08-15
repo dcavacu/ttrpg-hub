@@ -1,0 +1,62 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.page h1 {
+  font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Times New Roman", serif;
+  font-size: 1.8rem;
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 320px;
+  background: var(--panel);
+  border: 1px solid var(--hairline);
+  border-radius: 6px;
+  padding: 28px;
+}
+
+.form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--parchment-dim);
+}
+
+.form input {
+  background: var(--ink-2);
+  border: 1px solid var(--hairline-strong);
+  border-radius: 3px;
+  padding: 10px 12px;
+  color: var(--parchment);
+  font-size: 0.95rem;
+}
+
+.form button {
+  background: var(--brass);
+  color: var(--ink);
+  border: none;
+  border-radius: 3px;
+  padding: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.form button:hover {
+  background: #d1ab6d;
+}
+
+.form [role="alert"] {
+  color: var(--seal-crimson);
+  font-size: 0.85rem;
+}

@@ -3,6 +3,7 @@ import { listMonsters } from '@/lib/content/monsters';
 import { MonsterCard } from './MonsterCard';
 import { MonsterFilters } from './MonsterFilters';
 import type { ContentFilters, SourceType, System } from '@/lib/content/types';
+import styles from './page.module.css';
 
 export default async function MonstersPage({
   searchParams,
@@ -22,14 +23,14 @@ export default async function MonstersPage({
   const monsters = await listMonsters(client, filters);
 
   return (
-    <main>
+    <main className={styles.page}>
       <h1>Monsters</h1>
       <a href="/monsters/new">+ Add entry</a>
       <MonsterFilters systems={(systems ?? []) as System[]} initial={filters} />
       {monsters.length === 0 ? (
         <p>Nothing on the shelf matches that search. Try clearing a filter.</p>
       ) : (
-        <div>
+        <div className={styles.grid}>
           {monsters.map((monster) => (
             <MonsterCard key={monster.id} monster={monster} />
           ))}

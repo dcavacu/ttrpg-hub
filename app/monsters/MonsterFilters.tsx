@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import type { ContentFilters, System } from '@/lib/content/types';
+import styles from './MonsterFilters.module.css';
 
 function pushFilters(router: ReturnType<typeof useRouter>, filters: ContentFilters) {
   const params = new URLSearchParams();
@@ -16,7 +17,7 @@ export function MonsterFilters({ systems, initial }: { systems: System[]; initia
   const router = useRouter();
 
   return (
-    <div>
+    <div className={styles.filters}>
       <label htmlFor="monster-search">
         Search
         <input

@@ -1,0 +1,25 @@
+.page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 36px 24px 64px;
+}
+
+.page h1 {
+  font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Times New Roman", serif;
+  font-size: 2rem;
+  margin: 0 0 20px;
+}
+
+.page > a {
+  display: inline-block;
+  margin-bottom: 20px;
+  color: var(--brass);
+  text-decoration: none;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}

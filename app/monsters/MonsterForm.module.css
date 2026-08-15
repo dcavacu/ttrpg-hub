@@ -1,0 +1,46 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 480px;
+}
+
+.form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--parchment-dim);
+}
+
+.form input:not([type="checkbox"]),
+.form select,
+.form textarea {
+  background: var(--panel);
+  border: 1px solid var(--hairline-strong);
+  border-radius: 3px;
+  padding: 10px 12px;
+  color: var(--parchment);
+  font-family: inherit;
+  font-size: 0.95rem;
+}
+
+.form textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.form button {
+  align-self: flex-start;
+  background: var(--brass);
+  color: var(--ink);
+  border: none;
+  border-radius: 3px;
+  padding: 10px 20px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.form [role="alert"] {
+  color: var(--seal-crimson);
+}

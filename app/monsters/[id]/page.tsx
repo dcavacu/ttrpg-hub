@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { createSupabaseClient } from '@/lib/supabase/client';
 import { getMonsterById } from '@/lib/content/monsters';
+import styles from './page.module.css';
 
 export default async function MonsterDetailPage({ params }: { params: { id: string } }) {
   const client = createSupabaseClient();
@@ -8,7 +9,7 @@ export default async function MonsterDetailPage({ params }: { params: { id: stri
   if (!monster) notFound();
 
   return (
-    <main>
+    <main className={styles.page}>
       <a href="/monsters">&larr; Back to Monsters</a>
       <h1>{monster.name}</h1>
       <p>
@@ -16,7 +17,7 @@ export default async function MonsterDetailPage({ params }: { params: { id: stri
       </p>
       <a href={`/monsters/${monster.id}/edit`}>Edit entry</a>
       <p>{monster.description}</p>
-      <dl>
+      <dl className={styles.stats}>
         {Object.entries(monster.stats).map(([key, value]) => (
           <div key={key}>
             <dt>{key}</dt>
@@ -24,7 +25,7 @@ export default async function MonsterDetailPage({ params }: { params: { id: stri
           </div>
         ))}
       </dl>
-      <ul>
+      <ul className={styles.tags}>
         {monster.tags.map((tag) => (
           <li key={tag}>{tag}</li>
         ))}

@@ -1,6 +1,24 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Thumb Index palette (see the design preview artifact) — unused until
+     you apply them; swap --background/--foreground above or reference
+     these directly in your CSS modules. */
+  --ink: #14161f;
+  --ink-2: #1a1d29;
+  --panel: #1d2130;
+  --panel-2: #242939;
+  --parchment: #ede6d6;
+  --parchment-dim: #c9c2ae;
+  --brass: #c19a5b;
+  --brass-dim: #8a6d3f;
+  --seal-teal: #4f8177;
+  --seal-teal-dim: #345a52;
+  --seal-crimson: #af4b4b;
+  --seal-crimson-dim: #7a3535;
+  --hairline: rgba(237, 230, 214, 0.14);
+  --hairline-strong: rgba(237, 230, 214, 0.26);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -11,7 +29,11 @@
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  color: var(--parchment);
+  background: var(--ink);
+  font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+a {
+  color: var(--brass);
 }
