@@ -27,4 +27,5 @@ export interface ContentFilters {
   systemId?: string;
   sourceType?: SourceType;
   search?: string;
+  tags?: string[];
 }

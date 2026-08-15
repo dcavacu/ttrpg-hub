@@ -3,6 +3,7 @@ import type { ContentFilters } from './types';
 export interface FilterableQuery {
   eq(column: string, value: unknown): FilterableQuery;
   ilike(column: string, pattern: string): FilterableQuery;
+  overlaps(column: string, value: unknown[]): FilterableQuery;
 }
 
 export function applyContentFilters<Q extends FilterableQuery>(query: Q, filters: ContentFilters): Q {
@@ -15,6 +16,9 @@ export function applyContentFilters<Q extends FilterableQuery>(query: Q, filters
   }
   if (filters.search) {
     result = result.ilike('name', `%${filters.search}%`);
+  }
+  if (filters.tags && filters.tags.length > 0) {
+    result = result.overlaps('tags', filters.tags);
   }
   return result as Q;
 }

@@ -1,0 +1,75 @@
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  align-self: start;
+  background: var(--panel);
+  border: 1px solid var(--hairline);
+  border-radius: 4px;
+  padding: 16px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.heading {
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--parchment-dim);
+  margin: 0;
+}
+
+.categoryList,
+.tagList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.categoryLink {
+  color: var(--parchment);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.categoryLink:hover {
+  color: var(--brass-dim);
+}
+
+.categoryPending {
+  color: var(--parchment-dim);
+}
+
+.count {
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+  font-size: 0.85em;
+  color: var(--parchment-dim);
+}
+
+.soon {
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--brass-dim);
+  border: 1px solid var(--hairline-strong);
+  border-radius: 999px;
+  padding: 1px 7px;
+}
+
+.tagLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--parchment);
+  cursor: pointer;
+}
