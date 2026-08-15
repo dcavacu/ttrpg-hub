@@ -1,13 +1,11 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { verifySessionToken } from './lib/auth/session';
-
-const SESSION_COOKIE = 'ttrpg_hub_session';
+import { verifySessionToken, SESSION_COOKIE_NAME } from './lib/auth/session';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   if (pathname.startsWith('/login')) return NextResponse.next();
 
-  const token = request.cookies.get(SESSION_COOKIE)?.value;
+  const token = request.cookies.get(SESSION_COOKIE_NAME)?.value;
   const secret = process.env.SITE_PASSWORD ?? '';
 
   if (!(await verifySessionToken(token, secret))) {

@@ -3,11 +3,14 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { isCorrectPassword } from '@/lib/auth/password';
-import { createSessionToken } from '@/lib/auth/session';
+import { createSessionToken, SESSION_COOKIE_NAME } from '@/lib/auth/session';
+
+const SAFE_REDIRECT = /^\/(?!\/)/;
 
 export async function login(formData: FormData) {
   const password = String(formData.get('password') ?? '');
-  const redirectTo = String(formData.get('redirectTo') ?? '/monsters');
+  const requestedRedirectTo = String(formData.get('redirectTo') ?? '/monsters');
+  const redirectTo = SAFE_REDIRECT.test(requestedRedirectTo) ? requestedRedirectTo : '/monsters';
   const secret = process.env.SITE_PASSWORD ?? '';
 
   if (!isCorrectPassword(password, secret)) {
@@ -15,7 +18,7 @@ export async function login(formData: FormData) {
   }
 
   const token = await createSessionToken(secret);
-  cookies().set('ttrpg_hub_session', token, {
+  cookies().set(SESSION_COOKIE_NAME, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',

@@ -1,5 +1,7 @@
 const SIGNED_VALUE = 'granted';
 
+export const SESSION_COOKIE_NAME = 'ttrpg_hub_session';
+
 async function createHmac(secret: string, value: string): Promise<string> {
   const encoder = new TextEncoder();
   const keyData = encoder.encode(secret);

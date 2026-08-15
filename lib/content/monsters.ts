@@ -28,9 +28,9 @@ export interface MonsterInput {
   source_id: string;
   is_homebrew: boolean;
   rating_label?: string;
-  tags: string[];
-  description: string;
-  stats: Record<string, string>;
+  tags?: string[];
+  description?: string;
+  stats?: Record<string, string>;
 }
 
 export async function createMonster(client: SupabaseClient, input: MonsterInput): Promise<string> {
