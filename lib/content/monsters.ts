@@ -7,6 +7,7 @@ const MONSTER_SELECT =
 
 export async function listMonsters(client: SupabaseClient, filters: ContentFilters): Promise<Monster[]> {
   const query = applyContentFilters(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase's query builder type doesn't structurally match FilterableQuery's generic constraint
     client.from('monsters').select(MONSTER_SELECT).order('name') as any,
     filters,
   );

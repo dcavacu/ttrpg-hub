@@ -1,6 +1,7 @@
 import { listMonsters, getMonsterById, createMonster, updateMonster } from './monsters';
 
 function createMockBuilder(result: { data: unknown; error: { message: string } | null }) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- minimal mock double, real typing adds no value here
   const builder: any = {};
   builder.select = vi.fn(() => builder);
   builder.order = vi.fn(() => builder);
@@ -14,7 +15,9 @@ function createMockBuilder(result: { data: unknown; error: { message: string } |
   return builder;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- minimal mock double, real typing adds no value here
 function createMockClient(builder: any) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- minimal mock double, real typing adds no value here
   return { from: vi.fn(() => builder) } as any;
 }
 

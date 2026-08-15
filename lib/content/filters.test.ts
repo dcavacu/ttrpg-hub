@@ -1,6 +1,8 @@
 import { applyContentFilters, type FilterableQuery } from './filters';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- minimal mock double, real typing adds no value here
 function createMockQuery(): FilterableQuery & { eq: any; ilike: any } {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- minimal mock double, real typing adds no value here
   const query: any = {};
   query.eq = vi.fn(() => query);
   query.ilike = vi.fn(() => query);
