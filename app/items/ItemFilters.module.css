@@ -1,0 +1,23 @@
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.filters label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.78rem;
+  color: var(--parchment-dim);
+}
+
+.filters input,
+.filters select {
+  background: var(--panel);
+  border: 1px solid var(--hairline-strong);
+  border-radius: 3px;
+  padding: 8px 10px;
+  color: var(--parchment);
+}
