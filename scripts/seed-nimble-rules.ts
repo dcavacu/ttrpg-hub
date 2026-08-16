@@ -220,7 +220,7 @@ const RULES: SeedRule[] = [
     category: 'Conditions',
     tags: ['Condition'],
     description:
-      'Sees the charmer as an ally. The charmer has advantage on social interactions with the Charmed creature. The Charmed creature has disadvantage on attacks against the charmer.',
+      'Sees the charmer as an ally. The charmer has advantage on social interactions with the Charmed creature.',
   },
   {
     name: 'Dazed',
@@ -284,7 +284,8 @@ const RULES: SeedRule[] = [
     name: 'Prone',
     category: 'Conditions',
     tags: ['Condition'],
-    description: 'Movement costs twice as much while Prone. Spend 3 spaces of Speed to stand up.',
+    description:
+      "Movement costs twice as much while Prone, and the Prone creature's own attacks are made with disadvantage. Melee attacks against a Prone creature have advantage; Ranged attacks against it have disadvantage. Spend 3 spaces of Speed to stand up.",
   },
   {
     name: 'Riding',
@@ -556,6 +557,13 @@ const RULES: SeedRule[] = [
     tags: ['Optional'],
     description:
       'For larger weapon die sizes, dice of a different size can be used as long as they add up to the same initial die size. For example, a 1d10 glaive could instead use 1d4+1d6 or 1d6+1d4, using the first listed die as the Primary Die.',
+  },
+  {
+    name: 'I Had the High Ground',
+    category: 'Optional Rules',
+    tags: ['Optional'],
+    description:
+      "Taking a crit while at a... [Note: the Nimble Core Rules book cuts this rule off mid-sentence at the bottom of the Optional Variant Rules page -- the rest of its text is not present in the printed source.]",
   },
 
   // ---------------------------------------------------------------------

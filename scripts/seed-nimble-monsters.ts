@@ -1062,6 +1062,17 @@ const MONSTERS: MonsterInput[] = [
 async function main() {
   const client = createSupabaseClient();
 
+  // Idempotency guard: prevent re-seeding if any Nimble monster sources already exist.
+  const { data: existing, error: existingError } = await client
+    .from('monsters')
+    .select('id')
+    .in('source_id', [SOURCE_FEY, SOURCE_FIENDS, SOURCE_GIANT_BUGS, SOURCE_GMG])
+    .limit(1);
+  if (existingError) throw new Error(`Failed to check for existing monsters: ${existingError.message}`);
+  if (existing && existing.length > 0) {
+    throw new Error('Nimble monsters already seeded. Delete existing rows for these sources before re-running this script.');
+  }
+
   let created = 0;
   for (const monster of MONSTERS) {
     await createMonster(client, monster);

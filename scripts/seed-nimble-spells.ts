@@ -103,7 +103,7 @@ const SPELLS: SpellSeed[] = [
     level: 'Tier 1',
     tags: ['Ice'],
     description:
-      'Standard casting: 1 Action, Self. Reaction: when attacked, gain 2×KEY temp HP and Defend for free. The ice melts and these temp HP are lost at the start of your next turn. Upcast: +2×KEY temp HP.',
+      '1 Action, Self. Reaction: when attacked, gain 2×KEY temp HP and Defend for free. The ice melts and these temp HP are lost at the start of your next turn. Upcast: +2×KEY temp HP.',
     stats: { Actions: '1 (Reaction)', Target: 'Self', Effect: '2×KEY temp HP + free Defend', Upcast: '+2×KEY temp HP' },
   },
   {
@@ -111,7 +111,7 @@ const SPELLS: SpellSeed[] = [
     level: 'Tier 2',
     tags: ['Ice'],
     description:
-      'Standard casting: 2 Actions, Single Target. Range: 12. Damage: 3d6. If any die rolls the max against a Hampered target, this counts as a crit; on crit: +20 damage. Upcast: increase the result of any one die by 1, and +5 damage on crit.',
+      '2 Actions, Single Target. Range: 12. Damage: 3d6. If any die rolls the max against a Hampered target, this counts as a crit; on crit: +20 damage. Upcast: increase the result of any one die by 1, and +5 damage on crit.',
     stats: { Actions: '2', Target: 'Single Target', Range: '12', Damage: '3d6 (+20 on crit)', Upcast: '+1 to a die result, +5 damage on crit' },
   },
   {
@@ -119,7 +119,7 @@ const SPELLS: SpellSeed[] = [
     level: 'Tier 3',
     tags: ['Ice'],
     description:
-      'Standard casting: 2 Actions, AoE. Reach: 12. Creatures in a 2×2 area within Reach are Dazed. On a failed STR save, they fall asleep instead, becoming Incapacitated until two of their turns have passed, until damaged, or until an ally uses an action to wake them. Upcast: +1 area, +1 turn asleep.',
+      '2 Actions, AoE. Reach: 12. Creatures in a 2×2 area within Reach are Dazed. On a failed STR save, they fall asleep instead, becoming Incapacitated until two of their turns have passed, until damaged, or until an ally uses an action to wake them. Upcast: +1 area, +1 turn asleep.',
     stats: { Actions: '2', Target: 'AoE (2x2)', Reach: '12', Save: 'STR', Upcast: '+1 area, +1 turn asleep' },
   },
   {
@@ -639,6 +639,17 @@ const SPELLS: SpellSeed[] = [
 
 async function main() {
   const client = createSupabaseClient();
+
+  // Idempotency guard: prevent re-seeding if Nimble Core Rules spells already exist.
+  const { data: existing, error: existingError } = await client
+    .from('spells')
+    .select('id')
+    .eq('source_id', SOURCE_ID)
+    .limit(1);
+  if (existingError) throw new Error(`Failed to check for existing spells: ${existingError.message}`);
+  if (existing && existing.length > 0) {
+    throw new Error('Nimble Core Rules spells already seeded. Delete existing rows for this source before re-running this script.');
+  }
 
   let created = 0;
   for (const spell of SPELLS) {

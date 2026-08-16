@@ -1041,6 +1041,17 @@ const BUG_LOOT_ITEMS: RawItem[] = [
 async function main() {
   const client = createSupabaseClient();
 
+  // Idempotency guard: prevent re-seeding if any Nimble item sources already exist.
+  const { data: existing, error: existingError } = await client
+    .from('items')
+    .select('id')
+    .in('source_id', [CORE_RULES_SOURCE_ID, FEY_SOURCE_ID, BUGS_SOURCE_ID])
+    .limit(1);
+  if (existingError) throw new Error(`Failed to check for existing items: ${existingError.message}`);
+  if (existing && existing.length > 0) {
+    throw new Error('Nimble items already seeded. Delete existing rows for these sources before re-running this script.');
+  }
+
   const items: ItemInput[] = [
     ...CORE_RULES_ITEMS.map(coreItem),
     ...FEY_LOOT_ITEMS.map(feyItem),
