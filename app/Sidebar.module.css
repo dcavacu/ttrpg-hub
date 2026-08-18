@@ -16,9 +16,8 @@
 }
 
 .heading {
-  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
-  font-size: 0.72rem;
-  text-transform: uppercase;
+  font-size: var(--text-xs);
+  font-weight: 600;
   letter-spacing: 0.04em;
   color: var(--parchment-dim);
   margin: 0;
@@ -61,4 +60,10 @@
   font-size: 0.85rem;
   color: var(--parchment);
   cursor: pointer;
+}
+
+.tagCount {
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+  font-size: var(--text-2xs);
+  color: var(--parchment-dim);
 }

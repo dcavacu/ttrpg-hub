@@ -9,7 +9,11 @@ vi.mock('next/navigation', () => ({
 }));
 
 const counts = { monsters: 324, items: 0, spells: 0, rules: 0 };
-const tags = ['Aberration', 'Beast', 'Dragon'];
+const tags = [
+  { tag: 'Aberration', count: 2 },
+  { tag: 'Beast', count: 5 },
+  { tag: 'Dragon', count: 36 },
+];
 
 describe('Sidebar', () => {
   beforeEach(() => push.mockClear());
@@ -52,5 +56,10 @@ describe('Sidebar', () => {
     render(<Sidebar counts={counts} tags={tags} initial={{}} category="items" />);
     await userEvent.click(screen.getByLabelText('Dragon'));
     expect(push).toHaveBeenLastCalledWith('/items?tags=Dragon');
+  });
+
+  it('shows a count next to each tag', () => {
+    render(<Sidebar counts={counts} tags={tags} initial={{}} category="monsters" />);
+    expect(screen.getByText('(36)')).toBeInTheDocument();
   });
 });

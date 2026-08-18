@@ -1,4 +1,5 @@
-import { getCategoryCounts, listDistinctTags } from './sidebar';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { getCategoryCounts, listTagCounts } from './sidebar';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- minimal mock double, real typing adds no value here
 function createMockClient(resultsByTable: Record<string, any>) {
@@ -39,19 +40,22 @@ describe('getCategoryCounts', () => {
   });
 });
 
-describe('listDistinctTags', () => {
-  it('returns deduplicated, sorted tags', async () => {
+describe('listTagCounts', () => {
+  it('counts how many rows carry each tag', async () => {
     const client = createMockClient({
       monsters: {
-        data: [{ tags: ['Dragon', 'Beast'] }, { tags: ['Dragon', 'Aberration'] }],
+        data: [{ tags: ['Dragon', 'Beast'] }, { tags: ['Dragon'] }, { tags: [] }],
         error: null,
       },
     });
 
-    const result = await listDistinctTags(client, 'monsters');
+    const result = await listTagCounts(client, 'monsters');
 
     expect(client.from).toHaveBeenCalledWith('monsters');
-    expect(result).toEqual(['Aberration', 'Beast', 'Dragon']);
+    expect(result).toEqual([
+      { tag: 'Beast', count: 1 },
+      { tag: 'Dragon', count: 2 },
+    ]);
   });
 
   it('returns an empty array when there is no data', async () => {
@@ -59,7 +63,7 @@ describe('listDistinctTags', () => {
       monsters: { data: [], error: null },
     });
 
-    const result = await listDistinctTags(client, 'monsters');
+    const result = await listTagCounts(client, 'monsters');
 
     expect(result).toEqual([]);
   });
@@ -69,7 +73,7 @@ describe('listDistinctTags', () => {
       monsters: { data: null, error: { message: 'boom' } },
     });
 
-    await expect(listDistinctTags(client, 'monsters')).rejects.toThrow('boom');
+    await expect(listTagCounts(client, 'monsters')).rejects.toThrow('boom');
   });
 
   it('works against a different table name', async () => {
@@ -80,9 +84,22 @@ describe('listDistinctTags', () => {
       },
     });
 
-    const result = await listDistinctTags(client, 'items');
+    const result = await listTagCounts(client, 'items');
 
     expect(client.from).toHaveBeenCalledWith('items');
-    expect(result).toEqual(['Magic', 'Weapon']);
+    expect(result).toEqual([
+      { tag: 'Magic', count: 1 },
+      { tag: 'Weapon', count: 2 },
+    ]);
+  });
+
+  it('scopes the query by systemId when provided', async () => {
+    const eq = vi.fn(() => Promise.resolve({ data: [{ tags: ['Dragon'] }], error: null }));
+    const from = vi.fn(() => ({ select: vi.fn(() => ({ eq })) }));
+    const client = { from } as unknown as SupabaseClient;
+
+    await listTagCounts(client, 'monsters', 'system-123');
+
+    expect(eq).toHaveBeenCalledWith('system_id', 'system-123');
   });
 });

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import type { CategoryCounts } from '@/lib/content/sidebar';
+import type { CategoryCounts, TagCount } from '@/lib/content/sidebar';
 import type { ContentFilters } from '@/lib/content/types';
 import styles from './Sidebar.module.css';
 
@@ -32,7 +32,7 @@ export function Sidebar({
   category,
 }: {
   counts: CategoryCounts;
-  tags: string[];
+  tags: TagCount[];
   initial: ContentFilters;
   category: Category;
 }) {
@@ -64,15 +64,16 @@ export function Sidebar({
       <section className={styles.section}>
         <h2 className={styles.heading}>Tags</h2>
         <ul className={styles.tagList}>
-          {tags.map((tag) => (
+          {tags.map(({ tag, count }) => (
             <li key={tag}>
               <label className={styles.tagLabel}>
                 <input
                   type="checkbox"
+                  aria-label={tag}
                   checked={initial.tags?.includes(tag) ?? false}
                   onChange={(e) => toggleTag(tag, e.target.checked)}
                 />
-                {tag}
+                {tag} <span className={styles.tagCount}>({count})</span>
               </label>
             </li>
           ))}

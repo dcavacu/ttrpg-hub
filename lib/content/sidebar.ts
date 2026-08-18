@@ -26,15 +26,25 @@ export async function getCategoryCounts(client: SupabaseClient): Promise<Categor
   };
 }
 
-export async function listDistinctTags(
+export interface TagCount {
+  tag: string;
+  count: number;
+}
+
+export async function listTagCounts(
   client: SupabaseClient,
   table: 'monsters' | 'items' | 'spells' | 'rules',
-): Promise<string[]> {
-  const { data, error } = await client.from(table).select('tags');
-  if (error) throw new Error(`Failed to list ${table} tags: ${error.message}`);
-  const tagSet = new Set<string>();
+  systemId?: string,
+): Promise<TagCount[]> {
+  let query = client.from(table).select('tags');
+  if (systemId) query = query.eq('system_id', systemId);
+  const { data, error } = await query;
+  if (error) throw new Error(`Failed to list ${table} tag counts: ${error.message}`);
+  const counts = new Map<string, number>();
   for (const row of (data ?? []) as { tags: string[] }[]) {
-    for (const tag of row.tags ?? []) tagSet.add(tag);
+    for (const tag of row.tags ?? []) counts.set(tag, (counts.get(tag) ?? 0) + 1);
   }
-  return Array.from(tagSet).sort();
+  return Array.from(counts.entries())
+    .map(([tag, count]) => ({ tag, count }))
+    .sort((a, b) => a.tag.localeCompare(b.tag));
 }
