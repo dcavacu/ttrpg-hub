@@ -3,7 +3,7 @@ export interface DescriptionSection {
   text: string;
 }
 
-const PHASE_HEADING = /(?<=^|\s)([A-Z][A-Z '-]{2,30}):\s*/g;
+const PHASE_HEADING = /(?<=^|[.!?]\s)([A-Z][A-Z '-]{2,30}):\s*/g;
 
 export function splitDescriptionSections(description: string): DescriptionSection[] {
   if (!description) return [];

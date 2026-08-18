@@ -26,4 +26,11 @@ describe('splitDescriptionSections', () => {
       { heading: 'ACTIONS', text: 'Move 4 then choose one.' },
     ]);
   });
+
+  it('does not treat a mid-sentence ALL-CAPS token followed by a colon as a heading', () => {
+    const description = 'Make a STR: check to escape the net before it tightens.';
+    expect(splitDescriptionSections(description)).toEqual([
+      { heading: null, text: description },
+    ]);
+  });
 });
