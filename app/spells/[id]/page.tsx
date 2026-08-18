@@ -1,6 +1,8 @@
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
 import { createSupabaseClient } from '@/lib/supabase/client';
 import { getSpellById } from '@/lib/content/spells';
+import { splitDescriptionSections } from '@/lib/content/format-description';
 import styles from './page.module.css';
 
 export default async function SpellDetailPage({ params }: { params: { id: string } }) {
@@ -10,24 +12,39 @@ export default async function SpellDetailPage({ params }: { params: { id: string
 
   return (
     <main className={styles.page}>
-      <a href="/spells">&larr; Back to Spells</a>
+      <div className={styles.topRow}>
+        <a href="/spells">&larr; Back to Spells</a>
+        <Link href={`/spells/${spell.id}/edit`} className={styles.editLink}>
+          Edit entry
+        </Link>
+      </div>
       <h1>{spell.name}</h1>
-      <p>
+      <p className={styles.subtitle}>
         {spell.system.name} &middot; {spell.level}
       </p>
-      <a href={`/spells/${spell.id}/edit`}>Edit entry</a>
-      <p>{spell.description}</p>
-      <dl className={styles.stats}>
-        {Object.entries(spell.stats).map(([key, value]) => (
-          <div key={key}>
-            <dt>{key}</dt>
-            <dd>{value}</dd>
+      {Object.keys(spell.stats).length > 0 && (
+        <dl className={styles.stats}>
+          {Object.entries(spell.stats).map(([key, value]) => (
+            <div key={key}>
+              <dt>{key}</dt>
+              <dd>{value}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+      <div className={styles.description}>
+        {splitDescriptionSections(spell.description).map((section, i) => (
+          <div key={i} className={styles.descSection}>
+            {section.heading && <h2 className={styles.phaseHeading}>{section.heading}</h2>}
+            <p>{section.text}</p>
           </div>
         ))}
-      </dl>
+      </div>
       <ul className={styles.tags}>
         {spell.tags.map((tag) => (
-          <li key={tag}>{tag}</li>
+          <li key={tag}>
+            <Link href={`/spells?tags=${encodeURIComponent(tag)}`}>{tag}</Link>
+          </li>
         ))}
       </ul>
     </main>
