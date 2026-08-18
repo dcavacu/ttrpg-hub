@@ -1,0 +1,35 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--hairline-strong);
+}
+
+.brand {
+  font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Times New Roman", serif;
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--parchment);
+  text-decoration: none;
+}
+
+.brand:hover {
+  color: var(--brass-dim);
+}
+
+.logoutButton {
+  background: transparent;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 3px;
+  padding: 6px 14px;
+  font-size: var(--text-sm);
+  color: var(--parchment-dim);
+  cursor: pointer;
+}
+
+.logoutButton:hover {
+  border-color: var(--brass-dim);
+  color: var(--parchment);
+}
