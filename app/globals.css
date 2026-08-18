@@ -5,9 +5,13 @@
      --ink holds the light page-ground color and --parchment holds the
      dark ink-brown text color — background and text swapped materials.
      --brass stays as a fill color (buttons/badges); --brass-dim is used
-     wherever brass appears as text/links, since raw --brass is too low
-     -contrast on a light ground. --seal-teal/--seal-crimson are
-     deepened slightly from the dark-theme values for the same reason. */
+     wherever brass appears as text/links on a white --panel, since raw
+     --brass is too low-contrast on a light ground. --link-on-ink is a
+     further-darkened variant (5.07:1 on --ink, verified) for links that
+     sit directly on the --ink page background rather than inside a
+     white panel, where --brass-dim itself falls to 4.11:1 and fails
+     WCAG AA. --seal-teal/--seal-crimson are deepened slightly from the
+     dark-theme values for the same reason. */
   --ink: #f2ecde;
   --ink-2: #ffffff;
   --panel: #ffffff;
@@ -16,12 +20,31 @@
   --parchment-dim: #6b6152;
   --brass: #c19a5b;
   --brass-dim: #8a6d3f;
+  --link-on-ink: #7a5f34;
   --seal-teal: #3f6b62;
   --seal-teal-dim: #2e504a;
   --seal-crimson: #963f3f;
   --seal-crimson-dim: #7a3535;
   --hairline: rgba(34, 29, 21, 0.14);
   --hairline-strong: rgba(34, 29, 21, 0.26);
+  --focus-ring: var(--seal-teal);
+
+  /* Type scale. Introduced for new/touched CSS in this plan; existing
+     untouched files keep their historical hardcoded rem values rather
+     than being mass-migrated as an unrelated drive-by change. */
+  --text-2xs: 0.75rem;
+  --text-xs: 0.8rem;
+  --text-sm: 0.9rem;
+  --text-base: 1rem;
+  --text-lg: 1.15rem;
+  --text-xl: 1.8rem;
+  --text-display: 2.4rem;
+
+  /* Per-system card accents. Falls back to --system-accent-default for
+     any system name not explicitly matched. */
+  --system-accent-dnd: var(--seal-crimson-dim);
+  --system-accent-nimble: var(--seal-teal-dim);
+  --system-accent-default: var(--hairline-strong);
 }
 
 body {
@@ -31,5 +54,20 @@ body {
 }
 
 a {
-  color: var(--brass-dim);
+  color: var(--link-on-ink);
+}
+
+a:hover {
+  color: var(--parchment);
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: 2px;
 }
