@@ -36,6 +36,12 @@ describe('SpellCard', () => {
 
   it('links to the spell detail page', () => {
     render(<SpellCard spell={spell} />);
-    expect(screen.getByRole('link')).toHaveAttribute('href', '/spells/sp-1');
+    expect(screen.getByRole('link', { name: /Owlbear Bolt/i })).toHaveAttribute('href', '/spells/sp-1');
+  });
+
+  it('renders each tag as a link back into the filtered browse view', () => {
+    render(<SpellCard spell={spell} />);
+    const tagLink = screen.getByRole('link', { name: 'evocation' });
+    expect(tagLink).toHaveAttribute('href', '/spells?tags=evocation');
   });
 });

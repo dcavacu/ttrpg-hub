@@ -2,10 +2,16 @@ import Link from 'next/link';
 import type { Spell } from '@/lib/content/types';
 import styles from './SpellCard.module.css';
 
+function systemAccentClass(systemName: string): string {
+  if (systemName === 'D&D 5e') return styles.accentDnd;
+  if (systemName === 'Nimble') return styles.accentNimble;
+  return styles.accentDefault;
+}
+
 export function SpellCard({ spell }: { spell: Spell }) {
   return (
-    <Link href={`/spells/${spell.id}`}>
-      <article className={styles.card}>
+    <article className={`${styles.card} ${systemAccentClass(spell.system.name)}`}>
+      <Link href={`/spells/${spell.id}`} className={styles.cardLink}>
         <div className={styles.head}>
           <span className={styles.name}>{spell.name}</span>
           {spell.level && <span className={styles.rating}>{spell.level}</span>}
@@ -14,12 +20,14 @@ export function SpellCard({ spell }: { spell: Spell }) {
         <span className={spell.is_homebrew ? styles.homebrew : styles.official}>
           {spell.is_homebrew ? 'Homebrew' : 'Official'}
         </span>
-        <ul className={styles.tags}>
-          {spell.tags.map((tag) => (
-            <li key={tag}>{tag}</li>
-          ))}
-        </ul>
-      </article>
-    </Link>
+      </Link>
+      <ul className={styles.tags}>
+        {spell.tags.map((tag) => (
+          <li key={tag}>
+            <Link href={`/spells?tags=${encodeURIComponent(tag)}`}>{tag}</Link>
+          </li>
+        ))}
+      </ul>
+    </article>
   );
 }

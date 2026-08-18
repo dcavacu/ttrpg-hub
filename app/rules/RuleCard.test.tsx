@@ -36,6 +36,12 @@ describe('RuleCard', () => {
 
   it('links to the rule detail page', () => {
     render(<RuleCard rule={rule} />);
-    expect(screen.getByRole('link')).toHaveAttribute('href', '/rules/r-1');
+    expect(screen.getByRole('link', { name: /Grappling with an Owlbear/i })).toHaveAttribute('href', '/rules/r-1');
+  });
+
+  it('renders each tag as a link back into the filtered browse view', () => {
+    render(<RuleCard rule={rule} />);
+    const tagLink = screen.getByRole('link', { name: 'grappling' });
+    expect(tagLink).toHaveAttribute('href', '/rules?tags=grappling');
   });
 });

@@ -38,6 +38,12 @@ describe('ItemCard', () => {
 
   it('links to the item detail page', () => {
     render(<ItemCard item={item} />);
-    expect(screen.getByRole('link')).toHaveAttribute('href', '/items/i-1');
+    expect(screen.getByRole('link', { name: /Sword of Owlbears/i })).toHaveAttribute('href', '/items/i-1');
+  });
+
+  it('renders each tag as a link back into the filtered browse view', () => {
+    render(<ItemCard item={item} />);
+    const tagLink = screen.getByRole('link', { name: 'weapon' });
+    expect(tagLink).toHaveAttribute('href', '/items?tags=weapon');
   });
 });

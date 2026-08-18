@@ -36,6 +36,12 @@ describe('MonsterCard', () => {
 
   it('links to the monster detail page', () => {
     render(<MonsterCard monster={monster} />);
-    expect(screen.getByRole('link')).toHaveAttribute('href', '/monsters/m-1');
+    expect(screen.getByRole('link', { name: /Owlbear/i })).toHaveAttribute('href', '/monsters/m-1');
+  });
+
+  it('renders each tag as a link back into the filtered browse view', () => {
+    render(<MonsterCard monster={monster} />);
+    const tagLink = screen.getByRole('link', { name: 'beast' });
+    expect(tagLink).toHaveAttribute('href', '/monsters?tags=beast');
   });
 });
