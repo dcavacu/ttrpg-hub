@@ -1,14 +1,20 @@
 import type { Item, System } from '@/lib/content/types';
+import type { SourceOption } from '@/lib/content/sources';
+import { StatsEditor } from '../content/StatsEditor';
 import styles from './ItemForm.module.css';
 
 export function ItemForm({
   action,
   systems,
+  sources,
+  tags,
   item,
   error,
 }: {
   action: (formData: FormData) => void;
   systems: System[];
+  sources: SourceOption[];
+  tags: string[];
   item?: Item;
   error?: string;
 }) {
@@ -31,8 +37,15 @@ export function ItemForm({
         </select>
       </label>
       <label htmlFor="source_id">
-        Source id
-        <input id="source_id" name="source_id" defaultValue={item?.source.id} required />
+        Source
+        <select id="source_id" name="source_id" defaultValue={item?.source.id} required>
+          <option value="">Choose a source</option>
+          {sources.map((source) => (
+            <option key={source.id} value={source.id}>
+              {source.systemName} &middot; {source.name}
+            </option>
+          ))}
+        </select>
       </label>
       <label htmlFor="is_homebrew">
         Homebrew
@@ -48,12 +61,18 @@ export function ItemForm({
       </label>
       <label htmlFor="tags">
         Tags (comma separated)
-        <input id="tags" name="tags" defaultValue={item?.tags.join(', ')} />
+        <input id="tags" name="tags" defaultValue={item?.tags.join(', ')} list="tag-suggestions" />
+        <datalist id="tag-suggestions">
+          {tags.map((tag) => (
+            <option key={tag} value={tag} />
+          ))}
+        </datalist>
       </label>
       <label htmlFor="description">
         Description
         <textarea id="description" name="description" defaultValue={item?.description} />
       </label>
+      <StatsEditor defaultValue={item?.stats} />
       <button type="submit">Save</button>
     </form>
   );

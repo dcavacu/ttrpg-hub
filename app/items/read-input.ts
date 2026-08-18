@@ -1,5 +1,17 @@
 import type { ItemInput } from '@/lib/content/items';
 
+function readStats(formData: FormData): Record<string, string> | undefined {
+  const keys = formData.getAll('stats_key').map(String);
+  const values = formData.getAll('stats_value').map(String);
+  const stats: Record<string, string> = {};
+  keys.forEach((key, i) => {
+    const trimmedKey = key.trim();
+    if (!trimmedKey) return;
+    stats[trimmedKey] = (values[i] ?? '').trim();
+  });
+  return Object.keys(stats).length > 0 ? stats : undefined;
+}
+
 export function readInput(formData: FormData): Partial<ItemInput> {
   const sourceId = String(formData.get('source_id') ?? '');
   const isHomebrew = formData.get('is_homebrew') === 'on';
@@ -15,5 +27,6 @@ export function readInput(formData: FormData): Partial<ItemInput> {
       .split(',')
       .map((t) => t.trim())
       .filter(Boolean),
+    stats: readStats(formData),
   };
 }

@@ -9,7 +9,7 @@ function buildFormData(fields: Record<string, string>): FormData {
 }
 
 describe('readInput', () => {
-  it('does not set a stats key, so an update never wipes the existing stat block', () => {
+  it('leaves stats undefined when no stat rows are submitted, so an update never wipes the existing stat block', () => {
     const formData = buildFormData({
       name: 'Sword of Owlbears',
       system_id: 'sys-1',
@@ -18,7 +18,7 @@ describe('readInput', () => {
 
     const result = readInput(formData);
 
-    expect(result).not.toHaveProperty('stats');
+    expect(result.stats).toBeUndefined();
   });
 
   it('parses a comma-separated tags field into a trimmed array', () => {

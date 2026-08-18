@@ -1,6 +1,8 @@
 import { notFound } from 'next/navigation';
 import { createSupabaseClient } from '@/lib/supabase/client';
 import { getRuleById } from '@/lib/content/rules';
+import { listSources } from '@/lib/content/sources';
+import { listTagCounts } from '@/lib/content/sidebar';
 import { updateRuleAction } from '../../actions';
 import { RuleForm } from '../../RuleForm';
 import type { System } from '@/lib/content/types';
@@ -16,7 +18,11 @@ export default async function EditRulePage({
   const rule = await getRuleById(client, params.id);
   if (!rule) notFound();
 
-  const { data: systems } = await client.from('systems').select('id, name').order('name');
+  const [{ data: systems }, sources, tagCounts] = await Promise.all([
+    client.from('systems').select('id, name').order('name'),
+    listSources(client),
+    listTagCounts(client, 'rules'),
+  ]);
   const boundAction = updateRuleAction.bind(null, params.id);
 
   return (
@@ -25,6 +31,8 @@ export default async function EditRulePage({
       <RuleForm
         action={boundAction}
         systems={(systems ?? []) as System[]}
+        sources={sources}
+        tags={tagCounts.map((t) => t.tag)}
         rule={rule}
         error={searchParams.error}
       />

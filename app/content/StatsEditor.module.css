@@ -1,0 +1,54 @@
+.editor {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font-size: var(--text-sm);
+  color: var(--parchment-dim);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 8px;
+}
+
+.row input {
+  background: var(--ink-2);
+  border: 1px solid var(--hairline-strong);
+  border-radius: 3px;
+  padding: 8px 10px;
+  color: var(--parchment);
+  font-size: var(--text-sm);
+}
+
+.removeButton {
+  background: transparent;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 3px;
+  padding: 0 12px;
+  color: var(--parchment-dim);
+  cursor: pointer;
+}
+
+.removeButton:hover {
+  border-color: var(--seal-crimson);
+  color: var(--seal-crimson);
+}
+
+.addButton {
+  align-self: flex-start;
+  background: transparent;
+  border: 1px dashed var(--hairline-strong);
+  border-radius: 3px;
+  padding: 8px 14px;
+  color: var(--link-on-ink);
+  cursor: pointer;
+  font-size: var(--text-sm);
+}
+
+.addButton:hover {
+  border-color: var(--brass-dim);
+}

@@ -1,6 +1,8 @@
 import { notFound } from 'next/navigation';
 import { createSupabaseClient } from '@/lib/supabase/client';
 import { getItemById } from '@/lib/content/items';
+import { listSources } from '@/lib/content/sources';
+import { listTagCounts } from '@/lib/content/sidebar';
 import { updateItemAction } from '../../actions';
 import { ItemForm } from '../../ItemForm';
 import type { System } from '@/lib/content/types';
@@ -16,7 +18,11 @@ export default async function EditItemPage({
   const item = await getItemById(client, params.id);
   if (!item) notFound();
 
-  const { data: systems } = await client.from('systems').select('id, name').order('name');
+  const [{ data: systems }, sources, tagCounts] = await Promise.all([
+    client.from('systems').select('id, name').order('name'),
+    listSources(client),
+    listTagCounts(client, 'items'),
+  ]);
   const boundAction = updateItemAction.bind(null, params.id);
 
   return (
@@ -25,6 +31,8 @@ export default async function EditItemPage({
       <ItemForm
         action={boundAction}
         systems={(systems ?? []) as System[]}
+        sources={sources}
+        tags={tagCounts.map((t) => t.tag)}
         item={item}
         error={searchParams.error}
       />

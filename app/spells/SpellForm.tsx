@@ -1,14 +1,20 @@
 import type { Spell, System } from '@/lib/content/types';
+import type { SourceOption } from '@/lib/content/sources';
+import { StatsEditor } from '../content/StatsEditor';
 import styles from './SpellForm.module.css';
 
 export function SpellForm({
   action,
   systems,
+  sources,
+  tags,
   spell,
   error,
 }: {
   action: (formData: FormData) => void;
   systems: System[];
+  sources: SourceOption[];
+  tags: string[];
   spell?: Spell;
   error?: string;
 }) {
@@ -31,8 +37,15 @@ export function SpellForm({
         </select>
       </label>
       <label htmlFor="source_id">
-        Source id
-        <input id="source_id" name="source_id" defaultValue={spell?.source.id} required />
+        Source
+        <select id="source_id" name="source_id" defaultValue={spell?.source.id} required>
+          <option value="">Choose a source</option>
+          {sources.map((source) => (
+            <option key={source.id} value={source.id}>
+              {source.systemName} &middot; {source.name}
+            </option>
+          ))}
+        </select>
       </label>
       <label htmlFor="is_homebrew">
         Homebrew
@@ -44,12 +57,18 @@ export function SpellForm({
       </label>
       <label htmlFor="tags">
         Tags (comma separated)
-        <input id="tags" name="tags" defaultValue={spell?.tags.join(', ')} />
+        <input id="tags" name="tags" defaultValue={spell?.tags.join(', ')} list="tag-suggestions" />
+        <datalist id="tag-suggestions">
+          {tags.map((tag) => (
+            <option key={tag} value={tag} />
+          ))}
+        </datalist>
       </label>
       <label htmlFor="description">
         Description
         <textarea id="description" name="description" defaultValue={spell?.description} />
       </label>
+      <StatsEditor defaultValue={spell?.stats} />
       <button type="submit">Save</button>
     </form>
   );

@@ -26,8 +26,9 @@
 }
 
 .form textarea {
-  min-height: 120px;
+  min-height: 220px;
   resize: vertical;
+  field-sizing: content;
 }
 
 .form button {
