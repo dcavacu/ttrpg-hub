@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
 import { SpellFilters } from './SpellFilters';
@@ -16,10 +16,14 @@ const systems = [
 describe('SpellFilters', () => {
   beforeEach(() => push.mockClear());
 
-  it('navigates with a search query param when typing', async () => {
+  it('navigates with a search query param when typing, after the debounce delay', () => {
+    vi.useFakeTimers();
     render(<SpellFilters systems={systems} initial={{}} />);
-    await userEvent.type(screen.getByLabelText(/search/i), 'bolt');
+    fireEvent.change(screen.getByLabelText(/search/i), { target: { value: 'bolt' } });
+    expect(push).not.toHaveBeenCalled();
+    act(() => vi.advanceTimersByTime(250));
     expect(push).toHaveBeenLastCalledWith('/spells?search=bolt');
+    vi.useRealTimers();
   });
 
   it('navigates with a system query param when selected', async () => {

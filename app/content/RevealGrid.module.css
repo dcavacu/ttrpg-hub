@@ -1,0 +1,16 @@
+.showMore {
+  display: block;
+  margin: 20px auto 0;
+  background: transparent;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 4px;
+  padding: 10px 20px;
+  color: var(--link-on-ink);
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+
+.showMore:hover {
+  border-color: var(--brass-dim);
+  color: var(--parchment);
+}

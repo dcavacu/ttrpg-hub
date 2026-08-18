@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import type { ContentFilters, System } from '@/lib/content/types';
+import { useDebouncedCallback } from '@/lib/hooks/useDebouncedCallback';
 import styles from './MonsterFilters.module.css';
 
 function pushFilters(router: ReturnType<typeof useRouter>, filters: ContentFilters) {
@@ -9,12 +10,17 @@ function pushFilters(router: ReturnType<typeof useRouter>, filters: ContentFilte
   if (filters.search) params.set('search', filters.search);
   if (filters.systemId) params.set('systemId', filters.systemId);
   if (filters.sourceType) params.set('sourceType', filters.sourceType);
+  if (filters.tags && filters.tags.length > 0) params.set('tags', filters.tags.join(','));
   const query = params.toString();
   router.push(query ? `/monsters?${query}` : '/monsters');
 }
 
 export function MonsterFilters({ systems, initial }: { systems: System[]; initial: ContentFilters }) {
   const router = useRouter();
+  const debouncedSearch = useDebouncedCallback(
+    (value: string) => pushFilters(router, { ...initial, search: value || undefined }),
+    250,
+  );
 
   return (
     <div className={styles.filters}>
@@ -24,7 +30,7 @@ export function MonsterFilters({ systems, initial }: { systems: System[]; initia
           id="monster-search"
           type="text"
           defaultValue={initial.search ?? ''}
-          onChange={(e) => pushFilters(router, { ...initial, search: e.target.value || undefined })}
+          onChange={(e) => debouncedSearch(e.target.value)}
         />
       </label>
       <label htmlFor="monster-system">
