@@ -13,6 +13,15 @@
   margin-bottom: 24px;
 }
 
+.page h1::after {
+  content: "";
+  display: block;
+  width: 48px;
+  height: 2px;
+  background: var(--brass);
+  margin: 12px auto 0;
+}
+
 .form {
   display: flex;
   flex-direction: column;
@@ -21,6 +30,7 @@
   max-width: 320px;
   background: var(--panel);
   border: 1px solid var(--hairline);
+  border-top: 3px solid var(--brass);
   border-radius: 6px;
   padding: 28px;
 }
