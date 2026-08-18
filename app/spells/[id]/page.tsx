@@ -20,7 +20,7 @@ export default async function SpellDetailPage({ params }: { params: { id: string
       </div>
       <h1>{spell.name}</h1>
       <p className={styles.subtitle}>
-        {spell.system.name} &middot; {spell.level}
+        {[spell.system.name, spell.level].filter(Boolean).join(' · ')}
       </p>
       {Object.keys(spell.stats).length > 0 && (
         <dl className={styles.stats}>

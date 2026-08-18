@@ -20,7 +20,7 @@ export default async function MonsterDetailPage({ params }: { params: { id: stri
       </div>
       <h1>{monster.name}</h1>
       <p className={styles.subtitle}>
-        {monster.system.name} &middot; {monster.rating_label}
+        {[monster.system.name, monster.rating_label].filter(Boolean).join(' · ')}
       </p>
       {Object.keys(monster.stats).length > 0 && (
         <dl className={styles.stats}>

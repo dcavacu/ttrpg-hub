@@ -30,4 +30,16 @@ describe('readInput stats parsing', () => {
     ]);
     expect(readInput(fd).stats).toBeUndefined();
   });
+
+  it('returns an empty object (not undefined) when the stats editor was submitted with all rows cleared', () => {
+    const fd = formDataWith([
+      ['name', 'Owlbear Bolt'],
+      ['system_id', 'sys-1'],
+      ['source_id', 'src-1'],
+      ['stats_present', '1'],
+      ['stats_key', ''],
+      ['stats_value', ''],
+    ]);
+    expect(readInput(fd).stats).toEqual({});
+  });
 });

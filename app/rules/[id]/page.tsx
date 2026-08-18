@@ -20,7 +20,7 @@ export default async function RuleDetailPage({ params }: { params: { id: string 
       </div>
       <h1>{rule.name}</h1>
       <p className={styles.subtitle}>
-        {rule.system.name} &middot; {rule.category}
+        {[rule.system.name, rule.category].filter(Boolean).join(' · ')}
       </p>
       {Object.keys(rule.stats).length > 0 && (
         <dl className={styles.stats}>

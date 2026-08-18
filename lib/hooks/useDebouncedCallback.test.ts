@@ -21,4 +21,17 @@ describe('useDebouncedCallback', () => {
     expect(callback).toHaveBeenCalledTimes(1);
     expect(callback).toHaveBeenCalledWith('abc');
   });
+
+  it('does not call the callback if unmounted before the delay elapses', () => {
+    const callback = vi.fn();
+    const { result, unmount } = renderHook(() => useDebouncedCallback(callback, 250));
+
+    act(() => {
+      result.current('a');
+    });
+    unmount();
+
+    act(() => vi.advanceTimersByTime(250));
+    expect(callback).not.toHaveBeenCalled();
+  });
 });

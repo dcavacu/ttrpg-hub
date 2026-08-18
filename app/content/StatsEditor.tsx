@@ -25,6 +25,7 @@ export function StatsEditor({ defaultValue }: { defaultValue?: Record<string, st
 
   return (
     <div className={styles.editor}>
+      <input type="hidden" name="stats_present" value="1" />
       <span className={styles.label}>Stats</span>
       {rows.map(([key, value], index) => (
         <div className={styles.row} key={index}>

@@ -1,6 +1,7 @@
 import type { RuleInput } from '@/lib/content/rules';
 
 function readStats(formData: FormData): Record<string, string> | undefined {
+  const statsPresent = formData.get('stats_present') === '1';
   const keys = formData.getAll('stats_key').map(String);
   const values = formData.getAll('stats_value').map(String);
   const stats: Record<string, string> = {};
@@ -9,7 +10,8 @@ function readStats(formData: FormData): Record<string, string> | undefined {
     if (!trimmedKey) return;
     stats[trimmedKey] = (values[i] ?? '').trim();
   });
-  return Object.keys(stats).length > 0 ? stats : undefined;
+  if (Object.keys(stats).length > 0) return stats;
+  return statsPresent ? {} : undefined;
 }
 
 export function readInput(formData: FormData): Partial<RuleInput> {
