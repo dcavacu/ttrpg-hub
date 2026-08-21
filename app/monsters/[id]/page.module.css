@@ -22,7 +22,7 @@
 }
 
 .page h1 {
-  font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Times New Roman", serif;
+  font-family: var(--font-display);
   font-size: var(--text-xl);
   margin: 12px 0 4px;
 }
