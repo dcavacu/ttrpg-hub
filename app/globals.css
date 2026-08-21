@@ -46,10 +46,6 @@
   --system-accent-nimble: var(--seal-teal-dim);
   --system-accent-default: var(--hairline-strong);
 
-  /* Fantasy display and body fonts */
-  --font-display: var(--font-cinzel), Georgia, "Times New Roman", serif;
-  --font-body: var(--font-garamond), Georgia, "Times New Roman", serif;
-
   /* Category accent colors */
   --cat-monsters: #8a2e2e;
   --cat-monsters-soft: #f4e2df;
@@ -64,6 +60,8 @@
 body {
   color: var(--parchment);
   background: var(--ink);
+  --font-display: var(--font-cinzel), Georgia, "Times New Roman", serif;
+  --font-body: var(--font-garamond), Georgia, "Times New Roman", serif;
   font-family: var(--font-body);
 }
 
