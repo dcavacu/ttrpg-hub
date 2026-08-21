@@ -1,0 +1,81 @@
+import type { SVGProps } from 'react';
+
+const defaults: SVGProps<SVGSVGElement> = {
+  viewBox: '0 0 24 24',
+  fill: 'none',
+  stroke: 'currentColor',
+  strokeWidth: 1.6,
+  strokeLinecap: 'round',
+  strokeLinejoin: 'round',
+};
+
+export function BookIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...defaults} {...props}>
+      <path d="M12 6c-1.8-1.3-4-2-6.5-2S2 4.3 2 5v13c0 .5.3.8.8.6C4.5 17.9 6.3 17.5 8 17.5c1.5 0 3 .4 4 1.2" />
+      <path d="M12 6c1.8-1.3 4-2 6.5-2S22 4.3 22 5v13c0 .5-.3.8-.8.6c-1.7-.7-3.5-1.1-5.2-1.1c-1.5 0-3 .4-4 1.2" />
+      <path d="M12 6v12.7" />
+    </svg>
+  );
+}
+
+export function SwordIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...defaults} {...props}>
+      <path d="M14.5 3.5l6 6-9 9-3-3z" />
+      <path d="M11.5 15.5L8 19l-4 1 1-4 3.5-3.5" />
+      <path d="M17 6l2-2" />
+    </svg>
+  );
+}
+
+export function PotionIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...defaults} {...props}>
+      <path d="M10 2h4" />
+      <path d="M11 2v5.5L6.5 15c-1 1.7.2 4 2.2 4h6.6c2 0 3.2-2.3 2.2-4L13 7.5V2" />
+      <path d="M8 14h8" />
+    </svg>
+  );
+}
+
+export function WandIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...defaults} {...props}>
+      <path d="M4 20L15 9" />
+      <path d="M17 3l1 2 2 1-2 1-1 2-1-2-2-1 2-1z" />
+      <path d="M19 13l.6 1.4 1.4.6-1.4.6-.6 1.4-.6-1.4L17 15l1.4-.6z" />
+    </svg>
+  );
+}
+
+export function ScrollIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...defaults} {...props}>
+      <path d="M6 4h11a2 2 0 0 1 2 2v11" />
+      <path d="M6 4a2 2 0 0 0-2 2v13a1 1 0 0 0 1.6.8L7 19" />
+      <path d="M6 4v14" />
+      <path d="M19 17a2 2 0 0 1-2 2H7" />
+      <path d="M9 8h6M9 11h6" />
+    </svg>
+  );
+}
+
+export function SearchIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...defaults} {...props}>
+      <circle cx="11" cy="11" r="7" />
+      <path d="M21 21l-4.3-4.3" />
+    </svg>
+  );
+}
+
+export function SealIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...defaults} {...props}>
+      <path d="M12 6c-1.8-1.3-4-2-6.5-2S2 4.3 2 5v13c0 .5.3.8.8.6C4.5 17.9 6.3 17.5 8 17.5c1.5 0 3 .4 4 1.2" />
+      <path d="M12 6c1.8-1.3 4-2 6.5-2S22 4.3 22 5v13c0 .5-.3.8-.8.6c-1.7-.7-3.5-1.1-5.2-1.1c-1.5 0-3 .4-4 1.2" />
+      <path d="M12 6v12.7" />
+    </svg>
+  );
+}

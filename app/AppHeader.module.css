@@ -8,6 +8,9 @@
 }
 
 .brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Times New Roman", serif;
   font-size: var(--text-lg);
   font-weight: 600;
@@ -17,6 +20,13 @@
 
 .brand:hover {
   color: var(--brass-dim);
+}
+
+.brandMark {
+  width: 20px;
+  height: 20px;
+  color: var(--brass-dim);
+  flex: none;
 }
 
 .logoutButton {
