@@ -44,4 +44,14 @@ describe('RuleCard', () => {
     const tagLink = screen.getByRole('link', { name: 'grappling' });
     expect(tagLink).toHaveAttribute('href', '/rules?tags=grappling');
   });
+
+  it('shows a preview of the description when present', () => {
+    render(<RuleCard rule={rule} />);
+    expect(screen.getByText('Special rules for grappling an owlbear.')).toBeInTheDocument();
+  });
+
+  it('renders nothing extra when the description is empty', () => {
+    render(<RuleCard rule={{ ...rule, description: '' }} />);
+    expect(screen.queryByText('Special rules for grappling an owlbear.')).not.toBeInTheDocument();
+  });
 });

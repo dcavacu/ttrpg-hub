@@ -20,6 +20,7 @@ export function RuleCard({ rule }: { rule: Rule }) {
         <span className={rule.is_homebrew ? styles.homebrew : styles.official}>
           {rule.is_homebrew ? 'Homebrew' : 'Official'}
         </span>
+        {rule.description && <p className={styles.desc}>{rule.description}</p>}
       </Link>
       <ul className={styles.tags}>
         {rule.tags.map((tag) => (

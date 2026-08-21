@@ -22,6 +22,7 @@ export function ItemCard({ item }: { item: Item }) {
         <span className={item.is_homebrew ? styles.homebrew : styles.official}>
           {item.is_homebrew ? 'Homebrew' : 'Official'}
         </span>
+        {item.description && <p className={styles.desc}>{item.description}</p>}
       </Link>
       <ul className={styles.tags}>
         {item.tags.map((tag) => (

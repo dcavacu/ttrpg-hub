@@ -44,4 +44,14 @@ describe('SpellCard', () => {
     const tagLink = screen.getByRole('link', { name: 'evocation' });
     expect(tagLink).toHaveAttribute('href', '/spells?tags=evocation');
   });
+
+  it('shows a preview of the description when present', () => {
+    render(<SpellCard spell={spell} />);
+    expect(screen.getByText('Hurls a bolt shaped like an owlbear claw.')).toBeInTheDocument();
+  });
+
+  it('renders nothing extra when the description is empty', () => {
+    render(<SpellCard spell={{ ...spell, description: '' }} />);
+    expect(screen.queryByText('Hurls a bolt shaped like an owlbear claw.')).not.toBeInTheDocument();
+  });
 });

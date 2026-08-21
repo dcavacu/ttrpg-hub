@@ -20,6 +20,7 @@ export function MonsterCard({ monster }: { monster: Monster }) {
         <span className={monster.is_homebrew ? styles.homebrew : styles.official}>
           {monster.is_homebrew ? 'Homebrew' : 'Official'}
         </span>
+        {monster.description && <p className={styles.desc}>{monster.description}</p>}
       </Link>
       <ul className={styles.tags}>
         {monster.tags.map((tag) => (

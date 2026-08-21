@@ -20,6 +20,7 @@ export function SpellCard({ spell }: { spell: Spell }) {
         <span className={spell.is_homebrew ? styles.homebrew : styles.official}>
           {spell.is_homebrew ? 'Homebrew' : 'Official'}
         </span>
+        {spell.description && <p className={styles.desc}>{spell.description}</p>}
       </Link>
       <ul className={styles.tags}>
         {spell.tags.map((tag) => (

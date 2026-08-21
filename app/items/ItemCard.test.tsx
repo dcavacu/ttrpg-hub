@@ -46,4 +46,14 @@ describe('ItemCard', () => {
     const tagLink = screen.getByRole('link', { name: 'weapon' });
     expect(tagLink).toHaveAttribute('href', '/items?tags=weapon');
   });
+
+  it('shows a preview of the description when present', () => {
+    render(<ItemCard item={item} />);
+    expect(screen.getByText('A sword shaped like an owlbear, all bad mood.')).toBeInTheDocument();
+  });
+
+  it('renders nothing extra when the description is empty', () => {
+    render(<ItemCard item={{ ...item, description: '' }} />);
+    expect(screen.queryByText('A sword shaped like an owlbear, all bad mood.')).not.toBeInTheDocument();
+  });
 });

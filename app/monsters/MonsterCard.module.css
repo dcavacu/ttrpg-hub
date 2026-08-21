@@ -85,6 +85,19 @@
   background: currentColor;
 }
 
+.desc {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  color: var(--parchment-dim);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .tags {
   display: flex;
   flex-wrap: wrap;

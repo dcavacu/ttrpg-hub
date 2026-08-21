@@ -44,4 +44,14 @@ describe('MonsterCard', () => {
     const tagLink = screen.getByRole('link', { name: 'beast' });
     expect(tagLink).toHaveAttribute('href', '/monsters?tags=beast');
   });
+
+  it('shows a preview of the description when present', () => {
+    render(<MonsterCard monster={monster} />);
+    expect(screen.getByText('Half owl, half bear, all bad mood.')).toBeInTheDocument();
+  });
+
+  it('renders nothing extra when the description is empty', () => {
+    render(<MonsterCard monster={{ ...monster, description: '' }} />);
+    expect(screen.queryByText('Half owl, half bear, all bad mood.')).not.toBeInTheDocument();
+  });
 });
