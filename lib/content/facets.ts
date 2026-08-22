@@ -17,7 +17,7 @@ export async function listFacetCounts(
   const { data, error } = await query;
   if (error) throw new Error(`Failed to list ${table} ${column} counts: ${error.message}`);
   const counts = new Map<string, number>();
-  for (const row of (data ?? []) as Record<string, string | null>[]) {
+  for (const row of (data ?? []) as unknown as Record<string, string | null>[]) {
     const value = row[column];
     if (!value) continue;
     counts.set(value, (counts.get(value) ?? 0) + 1);
