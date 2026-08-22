@@ -1,9 +1,9 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { applyContentFilters } from './filters';
-import type { ContentFilters, Monster } from './types';
+import type { CombatRole, ContentFilters, Monster, MonsterTier } from './types';
 
 const MONSTER_SELECT =
-  'id, name, is_homebrew, rating_label, tags, description, stats, system:systems(id,name), source:sources(id,name,is_homebrew)';
+  'id, name, is_homebrew, rating_label, combat_role, race, tier, tags, description, stats, system:systems(id,name), source:sources(id,name,is_homebrew)';
 
 export async function listMonsters(client: SupabaseClient, filters: ContentFilters): Promise<Monster[]> {
   const query = applyContentFilters(
@@ -28,6 +28,9 @@ export interface MonsterInput {
   source_id: string;
   is_homebrew: boolean;
   rating_label?: string;
+  combat_role?: CombatRole;
+  race?: string;
+  tier?: MonsterTier;
   tags?: string[];
   description?: string;
   stats?: Record<string, string>;

@@ -11,6 +11,10 @@ export interface Source {
   is_homebrew: boolean;
 }
 
+export type CombatRole = 'Melee' | 'Ranged';
+export type MonsterTier = 'Normal' | 'Legendary' | 'Minion';
+export type ManaCostBucket = '0' | '1-2' | '3+';
+
 export interface Monster {
   id: string;
   name: string;
@@ -18,6 +22,9 @@ export interface Monster {
   source: Source;
   is_homebrew: boolean;
   rating_label: string | null;
+  combat_role: CombatRole | null;
+  race: string | null;
+  tier: MonsterTier;
   tags: string[];
   description: string;
   stats: Record<string, string>;
@@ -43,6 +50,8 @@ export interface Spell {
   source: Source;
   is_homebrew: boolean;
   level: string | null;
+  school: string | null;
+  mana_cost: number | null;
   tags: string[];
   description: string;
   stats: Record<string, string>;
@@ -65,4 +74,12 @@ export interface ContentFilters {
   sourceType?: SourceType;
   search?: string;
   tags?: string[];
+  combatRole?: CombatRole;
+  race?: string;
+  tier?: MonsterTier;
+  itemType?: string;
+  rarity?: string;
+  school?: string;
+  manaCostBucket?: ManaCostBucket;
+  category?: string;
 }
