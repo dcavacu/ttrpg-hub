@@ -541,7 +541,7 @@ export async function listFacetCounts(
   const { data, error } = await query;
   if (error) throw new Error(`Failed to list ${table} ${column} counts: ${error.message}`);
   const counts = new Map<string, number>();
-  for (const row of (data ?? []) as Record<string, string | null>[]) {
+  for (const row of (data ?? []) as unknown as Record<string, string | null>[]) {
     const value = row[column];
     if (!value) continue;
     counts.set(value, (counts.get(value) ?? 0) + 1);
@@ -810,7 +810,7 @@ Note: D&D SRD monsters' `race` (capitalized Open5e `type`) is handled by `derive
 
 - [ ] **Step 6: Write the judgment-pass data file**
 
-Create `scripts/backfill-judgment-facets-data.ts`. This is the content-authoring deliverable: read every monster's and spell's `name`/`tags`/`description`/`stats` from `scripts/seed-nimble-monsters.ts`, `scripts/seed-srd-monsters.ts` (via the live DB, not the seed file, since Open5e SRD monsters aren't in a local seed file — query `combat_role is null` rows from the live `monsters` table after Task 1's migration and Task 5's deterministic pass have run), and `scripts/seed-nimble-spells.ts`, and assign values using the worked examples below as calibration.
+Create `scripts/backfill-judgment-facets-data.ts`. This is the content-authoring deliverable: read every monster's and spell's `name`/`tags`/`description`/`stats` from `scripts/seed-nimble-monsters.ts` and `scripts/seed-nimble-spells.ts` directly (both are static local files), plus every D&D SRD monster's `name`/`type`/`desc` by fetching the same Open5e endpoint `scripts/seed-srd-monsters.ts` already uses — `https://api.open5e.com/v1/monsters/?document__slug=wotc-srd&limit=1000` — rather than reading them from the live database. This is deliberate: this task (Task 4) runs before Task 5, which is the only task that applies Task 1's migration and runs the deterministic-backfill script against the live DB, so the new `combat_role`/`tier`/`school` columns do not exist in production yet at this point in the plan and cannot be queried. The Open5e API is read-only, unauthenticated, and has no dependency on this project's DB state, so fetching from it directly avoids that ordering problem entirely. Assign values using the worked examples below as calibration.
 
 ```ts
 import type { CombatRole } from '../lib/content/types';
