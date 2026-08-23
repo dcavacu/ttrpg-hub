@@ -11,6 +11,8 @@ function pushFilters(router: ReturnType<typeof useRouter>, filters: ContentFilte
   if (filters.systemId) params.set('systemId', filters.systemId);
   if (filters.sourceType) params.set('sourceType', filters.sourceType);
   if (filters.tags && filters.tags.length > 0) params.set('tags', filters.tags.join(','));
+  if (filters.school) params.set('school', filters.school);
+  if (filters.manaCostBucket) params.set('manaCostBucket', filters.manaCostBucket);
   const query = params.toString();
   router.push(query ? `/spells?${query}` : '/spells');
 }
