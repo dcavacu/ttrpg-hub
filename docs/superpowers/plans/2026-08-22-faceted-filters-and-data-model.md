@@ -602,7 +602,9 @@ This task covers everything that can run and be verified **without touching the 
 
 **Interfaces:**
 - Produces: `deriveMonsterTier(name: string, tags: string[]): MonsterTier`, `deriveMonsterRaceFromTags(tags: string[]): string | undefined`, `deriveSpellSchoolFromTags(tags: string[]): string | undefined`. Consumed by `backfill-deterministic-facets.ts` (this task) and nothing else.
-- Produces: `JUDGMENT_MONSTER_DATA: Record<string, { combat_role: CombatRole; race?: string }>` and `JUDGMENT_SPELL_MANA_COST: Record<string, number>` (both keyed by monster/spell `name`, since the seed scripts don't expose stable slugs and names are unique within this dataset), exported from `backfill-judgment-facets-data.ts`. Consumed by Task 5's `apply-judgment-facets.ts` and this task's `print-facet-spot-check.ts`.
+- Produces: `JUDGMENT_MONSTER_DATA: { nimble: Record<string, MonsterJudgment>; srd: Record<string, MonsterJudgment> }` (see the note below on why this is namespaced by system rather than a single flat name-keyed map) and `JUDGMENT_SPELL_MANA_COST: Record<string, number>` (spells have only one source system today, so a flat name-keyed map is safe there — verified no duplicate names exist in `scripts/seed-nimble-spells.ts`), exported from `backfill-judgment-facets-data.ts`. Consumed by Task 5's `apply-judgment-facets.ts` and this task's `print-facet-spot-check.ts`.
+
+**Why monster judgments are namespaced by system, not a single flat name-keyed map:** monster names are only unique *within* their own source, not globally — Nimble and the D&D SRD both have a monster literally named `Goblin`, `Bandit`, `Basilisk`, `Giant Spider`, and 13 others (confirmed by actually cross-referencing both seed sources, not assumed). A flat `Record<string, MonsterJudgment>` keyed by name alone would mean the second entry silently overwrites the first at the TypeScript-object-literal level, and worse, Task 5's apply script (`update(...).eq('name', name)`) would update *every* row with that name — including a Nimble monster when the judgment was actually written for its SRD namesake, or vice versa. Namespacing by system (`nimble`/`srd`) keeps every name unique within its own bucket, and Task 5's apply script scopes each bucket's updates to the matching `system_id` so it never touches the wrong system's row.
 
 **Design notes carried into this task (verified against the actual seeded data in `scripts/seed-nimble-monsters.ts` and `scripts/seed-nimble-spells.ts`, not just the spec's prose, which turned out to be imprecise on two points):**
 
@@ -820,14 +822,28 @@ export interface MonsterJudgment {
   race?: string; // only for monsters whose tags are thematic groupings (Kobolds, Goblins, Bandits, Snakemen, Dungeon Denizens, Hill & Field, Forest Denizens, Underground, Cultists/Horrors) — deriveMonsterRaceFromTags already handles the rest.
 }
 
-// Keyed by monster name (unique within this dataset — no stable slug exists elsewhere).
-export const JUDGMENT_MONSTER_DATA: Record<string, MonsterJudgment> = {
-  // Worked examples (fill in the rest reading each monster's description/stats):
-  Sprite: { combat_role: 'Ranged' }, // "Fae Trick: deals 1d4+4 damage" — no melee attack described, ranged fey trick.
-  Gremlin: { combat_role: 'Melee' }, // "Weeee!" is a melee grapple/ride attack, no range given.
-  'Kobold Trapper': { combat_role: 'Ranged', race: 'Humanoid' }, // "Throw Scorpion (2x, Range 8)" — ranged; Kobolds tag → Humanoid.
-  'Bug Minion': { combat_role: 'Melee', race: 'Giant Bug' }, // "Bite" is melee; race already handled deterministically via the 'Giant Bug' tag, listed here only as a worked example — do not duplicate rows the deterministic pass already covers.
-  // ... continue for every monster in scripts/seed-nimble-monsters.ts and every SRD monster.
+// Namespaced by system: monster names are only unique within their own source (Nimble and the
+// D&D SRD both have e.g. a "Goblin" and a "Bandit") — see the note above Task 4's Interfaces
+// section for why a single flat name-keyed map is unsafe here.
+export const JUDGMENT_MONSTER_DATA: {
+  nimble: Record<string, MonsterJudgment>;
+  srd: Record<string, MonsterJudgment>;
+} = {
+  nimble: {
+    // Worked examples (fill in the rest reading every monster in scripts/seed-nimble-monsters.ts):
+    Sprite: { combat_role: 'Ranged' }, // "Fae Trick: deals 1d4+4 damage" — no melee attack described, ranged fey trick.
+    Gremlin: { combat_role: 'Melee' }, // "Weeee!" is a melee grapple/ride attack, no range given.
+    'Kobold Trapper': { combat_role: 'Ranged', race: 'Humanoid' }, // "Throw Scorpion (2x, Range 8)" — ranged; Kobolds tag → Humanoid.
+    'Bug Minion': { combat_role: 'Melee', race: 'Giant Bug' }, // "Bite" is melee; race already handled deterministically via the 'Giant Bug' tag, listed here only as a worked example — do not duplicate rows the deterministic pass already covers.
+    // ... continue for every monster in scripts/seed-nimble-monsters.ts.
+  },
+  srd: {
+    // Worked examples (fill in the rest reading every monster from the Open5e SRD fetch):
+    Owlbear: { combat_role: 'Melee' }, // claw/beak attacks only, no ranged option.
+    Griffon: { combat_role: 'Melee' }, // claws/bite, no ranged option (its "Goblin"/"Bandit" SRD siblings follow the same read-the-desc approach).
+    // ... continue for every SRD monster fetched from Open5e. No race entries here — SRD race is
+    // already handled deterministically by capitalizing the Open5e `type` field.
+  },
 };
 
 // Keyed by spell name (unique within scripts/seed-nimble-spells.ts).
@@ -855,9 +871,14 @@ function sample<T>(entries: [string, T][], size: number): [string, T][] {
 }
 
 function main() {
-  console.log('=== Monster combat_role / race spot-check (20 random rows) ===');
-  for (const [name, judgment] of sample(Object.entries(JUDGMENT_MONSTER_DATA), 20)) {
+  console.log('=== Nimble monster combat_role / race spot-check (10 random rows) ===');
+  for (const [name, judgment] of sample(Object.entries(JUDGMENT_MONSTER_DATA.nimble), 10)) {
     console.log(`${name}: combat_role=${judgment.combat_role}${judgment.race ? `, race=${judgment.race}` : ''}`);
+  }
+
+  console.log('\n=== SRD monster combat_role spot-check (10 random rows) ===');
+  for (const [name, judgment] of sample(Object.entries(JUDGMENT_MONSTER_DATA.srd), 10)) {
+    console.log(`${name}: combat_role=${judgment.combat_role}`);
   }
 
   console.log('\n=== Spell mana_cost spot-check (20 random rows) ===');
@@ -899,18 +920,40 @@ git commit -m "Add deterministic facet derivation + judgment-pass data and spot-
 import { createSupabaseClient } from '../lib/supabase/client';
 import { JUDGMENT_MONSTER_DATA, JUDGMENT_SPELL_MANA_COST } from './backfill-judgment-facets-data';
 
+async function getSystemId(client: ReturnType<typeof createSupabaseClient>, name: string): Promise<string> {
+  const { data, error } = await client.from('systems').select('id').eq('name', name).single();
+  if (error || !data) throw new Error(`Could not find a "${name}" system row: ${error?.message ?? 'not found'}`);
+  return (data as { id: string }).id;
+}
+
+async function applyMonsterNamespace(
+  client: ReturnType<typeof createSupabaseClient>,
+  systemId: string,
+  entries: Record<string, { combat_role: string; race?: string }>,
+): Promise<number> {
+  let updates = 0;
+  for (const [name, judgment] of Object.entries(entries)) {
+    const patch: Record<string, string> = { combat_role: judgment.combat_role };
+    if (judgment.race) patch.race = judgment.race;
+    // Scoping by system_id (not just name) is required — Nimble and the D&D SRD share several
+    // monster names (Goblin, Bandit, Basilisk, ...); without this an update could silently land
+    // on the wrong system's row.
+    const { error } = await client.from('monsters').update(patch).eq('name', name).eq('system_id', systemId);
+    if (error) throw new Error(`Failed to update monster ${name}: ${error.message}`);
+    updates += 1;
+  }
+  return updates;
+}
+
 async function main() {
   const client = createSupabaseClient();
 
-  let monsterUpdates = 0;
-  for (const [name, judgment] of Object.entries(JUDGMENT_MONSTER_DATA)) {
-    const patch: Record<string, string> = { combat_role: judgment.combat_role };
-    if (judgment.race) patch.race = judgment.race;
-    const { error } = await client.from('monsters').update(patch).eq('name', name);
-    if (error) throw new Error(`Failed to update monster ${name}: ${error.message}`);
-    monsterUpdates += 1;
-  }
-  console.log(`Applied combat_role/race to ${monsterUpdates} monsters.`);
+  const nimbleSystemId = await getSystemId(client, 'Nimble');
+  const srdSystemId = await getSystemId(client, 'D&D 5e');
+
+  const nimbleUpdates = await applyMonsterNamespace(client, nimbleSystemId, JUDGMENT_MONSTER_DATA.nimble);
+  const srdUpdates = await applyMonsterNamespace(client, srdSystemId, JUDGMENT_MONSTER_DATA.srd);
+  console.log(`Applied combat_role/race to ${nimbleUpdates} Nimble monsters and ${srdUpdates} SRD monsters.`);
 
   let spellUpdates = 0;
   for (const [name, manaCost] of Object.entries(JUDGMENT_SPELL_MANA_COST)) {
