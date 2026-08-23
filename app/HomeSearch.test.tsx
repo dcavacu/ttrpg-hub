@@ -26,7 +26,6 @@ describe('HomeSearch', () => {
   it('navigates to the monsters browse page with no query when submitted empty', async () => {
     render(<HomeSearch />);
     const form = screen.getByRole('search');
-    // eslint-disable-next-line testing-library/no-node-access
     (form as HTMLFormElement).requestSubmit();
     expect(push).toHaveBeenLastCalledWith('/monsters');
   });
