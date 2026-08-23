@@ -23,25 +23,27 @@ export default async function MonsterDetailPage({ params }: { params: { id: stri
       <p className={styles.subtitle}>
         {[monster.system.name, monster.rating_label].filter(Boolean).join(' · ')}
       </p>
-      <div className={styles.badgeRow}>
-        {monster.tier === 'Legendary' && (
-          <span className={styles.tierBadge}>
-            <ShieldIcon className={styles.badgeIcon} /> Legendary
-          </span>
-        )}
-        {monster.tier === 'Minion' && (
-          <span className={styles.tierBadge}>
-            <ChevronIcon className={styles.badgeIcon} /> Minion
-          </span>
-        )}
-        {monster.combat_role && (
-          <span className={styles.roleBadge}>
-            {monster.combat_role === 'Melee' ? <SwordIcon className={styles.badgeIcon} /> : <RangedIcon className={styles.badgeIcon} />}
-            {monster.combat_role}
-          </span>
-        )}
-        {monster.race && <span className={styles.racePill}>{monster.race}</span>}
-      </div>
+      {(monster.tier !== 'Normal' || monster.combat_role || monster.race) && (
+        <div className={styles.badgeRow}>
+          {monster.tier === 'Legendary' && (
+            <span className={styles.tierBadge}>
+              <ShieldIcon className={styles.badgeIcon} /> Legendary
+            </span>
+          )}
+          {monster.tier === 'Minion' && (
+            <span className={styles.tierBadge}>
+              <ChevronIcon className={styles.badgeIcon} /> Minion
+            </span>
+          )}
+          {monster.combat_role && (
+            <span className={styles.roleBadge}>
+              {monster.combat_role === 'Melee' ? <SwordIcon className={styles.badgeIcon} /> : <RangedIcon className={styles.badgeIcon} />}
+              {monster.combat_role}
+            </span>
+          )}
+          {monster.race && <span className={styles.racePill}>{monster.race}</span>}
+        </div>
+      )}
       {Object.keys(monster.stats).length > 0 && (
         <dl className={styles.stats}>
           {Object.entries(monster.stats).map(([key, value]) => (

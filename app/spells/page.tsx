@@ -104,7 +104,7 @@ export default async function SpellsPage({
           tags={tags}
           facets={[
             { key: 'school', label: 'School', color: 'var(--cat-spells)', options: schoolCounts.map((c) => ({ value: c.value, label: c.value, count: c.count })) },
-            { key: 'manaCostBucket', label: 'Mana Cost', color: 'var(--cat-spells)', options: manaCostCounts.map((c) => ({ value: c.bucket, label: c.bucket, count: c.count })) },
+            { key: 'manaCostBucket', label: 'Mana Cost', color: 'var(--cat-spells)', options: manaCostCounts.filter((c) => c.count > 0).map((c) => ({ value: c.bucket, label: c.bucket, count: c.count })) },
           ]}
           initial={filters}
           category="spells"

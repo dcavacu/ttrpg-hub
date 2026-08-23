@@ -63,3 +63,47 @@ describe('Sidebar', () => {
     expect(screen.getByText('(36)')).toBeInTheDocument();
   });
 });
+
+describe('Sidebar facets', () => {
+  beforeEach(() => push.mockClear());
+
+  const facets = [
+    {
+      key: 'tier' as const,
+      label: 'Tier',
+      color: 'red',
+      options: [{ value: 'Legendary', label: 'Legendary', count: 3 }],
+    },
+  ];
+
+  it('shows each facet option label and count, and navigates with the facet added when clicking an unselected option', async () => {
+    render(<Sidebar counts={counts} tags={tags} facets={facets} initial={{}} category="monsters" />);
+    const option = screen.getByRole('button', { name: /legendary/i });
+    expect(option).toHaveTextContent('Legendary');
+    expect(option).toHaveTextContent('(3)');
+    await userEvent.click(option);
+    expect(push).toHaveBeenLastCalledWith('/monsters?tier=Legendary');
+  });
+
+  it('clears an already-selected facet option when clicked again', async () => {
+    render(
+      <Sidebar counts={counts} tags={tags} facets={facets} initial={{ tier: 'Legendary' }} category="monsters" />,
+    );
+    await userEvent.click(screen.getByRole('button', { name: /legendary/i }));
+    expect(push).toHaveBeenLastCalledWith('/monsters');
+  });
+
+  it('preserves other active filters when selecting a facet', async () => {
+    render(
+      <Sidebar
+        counts={counts}
+        tags={tags}
+        facets={facets}
+        initial={{ search: 'dragon', tags: ['Beast'] }}
+        category="monsters"
+      />,
+    );
+    await userEvent.click(screen.getByRole('button', { name: /legendary/i }));
+    expect(push).toHaveBeenLastCalledWith('/monsters?search=dragon&tags=Beast&tier=Legendary');
+  });
+});

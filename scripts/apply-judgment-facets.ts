@@ -19,9 +19,17 @@ async function applyMonsterNamespace(
     // Scoping by system_id (not just name) is required — Nimble and the D&D SRD share several
     // monster names (Goblin, Bandit, Basilisk, ...); without this an update could silently land
     // on the wrong system's row.
-    const { error } = await client.from('monsters').update(patch).eq('name', name).eq('system_id', systemId);
+    const { data, error } = await client
+      .from('monsters')
+      .update(patch)
+      .eq('name', name)
+      .eq('system_id', systemId)
+      .select('id');
     if (error) throw new Error(`Failed to update monster ${name}: ${error.message}`);
-    updates += 1;
+    if (!data || data.length === 0) {
+      throw new Error(`No monster row matched name="${name}" in this system — update silently no-opped.`);
+    }
+    updates += data.length;
   }
   return updates;
 }
@@ -38,9 +46,15 @@ async function main() {
 
   let spellUpdates = 0;
   for (const [name, manaCost] of Object.entries(JUDGMENT_SPELL_MANA_COST)) {
-    const { error } = await client.from('spells').update({ mana_cost: manaCost }).eq('name', name);
+    // Not scoped by system_id like the monster updates above — safe today because
+    // only one spell-source system exists and spell names are unique within it
+    // (verified). Add system_id scoping here too if a second spell source is ever seeded.
+    const { data, error } = await client.from('spells').update({ mana_cost: manaCost }).eq('name', name).select('id');
     if (error) throw new Error(`Failed to update spell ${name}: ${error.message}`);
-    spellUpdates += 1;
+    if (!data || data.length === 0) {
+      throw new Error(`No spell row matched name="${name}" — update silently no-opped.`);
+    }
+    spellUpdates += data.length;
   }
   console.log(`Applied mana_cost to ${spellUpdates} spells.`);
 }

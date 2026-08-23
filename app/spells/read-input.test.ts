@@ -68,14 +68,14 @@ describe('readInput facet fields', () => {
     expect(readInput(fd).mana_cost).toBe(0);
   });
 
-  it('leaves school and mana_cost undefined when not submitted', () => {
+  it('leaves school and mana_cost null when not submitted', () => {
     const fd = formDataWith([
       ['name', 'Flame Dart'],
       ['system_id', 'sys-1'],
       ['source_id', 'src-1'],
     ]);
     const input = readInput(fd);
-    expect(input.school).toBeUndefined();
-    expect(input.mana_cost).toBeUndefined();
+    expect(input.school).toBeNull();
+    expect(input.mana_cost).toBeNull();
   });
 });

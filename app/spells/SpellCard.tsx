@@ -18,14 +18,16 @@ export function SpellCard({ spell }: { spell: Spell }) {
           {spell.level && <span className={styles.rating}>{spell.level}</span>}
         </div>
         <div className={styles.meta}>{spell.system.name} &middot; {spell.source.name}</div>
-        <div className={styles.badgeRow}>
-          {spell.school && <span className={styles.schoolChip}>{spell.school}</span>}
-          {spell.mana_cost !== null && (
-            <span className={styles.manaBadge} data-testid="mana-cost-badge">
-              <DropletIcon className={styles.badgeIcon} /> {spell.mana_cost}
-            </span>
-          )}
-        </div>
+        {(spell.school || spell.mana_cost !== null) && (
+          <div className={styles.badgeRow}>
+            {spell.school && <span className={styles.schoolChip}>{spell.school}</span>}
+            {spell.mana_cost !== null && (
+              <span className={styles.manaBadge} data-testid="mana-cost-badge">
+                <DropletIcon className={styles.badgeIcon} /> {spell.mana_cost}
+              </span>
+            )}
+          </div>
+        )}
         <span className={spell.is_homebrew ? styles.homebrew : styles.official}>
           {spell.is_homebrew ? 'Homebrew' : 'Official'}
         </span>

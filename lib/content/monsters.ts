@@ -28,8 +28,8 @@ export interface MonsterInput {
   source_id: string;
   is_homebrew: boolean;
   rating_label?: string;
-  combat_role?: CombatRole;
-  race?: string;
+  combat_role?: CombatRole | null;
+  race?: string | null;
   tier?: MonsterTier;
   tags?: string[];
   description?: string;

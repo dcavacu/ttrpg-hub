@@ -60,15 +60,15 @@ describe('readInput facet fields', () => {
     expect(input.tier).toBe('Normal');
   });
 
-  it('leaves combat_role, race, and tier undefined when not submitted', () => {
+  it('leaves combat_role and race null, and tier undefined, when not submitted', () => {
     const fd = formDataWith([
       ['name', 'Sprite'],
       ['system_id', 'sys-1'],
       ['source_id', 'src-1'],
     ]);
     const input = readInput(fd);
-    expect(input.combat_role).toBeUndefined();
-    expect(input.race).toBeUndefined();
+    expect(input.combat_role).toBeNull();
+    expect(input.race).toBeNull();
     expect(input.tier).toBeUndefined();
   });
 });

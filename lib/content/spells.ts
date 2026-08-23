@@ -28,8 +28,8 @@ export interface SpellInput {
   source_id: string;
   is_homebrew: boolean;
   level?: string;
-  school?: string;
-  mana_cost?: number;
+  school?: string | null;
+  mana_cost?: number | null;
   tags?: string[];
   description?: string;
   stats?: Record<string, string>;

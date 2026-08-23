@@ -71,10 +71,10 @@ create table rules (
   created_at timestamptz not null default now()
 );
 
--- Faceted-filter columns (2026-08-22). Safe to re-run: IF NOT EXISTS guards
--- both the column adds and the tier default backfills existing rows to
--- 'Normal' automatically as part of the ALTER (Postgres applies a constant
--- DEFAULT to existing rows in the same statement that adds a NOT NULL column).
+-- Faceted-filter columns (2026-08-22). Safe to re-run (IF NOT EXISTS guards the
+-- column adds). Adding `tier` as NOT NULL DEFAULT 'Normal' also backfills that
+-- default onto every existing row in the same statement — no separate UPDATE
+-- needed.
 -- Must be run manually in the Supabase SQL editor, same as the GRANT
 -- statements below.
 alter table monsters add column if not exists combat_role text;

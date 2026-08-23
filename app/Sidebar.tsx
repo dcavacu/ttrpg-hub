@@ -101,6 +101,7 @@ export function Sidebar({
                   <button
                     type="button"
                     className={active ? `${styles.facetOption} ${styles.facetOptionActive}` : styles.facetOption}
+                    aria-pressed={active}
                     onClick={() => selectFacetOption(facet.key, option.value)}
                   >
                     <span className={styles.swatch} style={{ background: facet.color }} />
