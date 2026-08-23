@@ -55,6 +55,23 @@ export function SpellForm({
         Level
         <input id="level" name="level" defaultValue={spell?.level ?? ''} />
       </label>
+      <label htmlFor="school">
+        School
+        <select id="school" name="school" defaultValue={spell?.school ?? ''}>
+          <option value="">Not set</option>
+          <option value="Fire">Fire</option>
+          <option value="Ice">Ice</option>
+          <option value="Lightning">Lightning</option>
+          <option value="Wind">Wind</option>
+          <option value="Radiant">Radiant</option>
+          <option value="Necrotic">Necrotic</option>
+          <option value="Utility">Utility</option>
+        </select>
+      </label>
+      <label htmlFor="mana_cost">
+        Mana cost
+        <input id="mana_cost" name="mana_cost" type="number" min="0" defaultValue={spell?.mana_cost ?? ''} />
+      </label>
       <label htmlFor="tags">
         Tags (comma separated)
         <input id="tags" name="tags" defaultValue={spell?.tags.join(', ')} list="tag-suggestions" />

@@ -23,6 +23,13 @@ export function readInput(formData: FormData): Partial<SpellInput> {
     source_id: sourceId,
     is_homebrew: isHomebrew,
     level: String(formData.get('level') ?? '') || undefined,
+    school: String(formData.get('school') ?? '') || undefined,
+    mana_cost: (() => {
+      const raw = String(formData.get('mana_cost') ?? '').trim();
+      if (raw === '') return undefined;
+      const parsed = Number(raw);
+      return Number.isNaN(parsed) ? undefined : parsed;
+    })(),
     description: String(formData.get('description') ?? ''),
     tags: String(formData.get('tags') ?? '')
       .split(',')
