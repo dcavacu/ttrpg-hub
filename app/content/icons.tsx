@@ -79,3 +79,39 @@ export function SealIcon(props: SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
+export function RangedIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...defaults} {...props}>
+      <path d="M4 4c8 0 14 6 16 16" />
+      <path d="M20 20l-5-1M20 20l1-5" />
+      <path d="M4 4l6 6" />
+    </svg>
+  );
+}
+
+export function ShieldIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...defaults} {...props}>
+      <path d="M12 3l7 3v6c0 4.5-3 7.5-7 9c-4-1.5-7-4.5-7-9V6z" />
+      <path d="M9 12l2 2 4-4" />
+    </svg>
+  );
+}
+
+export function ChevronIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...defaults} {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M9 10l3 3 3-3" />
+    </svg>
+  );
+}
+
+export function DropletIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...defaults} {...props}>
+      <path d="M12 3c4 5 6.5 8.5 6.5 12a6.5 6.5 0 0 1-13 0C5.5 11.5 8 8 12 3z" />
+    </svg>
+  );
+}

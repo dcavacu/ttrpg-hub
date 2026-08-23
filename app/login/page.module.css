@@ -16,18 +16,27 @@
   z-index: 2;
   width: 100%;
   max-width: 400px;
-  border: 1px solid var(--hairline-strong);
   padding: 46px 38px 34px;
   box-shadow: 0 40px 80px -30px rgba(0, 0, 0, 0.6);
 }
 
-.card::before {
+.card::before,
+.card::after {
   content: "";
   position: absolute;
+  clip-path: polygon(0 10px, 3% 0, 97% 0, 100% 10px, 100% 100%, 0 100%);
+}
+
+.card::before {
   inset: 0;
+  z-index: -2;
+  background: var(--hairline-strong);
+}
+
+.card::after {
+  inset: 1px;
   z-index: -1;
   background: var(--panel);
-  clip-path: polygon(0 10px, 3% 0, 97% 0, 100% 10px, 100% 100%, 0 100%);
 }
 
 .seal {

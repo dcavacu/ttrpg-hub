@@ -3,7 +3,7 @@ import { applyContentFilters } from './filters';
 import type { ContentFilters, Spell } from './types';
 
 const SPELL_SELECT =
-  'id, name, is_homebrew, level, tags, description, stats, system:systems(id,name), source:sources(id,name,is_homebrew)';
+  'id, name, is_homebrew, level, school, mana_cost, tags, description, stats, system:systems(id,name), source:sources(id,name,is_homebrew)';
 
 export async function listSpells(client: SupabaseClient, filters: ContentFilters): Promise<Spell[]> {
   const query = applyContentFilters(
@@ -28,6 +28,8 @@ export interface SpellInput {
   source_id: string;
   is_homebrew: boolean;
   level?: string;
+  school?: string | null;
+  mana_cost?: number | null;
   tags?: string[];
   description?: string;
   stats?: Record<string, string>;

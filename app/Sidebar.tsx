@@ -8,6 +8,19 @@ import styles from './Sidebar.module.css';
 
 type Category = 'monsters' | 'items' | 'spells' | 'rules';
 
+export interface FacetGroupOption {
+  value: string;
+  label: string;
+  count: number;
+}
+
+export interface FacetGroup {
+  key: keyof ContentFilters;
+  label: string;
+  color: string;
+  options: FacetGroupOption[];
+}
+
 const CATEGORIES: { key: Category; label: string }[] = [
   { key: 'monsters', label: 'Monsters' },
   { key: 'items', label: 'Items' },
@@ -21,6 +34,14 @@ function pushTagFilters(router: ReturnType<typeof useRouter>, category: Category
   if (filters.systemId) params.set('systemId', filters.systemId);
   if (filters.sourceType) params.set('sourceType', filters.sourceType);
   if (filters.tags && filters.tags.length > 0) params.set('tags', filters.tags.join(','));
+  if (filters.combatRole) params.set('combatRole', filters.combatRole);
+  if (filters.race) params.set('race', filters.race);
+  if (filters.tier) params.set('tier', filters.tier);
+  if (filters.itemType) params.set('itemType', filters.itemType);
+  if (filters.rarity) params.set('rarity', filters.rarity);
+  if (filters.school) params.set('school', filters.school);
+  if (filters.manaCostBucket) params.set('manaCostBucket', filters.manaCostBucket);
+  if (filters.category) params.set('category', filters.category);
   const query = params.toString();
   router.push(query ? `/${category}?${query}` : `/${category}`);
 }
@@ -28,11 +49,13 @@ function pushTagFilters(router: ReturnType<typeof useRouter>, category: Category
 export function Sidebar({
   counts,
   tags,
+  facets,
   initial,
   category,
 }: {
   counts: CategoryCounts;
   tags: TagCount[];
+  facets?: FacetGroup[];
   initial: ContentFilters;
   category: Category;
 }) {
@@ -42,6 +65,12 @@ export function Sidebar({
     const current = initial.tags ?? [];
     const next = checked ? [...current, tag] : current.filter((t) => t !== tag);
     pushTagFilters(router, category, { ...initial, tags: next });
+  }
+
+  function selectFacetOption(key: keyof ContentFilters, value: string) {
+    const current = initial[key];
+    const next = { ...initial, [key]: current === value ? undefined : value };
+    pushTagFilters(router, category, next);
   }
 
   return (
@@ -61,6 +90,29 @@ export function Sidebar({
           ))}
         </ul>
       </section>
+      {facets?.map((facet) => (
+        <section key={facet.key} className={styles.section}>
+          <h2 className={styles.heading}>{facet.label}</h2>
+          <ul className={styles.tagList}>
+            {facet.options.map((option) => {
+              const active = initial[facet.key] === option.value;
+              return (
+                <li key={option.value}>
+                  <button
+                    type="button"
+                    className={active ? `${styles.facetOption} ${styles.facetOptionActive}` : styles.facetOption}
+                    aria-pressed={active}
+                    onClick={() => selectFacetOption(facet.key, option.value)}
+                  >
+                    <span className={styles.swatch} style={{ background: facet.color }} />
+                    {option.label} <span className={styles.tagCount}>({option.count})</span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ))}
       <section className={styles.section}>
         <h2 className={styles.heading}>Tags</h2>
         <ul className={styles.tagList}>

@@ -11,6 +11,9 @@ function pushFilters(router: ReturnType<typeof useRouter>, filters: ContentFilte
   if (filters.systemId) params.set('systemId', filters.systemId);
   if (filters.sourceType) params.set('sourceType', filters.sourceType);
   if (filters.tags && filters.tags.length > 0) params.set('tags', filters.tags.join(','));
+  if (filters.combatRole) params.set('combatRole', filters.combatRole);
+  if (filters.race) params.set('race', filters.race);
+  if (filters.tier) params.set('tier', filters.tier);
   const query = params.toString();
   router.push(query ? `/monsters?${query}` : '/monsters');
 }

@@ -71,6 +71,19 @@ create table rules (
   created_at timestamptz not null default now()
 );
 
+-- Faceted-filter columns (2026-08-22). Safe to re-run (IF NOT EXISTS guards the
+-- column adds). Adding `tier` as NOT NULL DEFAULT 'Normal' also backfills that
+-- default onto every existing row in the same statement — no separate UPDATE
+-- needed.
+-- Must be run manually in the Supabase SQL editor, same as the GRANT
+-- statements below.
+alter table monsters add column if not exists combat_role text;
+alter table monsters add column if not exists race text;
+alter table monsters add column if not exists tier text not null default 'Normal';
+
+alter table spells add column if not exists school text;
+alter table spells add column if not exists mana_cost integer;
+
 create index monsters_name_idx on monsters using gin (to_tsvector('english', name));
 create index items_name_idx on items using gin (to_tsvector('english', name));
 create index spells_name_idx on spells using gin (to_tsvector('english', name));

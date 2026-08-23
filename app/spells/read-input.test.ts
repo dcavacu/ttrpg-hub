@@ -43,3 +43,39 @@ describe('readInput stats parsing', () => {
     expect(readInput(fd).stats).toEqual({});
   });
 });
+
+describe('readInput facet fields', () => {
+  it('reads school and mana_cost when present', () => {
+    const fd = formDataWith([
+      ['name', 'Flame Dart'],
+      ['system_id', 'sys-1'],
+      ['source_id', 'src-1'],
+      ['school', 'Fire'],
+      ['mana_cost', '2'],
+    ]);
+    const input = readInput(fd);
+    expect(input.school).toBe('Fire');
+    expect(input.mana_cost).toBe(2);
+  });
+
+  it('reads mana_cost of 0 as 0, not undefined', () => {
+    const fd = formDataWith([
+      ['name', 'Flame Dart'],
+      ['system_id', 'sys-1'],
+      ['source_id', 'src-1'],
+      ['mana_cost', '0'],
+    ]);
+    expect(readInput(fd).mana_cost).toBe(0);
+  });
+
+  it('leaves school and mana_cost null when not submitted', () => {
+    const fd = formDataWith([
+      ['name', 'Flame Dart'],
+      ['system_id', 'sys-1'],
+      ['source_id', 'src-1'],
+    ]);
+    const input = readInput(fd);
+    expect(input.school).toBeNull();
+    expect(input.mana_cost).toBeNull();
+  });
+});
