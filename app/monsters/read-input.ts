@@ -23,6 +23,9 @@ export function readInput(formData: FormData): Partial<MonsterInput> {
     source_id: sourceId,
     is_homebrew: isHomebrew,
     rating_label: String(formData.get('rating_label') ?? '') || undefined,
+    combat_role: (String(formData.get('combat_role') ?? '') || undefined) as MonsterInput['combat_role'],
+    race: String(formData.get('race') ?? '') || undefined,
+    tier: (String(formData.get('tier') ?? '') || undefined) as MonsterInput['tier'],
     description: String(formData.get('description') ?? ''),
     tags: String(formData.get('tags') ?? '')
       .split(',')

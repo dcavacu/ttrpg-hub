@@ -43,3 +43,32 @@ describe('readInput stats parsing', () => {
     expect(readInput(fd).stats).toEqual({});
   });
 });
+
+describe('readInput facet fields', () => {
+  it('reads combat_role, race, and tier when present', () => {
+    const fd = formDataWith([
+      ['name', 'Sprite'],
+      ['system_id', 'sys-1'],
+      ['source_id', 'src-1'],
+      ['combat_role', 'Ranged'],
+      ['race', 'Fey'],
+      ['tier', 'Normal'],
+    ]);
+    const input = readInput(fd);
+    expect(input.combat_role).toBe('Ranged');
+    expect(input.race).toBe('Fey');
+    expect(input.tier).toBe('Normal');
+  });
+
+  it('leaves combat_role, race, and tier undefined when not submitted', () => {
+    const fd = formDataWith([
+      ['name', 'Sprite'],
+      ['system_id', 'sys-1'],
+      ['source_id', 'src-1'],
+    ]);
+    const input = readInput(fd);
+    expect(input.combat_role).toBeUndefined();
+    expect(input.race).toBeUndefined();
+    expect(input.tier).toBeUndefined();
+  });
+});
