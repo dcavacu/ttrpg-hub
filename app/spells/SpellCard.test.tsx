@@ -12,6 +12,8 @@ const spell: Spell = {
   tags: ['evocation', 'ranged'],
   description: 'Hurls a bolt shaped like an owlbear claw.',
   stats: {},
+  school: 'Fire',
+  mana_cost: 2,
 };
 
 describe('SpellCard', () => {
@@ -53,5 +55,21 @@ describe('SpellCard', () => {
   it('renders nothing extra when the description is empty', () => {
     render(<SpellCard spell={{ ...spell, description: '' }} />);
     expect(screen.queryByText('Hurls a bolt shaped like an owlbear claw.')).not.toBeInTheDocument();
+  });
+
+  it('shows a school chip and mana-cost badge when present', () => {
+    render(<SpellCard spell={spell} />);
+    expect(screen.getByText('Fire')).toBeInTheDocument();
+    expect(screen.getByText('2')).toBeInTheDocument();
+  });
+
+  it('shows a mana-cost badge for a mana_cost of 0', () => {
+    render(<SpellCard spell={{ ...spell, mana_cost: 0 }} />);
+    expect(screen.getByText('0')).toBeInTheDocument();
+  });
+
+  it('shows no mana-cost badge when mana_cost is null', () => {
+    render(<SpellCard spell={{ ...spell, mana_cost: null }} />);
+    expect(screen.queryByTestId('mana-cost-badge')).not.toBeInTheDocument();
   });
 });

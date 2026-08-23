@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { createSupabaseClient } from '@/lib/supabase/client';
 import { getSpellById } from '@/lib/content/spells';
 import { splitDescriptionSections } from '@/lib/content/format-description';
+import { DropletIcon } from '../../content/icons';
 import styles from './page.module.css';
 
 export default async function SpellDetailPage({ params }: { params: { id: string } }) {
@@ -22,6 +23,14 @@ export default async function SpellDetailPage({ params }: { params: { id: string
       <p className={styles.subtitle}>
         {[spell.system.name, spell.level].filter(Boolean).join(' · ')}
       </p>
+      <div className={styles.badgeRow}>
+        {spell.school && <span className={styles.schoolChip}>{spell.school}</span>}
+        {spell.mana_cost !== null && (
+          <span className={styles.manaBadge}>
+            <DropletIcon className={styles.badgeIcon} /> {spell.mana_cost}
+          </span>
+        )}
+      </div>
       {Object.keys(spell.stats).length > 0 && (
         <dl className={styles.stats}>
           {Object.entries(spell.stats).map(([key, value]) => (

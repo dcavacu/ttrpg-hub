@@ -121,3 +121,34 @@
   border-color: var(--brass-dim);
   color: var(--parchment);
 }
+
+.badgeRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.schoolChip {
+  display: inline-block;
+  font-size: var(--text-2xs);
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--cat-spells-soft);
+  color: var(--cat-spells);
+}
+
+.manaBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--text-2xs);
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+  color: var(--cat-spells);
+}
+
+.badgeIcon {
+  width: 13px;
+  height: 13px;
+  flex: none;
+}
