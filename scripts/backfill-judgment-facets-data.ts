@@ -521,3 +521,108 @@ export const JUDGMENT_MONSTER_DATA: {
     'Zombie': { combat_role: 'Melee' },
   },
 };
+
+// Nimble spell mana costs, derived from each spell's `level` field in
+// scripts/seed-nimble-spells.ts: 'Cantrip' -> 0, 'Tier N' -> N. Spell names
+// are unique across the whole spell list, so this is a single flat map.
+export const JUDGMENT_SPELL_MANA_COST: Record<string, number> = {
+  // Fire
+  'Flame Dart': 0,
+  "Heart's Fire": 0,
+  Ignite: 1,
+  'Enchant Weapon': 2,
+  'Flame Barrier': 3,
+  Pyroclasm: 4,
+  'Fiery Embrace': 5,
+  'Living Inferno': 7,
+  Dragonform: 9,
+
+  // Ice
+  'Ice Lance': 0,
+  Snowblind: 0,
+  'Frost Shield': 1,
+  Shatter: 2,
+  Cryosleep: 3,
+  Rimeblades: 4,
+  'Arctic Blast': 5,
+  'Glacier Strike': 8,
+  'Arctic Annihilation': 9,
+
+  // Lightning
+  Zap: 0,
+  Overload: 0,
+  'Arc Lightning': 1,
+  Alacrity: 2,
+  Stormlash: 3,
+  Electrickery: 4,
+  Electrocharge: 5,
+  'Ride the Lightning': 6,
+  'Seething Storm': 9,
+
+  // Wind
+  'Razor Wind': 0,
+  'Breath of Life': 0,
+  'Blustery Gale': 1,
+  'Barrier of Wind': 2,
+  Fly: 3,
+  'Eye of the Storm': 4,
+  Updraft: 5,
+  'Thousand Cuts': 6,
+  'Boisterous Winds': 7,
+  'Vicious Mockery': 0,
+
+  // Radiant
+  Rebuke: 0,
+  'True Strike': 0,
+  Heal: 1,
+  'Warding Bond': 2,
+  'Shield of Justice': 3,
+  Condemn: 4,
+  Vengeance: 5,
+  Sacrifice: 6,
+  Redeem: 9,
+  'Lifebinding Spirit': 1,
+
+  // Necrotic
+  Entice: 0,
+  'Withering Touch': 0,
+  'Shadow Trap': 1,
+  'Dread Visage': 2,
+  'Vampiric Greed': 3,
+  'Greater Shadow': 4,
+  'Gangrenous Burst': 5,
+  'Unspeakable Word': 6,
+  'Creeping Death': 7,
+  'Shadow Blast': 0,
+  'Summon Shadow': 0,
+
+  // Utility: Ice
+  'Ice Disk': 0,
+  Chillcraft: 0,
+  'Wintry Scrying': 0,
+
+  // Utility: Lightning
+  'Spark Buddy': 0,
+  'Spark Step': 0,
+  "Tempest's Command": 0,
+
+  // Utility: Radiant
+  Light: 0,
+  Beautify: 0,
+  'Bond of Peace': 0,
+
+  // Utility: Fire
+  Firebrand: 0,
+  'Fire Step': 0,
+  Kindle: 0,
+
+  // Utility: Wind
+  'Wind Whisper': 0,
+  'Helpful Gust': 0,
+  'Feather Fall': 0,
+
+  // Utility: Necrotic
+  Gravecraft: 0,
+  'False Face': 0,
+  'Thought Leech': 0,
+};
