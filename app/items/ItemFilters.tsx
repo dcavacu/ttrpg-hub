@@ -11,6 +11,8 @@ function pushFilters(router: ReturnType<typeof useRouter>, filters: ContentFilte
   if (filters.systemId) params.set('systemId', filters.systemId);
   if (filters.sourceType) params.set('sourceType', filters.sourceType);
   if (filters.tags && filters.tags.length > 0) params.set('tags', filters.tags.join(','));
+  if (filters.itemType) params.set('itemType', filters.itemType);
+  if (filters.rarity) params.set('rarity', filters.rarity);
   const query = params.toString();
   router.push(query ? `/items?${query}` : '/items');
 }
