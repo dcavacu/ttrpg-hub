@@ -12,6 +12,9 @@ const monster: Monster = {
   tags: ['beast', 'forest'],
   description: 'Half owl, half bear, all bad mood.',
   stats: {},
+  combat_role: 'Ranged',
+  race: 'Beast',
+  tier: 'Normal',
 };
 
 describe('MonsterCard', () => {
@@ -53,5 +56,27 @@ describe('MonsterCard', () => {
   it('renders nothing extra when the description is empty', () => {
     render(<MonsterCard monster={{ ...monster, description: '' }} />);
     expect(screen.queryByText('Half owl, half bear, all bad mood.')).not.toBeInTheDocument();
+  });
+
+  it('shows a race pill and combat-role label when present', () => {
+    render(<MonsterCard monster={monster} />);
+    expect(screen.getByText('Beast')).toBeInTheDocument();
+    expect(screen.getByText('Ranged')).toBeInTheDocument();
+  });
+
+  it('shows a Legendary tier badge for Legendary monsters', () => {
+    render(<MonsterCard monster={{ ...monster, tier: 'Legendary' }} />);
+    expect(screen.getByText('Legendary')).toBeInTheDocument();
+  });
+
+  it('shows a Minion tier badge for Minion monsters', () => {
+    render(<MonsterCard monster={{ ...monster, tier: 'Minion' }} />);
+    expect(screen.getByText('Minion')).toBeInTheDocument();
+  });
+
+  it('shows no tier badge for Normal monsters', () => {
+    render(<MonsterCard monster={{ ...monster, tier: 'Normal' }} />);
+    expect(screen.queryByText('Legendary')).not.toBeInTheDocument();
+    expect(screen.queryByText('Minion')).not.toBeInTheDocument();
   });
 });
