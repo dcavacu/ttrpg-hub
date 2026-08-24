@@ -21,7 +21,7 @@ export default async function EditRulePage({
   const [{ data: systems }, sources, tagCounts] = await Promise.all([
     client.from('systems').select('id, name').order('name'),
     listSources(client),
-    listTagCounts(client, 'rules'),
+    listTagCounts(client, 'rules', {}),
   ]);
   const boundAction = updateRuleAction.bind(null, params.id);
 

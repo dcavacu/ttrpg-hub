@@ -79,8 +79,8 @@ export default async function RulesPage({
     client.from('systems').select('id, name').order('name'),
     listRules(client, filters, page),
     getCategoryCounts(client),
-    listTagCounts(client, 'rules', filters.systemId),
-    listFacetCounts(client, 'rules', 'category', filters.systemId),
+    listTagCounts(client, 'rules', filters),
+    listFacetCounts(client, 'rules', 'category', filters, 'category'),
   ]);
 
   const systemList = (systems ?? []) as System[];

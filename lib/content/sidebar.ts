@@ -1,4 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { applyContentFilters } from './filters';
+import type { ContentFilters } from './types';
 
 export interface CategoryCounts {
   monsters: number;
@@ -31,17 +33,23 @@ export interface TagCount {
   count: number;
 }
 
+// tags are excluded from the filters applied here so the list still shows every tag (and its
+// count under the OTHER active filters) rather than collapsing to only the tags already selected.
 export async function listTagCounts(
   client: SupabaseClient,
   table: 'monsters' | 'items' | 'spells' | 'rules',
-  systemId?: string,
+  filters: ContentFilters,
 ): Promise<TagCount[]> {
-  let query = client.from(table).select('tags');
-  if (systemId) query = query.eq('system_id', systemId);
+  const scopedFilters: ContentFilters = { ...filters, tags: undefined };
+  const query = applyContentFilters(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase's query builder type doesn't structurally match FilterableQuery's generic constraint
+    client.from(table).select('tags') as any,
+    scopedFilters,
+  );
   const { data, error } = await query;
   if (error) throw new Error(`Failed to list ${table} tag counts: ${error.message}`);
   const counts = new Map<string, number>();
-  for (const row of (data ?? []) as { tags: string[] }[]) {
+  for (const row of (data ?? []) as unknown as { tags: string[] }[]) {
     for (const tag of row.tags ?? []) counts.set(tag, (counts.get(tag) ?? 0) + 1);
   }
   return Array.from(counts.entries())

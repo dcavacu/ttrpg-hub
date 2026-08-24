@@ -21,7 +21,7 @@ export default async function EditMonsterPage({
   const [{ data: systems }, sources, tagCounts] = await Promise.all([
     client.from('systems').select('id, name').order('name'),
     listSources(client),
-    listTagCounts(client, 'monsters'),
+    listTagCounts(client, 'monsters', {}),
   ]);
   const boundAction = updateMonsterAction.bind(null, params.id);
 

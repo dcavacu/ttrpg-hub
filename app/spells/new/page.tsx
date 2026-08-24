@@ -10,7 +10,7 @@ export default async function NewSpellPage({ searchParams }: { searchParams: { e
   const [{ data: systems }, sources, tagCounts] = await Promise.all([
     client.from('systems').select('id, name').order('name'),
     listSources(client),
-    listTagCounts(client, 'spells'),
+    listTagCounts(client, 'spells', {}),
   ]);
 
   return (

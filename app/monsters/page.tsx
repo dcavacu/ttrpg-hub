@@ -92,10 +92,10 @@ export default async function MonstersPage({
       client.from('systems').select('id, name').order('name'),
       listMonsters(client, filters, page),
       getCategoryCounts(client),
-      listTagCounts(client, 'monsters', filters.systemId),
-      listFacetCounts(client, 'monsters', 'combat_role', filters.systemId),
-      listFacetCounts(client, 'monsters', 'race', filters.systemId),
-      listFacetCounts(client, 'monsters', 'tier', filters.systemId),
+      listTagCounts(client, 'monsters', filters),
+      listFacetCounts(client, 'monsters', 'combat_role', filters, 'combatRole'),
+      listFacetCounts(client, 'monsters', 'race', filters, 'race'),
+      listFacetCounts(client, 'monsters', 'tier', filters, 'tier'),
     ]);
 
   const systemList = (systems ?? []) as System[];

@@ -10,7 +10,7 @@ export default async function NewRulePage({ searchParams }: { searchParams: { er
   const [{ data: systems }, sources, tagCounts] = await Promise.all([
     client.from('systems').select('id, name').order('name'),
     listSources(client),
-    listTagCounts(client, 'rules'),
+    listTagCounts(client, 'rules', {}),
   ]);
 
   return (

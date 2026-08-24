@@ -1,19 +1,28 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { ManaCostBucket } from './types';
+import { applyContentFilters } from './filters';
+import type { ContentFilters, ManaCostBucket } from './types';
 
 export interface FacetCount {
   value: string;
   count: number;
 }
 
+// excludeKey omits that one field from the filters applied to this count query, so a facet's
+// own sidebar still shows every sibling value (and its count under the OTHER active filters)
+// instead of collapsing to just the one value already selected for that facet.
 export async function listFacetCounts(
   client: SupabaseClient,
   table: 'monsters' | 'items' | 'spells' | 'rules',
   column: string,
-  systemId?: string,
+  filters: ContentFilters,
+  excludeKey?: keyof ContentFilters,
 ): Promise<FacetCount[]> {
-  let query = client.from(table).select(column);
-  if (systemId) query = query.eq('system_id', systemId);
+  const scopedFilters = excludeKey ? { ...filters, [excludeKey]: undefined } : filters;
+  const query = applyContentFilters(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase's query builder type doesn't structurally match FilterableQuery's generic constraint
+    client.from(table).select(column) as any,
+    scopedFilters,
+  );
   const { data, error } = await query;
   if (error) throw new Error(`Failed to list ${table} ${column} counts: ${error.message}`);
   const counts = new Map<string, number>();
@@ -34,14 +43,18 @@ export interface ManaCostBucketCount {
 
 export async function listManaCostBucketCounts(
   client: SupabaseClient,
-  systemId?: string,
+  filters: ContentFilters,
 ): Promise<ManaCostBucketCount[]> {
-  let query = client.from('spells').select('mana_cost');
-  if (systemId) query = query.eq('system_id', systemId);
+  const scopedFilters: ContentFilters = { ...filters, manaCostBucket: undefined };
+  const query = applyContentFilters(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase's query builder type doesn't structurally match FilterableQuery's generic constraint
+    client.from('spells').select('mana_cost') as any,
+    scopedFilters,
+  );
   const { data, error } = await query;
   if (error) throw new Error(`Failed to list spell mana cost counts: ${error.message}`);
   const buckets: Record<ManaCostBucket, number> = { '0': 0, '1-2': 0, '3+': 0 };
-  for (const row of (data ?? []) as { mana_cost: number | null }[]) {
+  for (const row of (data ?? []) as unknown as { mana_cost: number | null }[]) {
     if (row.mana_cost === null || row.mana_cost === undefined) continue;
     if (row.mana_cost === 0) buckets['0'] += 1;
     else if (row.mana_cost <= 2) buckets['1-2'] += 1;

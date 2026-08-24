@@ -21,7 +21,7 @@ export default async function EditItemPage({
   const [{ data: systems }, sources, tagCounts] = await Promise.all([
     client.from('systems').select('id, name').order('name'),
     listSources(client),
-    listTagCounts(client, 'items'),
+    listTagCounts(client, 'items', {}),
   ]);
   const boundAction = updateItemAction.bind(null, params.id);
 

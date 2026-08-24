@@ -85,9 +85,9 @@ export default async function SpellsPage({
     client.from('systems').select('id, name').order('name'),
     listSpells(client, filters, page),
     getCategoryCounts(client),
-    listTagCounts(client, 'spells', filters.systemId),
-    listFacetCounts(client, 'spells', 'school', filters.systemId),
-    listManaCostBucketCounts(client, filters.systemId),
+    listTagCounts(client, 'spells', filters),
+    listFacetCounts(client, 'spells', 'school', filters, 'school'),
+    listManaCostBucketCounts(client, filters),
   ]);
 
   const systemList = (systems ?? []) as System[];

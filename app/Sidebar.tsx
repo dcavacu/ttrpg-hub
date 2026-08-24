@@ -91,8 +91,8 @@ export function Sidebar({
         </ul>
       </section>
       {facets?.map((facet) => (
-        <section key={facet.key} className={styles.section}>
-          <h2 className={styles.heading}>{facet.label}</h2>
+        <details key={facet.key} className={styles.section} open>
+          <summary className={styles.heading}>{facet.label}</summary>
           <ul className={styles.tagList}>
             {facet.options.map((option) => {
               const active = initial[facet.key] === option.value;
@@ -111,10 +111,10 @@ export function Sidebar({
               );
             })}
           </ul>
-        </section>
+        </details>
       ))}
-      <section className={styles.section}>
-        <h2 className={styles.heading}>Tags</h2>
+      <details className={styles.section} open>
+        <summary className={styles.heading}>Tags</summary>
         <ul className={styles.tagList}>
           {tags.map(({ tag, count }) => (
             <li key={tag}>
@@ -130,7 +130,7 @@ export function Sidebar({
             </li>
           ))}
         </ul>
-      </section>
+      </details>
     </aside>
   );
 }

@@ -85,9 +85,9 @@ export default async function ItemsPage({
     client.from('systems').select('id, name').order('name'),
     listItems(client, filters, page),
     getCategoryCounts(client),
-    listTagCounts(client, 'items', filters.systemId),
-    listFacetCounts(client, 'items', 'item_type', filters.systemId),
-    listFacetCounts(client, 'items', 'rarity', filters.systemId),
+    listTagCounts(client, 'items', filters),
+    listFacetCounts(client, 'items', 'item_type', filters, 'itemType'),
+    listFacetCounts(client, 'items', 'rarity', filters, 'rarity'),
   ]);
 
   const systemList = (systems ?? []) as System[];

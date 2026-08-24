@@ -23,6 +23,30 @@
   margin: 0;
 }
 
+summary.heading {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
+}
+
+summary.heading::-webkit-details-marker {
+  display: none;
+}
+
+summary.heading::after {
+  content: "\25B8";
+  font-size: 0.8em;
+  color: var(--parchment-dim);
+  transition: transform 120ms ease;
+}
+
+details[open] > summary.heading::after {
+  transform: rotate(90deg);
+}
+
 .categoryList,
 .tagList {
   list-style: none;

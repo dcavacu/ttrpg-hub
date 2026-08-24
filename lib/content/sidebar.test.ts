@@ -1,4 +1,3 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
 import { getCategoryCounts, listTagCounts } from './sidebar';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- minimal mock double, real typing adds no value here
@@ -40,16 +39,34 @@ describe('getCategoryCounts', () => {
   });
 });
 
+function createMockBuilder(result: { data: unknown; error: { message: string } | null }) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- minimal mock double, real typing adds no value here
+  const builder: any = {};
+  builder.select = vi.fn(() => builder);
+  builder.eq = vi.fn(() => builder);
+  builder.ilike = vi.fn(() => builder);
+  builder.overlaps = vi.fn(() => builder);
+  builder.gte = vi.fn(() => builder);
+  builder.lte = vi.fn(() => builder);
+  builder.then = (resolve: (v: typeof result) => unknown) => Promise.resolve(result).then(resolve);
+  return builder;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- minimal mock double, real typing adds no value here
+function createMockBuilderClient(builder: any) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- minimal mock double, real typing adds no value here
+  return { from: vi.fn(() => builder) } as any;
+}
+
 describe('listTagCounts', () => {
   it('counts how many rows carry each tag', async () => {
-    const client = createMockClient({
-      monsters: {
-        data: [{ tags: ['Dragon', 'Beast'] }, { tags: ['Dragon'] }, { tags: [] }],
-        error: null,
-      },
+    const builder = createMockBuilder({
+      data: [{ tags: ['Dragon', 'Beast'] }, { tags: ['Dragon'] }, { tags: [] }],
+      error: null,
     });
+    const client = createMockBuilderClient(builder);
 
-    const result = await listTagCounts(client, 'monsters');
+    const result = await listTagCounts(client, 'monsters', {});
 
     expect(client.from).toHaveBeenCalledWith('monsters');
     expect(result).toEqual([
@@ -59,32 +76,29 @@ describe('listTagCounts', () => {
   });
 
   it('returns an empty array when there is no data', async () => {
-    const client = createMockClient({
-      monsters: { data: [], error: null },
-    });
+    const builder = createMockBuilder({ data: [], error: null });
+    const client = createMockBuilderClient(builder);
 
-    const result = await listTagCounts(client, 'monsters');
+    const result = await listTagCounts(client, 'monsters', {});
 
     expect(result).toEqual([]);
   });
 
   it('throws with the Supabase error message on failure', async () => {
-    const client = createMockClient({
-      monsters: { data: null, error: { message: 'boom' } },
-    });
+    const builder = createMockBuilder({ data: null, error: { message: 'boom' } });
+    const client = createMockBuilderClient(builder);
 
-    await expect(listTagCounts(client, 'monsters')).rejects.toThrow('boom');
+    await expect(listTagCounts(client, 'monsters', {})).rejects.toThrow('boom');
   });
 
   it('works against a different table name', async () => {
-    const client = createMockClient({
-      items: {
-        data: [{ tags: ['Weapon'] }, { tags: ['Weapon', 'Magic'] }],
-        error: null,
-      },
+    const builder = createMockBuilder({
+      data: [{ tags: ['Weapon'] }, { tags: ['Weapon', 'Magic'] }],
+      error: null,
     });
+    const client = createMockBuilderClient(builder);
 
-    const result = await listTagCounts(client, 'items');
+    const result = await listTagCounts(client, 'items', {});
 
     expect(client.from).toHaveBeenCalledWith('items');
     expect(result).toEqual([
@@ -94,12 +108,29 @@ describe('listTagCounts', () => {
   });
 
   it('scopes the query by systemId when provided', async () => {
-    const eq = vi.fn(() => Promise.resolve({ data: [{ tags: ['Dragon'] }], error: null }));
-    const from = vi.fn(() => ({ select: vi.fn(() => ({ eq })) }));
-    const client = { from } as unknown as SupabaseClient;
+    const builder = createMockBuilder({ data: [{ tags: ['Dragon'] }], error: null });
+    const client = createMockBuilderClient(builder);
 
-    await listTagCounts(client, 'monsters', 'system-123');
+    await listTagCounts(client, 'monsters', { systemId: 'system-123' });
 
-    expect(eq).toHaveBeenCalledWith('system_id', 'system-123');
+    expect(builder.eq).toHaveBeenCalledWith('system_id', 'system-123');
+  });
+
+  it('excludes the tags filter itself, even when tags are already selected', async () => {
+    const builder = createMockBuilder({ data: [{ tags: ['Dragon'] }], error: null });
+    const client = createMockBuilderClient(builder);
+
+    await listTagCounts(client, 'monsters', { tags: ['Beast'] });
+
+    expect(builder.overlaps).not.toHaveBeenCalled();
+  });
+
+  it('applies other active filters (e.g. combatRole) to the count', async () => {
+    const builder = createMockBuilder({ data: [{ tags: ['Dragon'] }], error: null });
+    const client = createMockBuilderClient(builder);
+
+    await listTagCounts(client, 'monsters', { combatRole: 'Ranged' });
+
+    expect(builder.eq).toHaveBeenCalledWith('combat_role', 'Ranged');
   });
 });

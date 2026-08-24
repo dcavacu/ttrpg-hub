@@ -10,7 +10,7 @@ export default async function NewMonsterPage({ searchParams }: { searchParams: {
   const [{ data: systems }, sources, tagCounts] = await Promise.all([
     client.from('systems').select('id, name').order('name'),
     listSources(client),
-    listTagCounts(client, 'monsters'),
+    listTagCounts(client, 'monsters', {}),
   ]);
 
   return (
