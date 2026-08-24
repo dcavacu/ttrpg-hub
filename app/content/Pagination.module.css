@@ -24,7 +24,7 @@
 }
 
 .pageStatus {
-  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
-  font-size: var(--text-xs);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
   color: var(--parchment-dim);
 }

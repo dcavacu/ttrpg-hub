@@ -6,7 +6,7 @@ import styles from './AppHeader.module.css';
 export function AppHeader() {
   return (
     <header className={styles.header}>
-      <Link href="/monsters" className={styles.brand}>
+      <Link href="/" className={styles.brand}>
         <BookIcon className={styles.brandMark} />
         The Compendium
       </Link>
