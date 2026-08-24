@@ -22,9 +22,10 @@ export function BookIcon(props: SVGProps<SVGSVGElement>) {
 export function SwordIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...defaults} {...props}>
-      <path d="M14.5 3.5l6 6-9 9-3-3z" />
-      <path d="M11.5 15.5L8 19l-4 1 1-4 3.5-3.5" />
-      <path d="M17 6l2-2" />
+      <path d="M19 3l2 2-12 12-2-2z" />
+      <path d="M5 13l6 6" />
+      <path d="M8 16l-3 3" />
+      <path d="M3.5 17.5l3 3" />
     </svg>
   );
 }
@@ -83,9 +84,10 @@ export function SealIcon(props: SVGProps<SVGSVGElement>) {
 export function RangedIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...defaults} {...props}>
-      <path d="M4 4c8 0 14 6 16 16" />
-      <path d="M20 20l-5-1M20 20l1-5" />
-      <path d="M4 4l6 6" />
+      <path d="M7 3c7 1.5 10 7 10 9s-3 7.5-10 9" />
+      <path d="M7 3v18" />
+      <path d="M2 12h16" />
+      <path d="M14 12l4-4M14 12l4 4" />
     </svg>
   );
 }
