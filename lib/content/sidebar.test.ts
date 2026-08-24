@@ -45,7 +45,7 @@ function createMockBuilder(result: { data: unknown; error: { message: string } |
   builder.select = vi.fn(() => builder);
   builder.eq = vi.fn(() => builder);
   builder.ilike = vi.fn(() => builder);
-  builder.overlaps = vi.fn(() => builder);
+  builder.contains = vi.fn(() => builder);
   builder.gte = vi.fn(() => builder);
   builder.lte = vi.fn(() => builder);
   builder.then = (resolve: (v: typeof result) => unknown) => Promise.resolve(result).then(resolve);
@@ -122,7 +122,7 @@ describe('listTagCounts', () => {
 
     await listTagCounts(client, 'monsters', { tags: ['Beast'] });
 
-    expect(builder.overlaps).not.toHaveBeenCalled();
+    expect(builder.contains).not.toHaveBeenCalled();
   });
 
   it('applies other active filters (e.g. combatRole) to the count', async () => {

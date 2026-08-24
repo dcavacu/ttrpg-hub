@@ -3,7 +3,7 @@ import type { ContentFilters } from './types';
 export interface FilterableQuery {
   eq(column: string, value: unknown): FilterableQuery;
   ilike(column: string, pattern: string): FilterableQuery;
-  overlaps(column: string, value: unknown[]): FilterableQuery;
+  contains(column: string, value: unknown[]): FilterableQuery;
   gte(column: string, value: unknown): FilterableQuery;
   lte(column: string, value: unknown): FilterableQuery;
 }
@@ -27,7 +27,9 @@ export function applyContentFilters<Q extends FilterableQuery>(query: Q, filters
     result = result.ilike('name', `%${filters.search}%`);
   }
   if (filters.tags && filters.tags.length > 0) {
-    result = result.overlaps('tags', filters.tags);
+    // contains (Postgres @>) requires every selected tag to be present — an AND across tags,
+    // not overlaps' (&&) OR-across-tags "any of these" semantics.
+    result = result.contains('tags', filters.tags);
   }
   if (filters.combatRole) {
     result = result.eq('combat_role', filters.combatRole);

@@ -6,7 +6,7 @@ function createMockBuilder(result: { data: unknown; error: { message: string } |
   builder.select = vi.fn(() => builder);
   builder.eq = vi.fn(() => builder);
   builder.ilike = vi.fn(() => builder);
-  builder.overlaps = vi.fn(() => builder);
+  builder.contains = vi.fn(() => builder);
   builder.gte = vi.fn(() => builder);
   builder.lte = vi.fn(() => builder);
   builder.then = (resolve: (v: typeof result) => unknown) => Promise.resolve(result).then(resolve);

@@ -1,12 +1,12 @@
 import { applyContentFilters, type FilterableQuery } from './filters';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- minimal mock double, real typing adds no value here
-function createMockQuery(): FilterableQuery & { eq: any; ilike: any; overlaps: any; gte: any; lte: any } {
+function createMockQuery(): FilterableQuery & { eq: any; ilike: any; contains: any; gte: any; lte: any } {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- minimal mock double, real typing adds no value here
   const query: any = {};
   query.eq = vi.fn(() => query);
   query.ilike = vi.fn(() => query);
-  query.overlaps = vi.fn(() => query);
+  query.contains = vi.fn(() => query);
   query.gte = vi.fn(() => query);
   query.lte = vi.fn(() => query);
   return query;
@@ -42,25 +42,25 @@ describe('applyContentFilters', () => {
     applyContentFilters(query, {});
     expect(query.eq).not.toHaveBeenCalled();
     expect(query.ilike).not.toHaveBeenCalled();
-    expect(query.overlaps).not.toHaveBeenCalled();
+    expect(query.contains).not.toHaveBeenCalled();
   });
 
   it('filters by a single tag', () => {
     const query = createMockQuery();
     applyContentFilters(query, { tags: ['Dragon'] });
-    expect(query.overlaps).toHaveBeenCalledWith('tags', ['Dragon']);
+    expect(query.contains).toHaveBeenCalledWith('tags', ['Dragon']);
   });
 
   it('filters by multiple tags', () => {
     const query = createMockQuery();
     applyContentFilters(query, { tags: ['Dragon', 'Beast'] });
-    expect(query.overlaps).toHaveBeenCalledWith('tags', ['Dragon', 'Beast']);
+    expect(query.contains).toHaveBeenCalledWith('tags', ['Dragon', 'Beast']);
   });
 
-  it('does not call overlaps when tags is an empty array', () => {
+  it('does not call contains when tags is an empty array', () => {
     const query = createMockQuery();
     applyContentFilters(query, { tags: [] });
-    expect(query.overlaps).not.toHaveBeenCalled();
+    expect(query.contains).not.toHaveBeenCalled();
   });
 
   it('combines multiple filters', () => {
@@ -74,7 +74,7 @@ describe('applyContentFilters', () => {
     expect(query.eq).toHaveBeenCalledWith('system_id', 'sys-123');
     expect(query.eq).toHaveBeenCalledWith('is_homebrew', true);
     expect(query.ilike).toHaveBeenCalledWith('name', '%owl%');
-    expect(query.overlaps).toHaveBeenCalledWith('tags', ['Dragon', 'Beast']);
+    expect(query.contains).toHaveBeenCalledWith('tags', ['Dragon', 'Beast']);
   });
 });
 
