@@ -30,11 +30,11 @@
 .card::before {
   inset: 0;
   z-index: -2;
-  background: var(--hairline-strong);
+  background: var(--brass-dim);
 }
 
 .card::after {
-  inset: 1px;
+  inset: 2px;
   z-index: -1;
   background: var(--panel);
 }

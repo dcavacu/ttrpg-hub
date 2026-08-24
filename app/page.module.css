@@ -69,11 +69,11 @@
 
 .tile::before {
   inset: 0;
-  background: var(--hairline-strong);
+  background: var(--brass-dim);
 }
 
 .tile::after {
-  inset: 1px;
+  inset: 2px;
   background: var(--panel);
 }
 
