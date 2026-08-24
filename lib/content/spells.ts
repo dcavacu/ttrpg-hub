@@ -1,19 +1,25 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { applyContentFilters } from './filters';
-import type { ContentFilters, Spell } from './types';
+import { PAGE_SIZE, type ContentFilters, type PagedResult, type Spell } from './types';
 
 const SPELL_SELECT =
   'id, name, is_homebrew, level, school, mana_cost, tags, description, stats, system:systems(id,name), source:sources(id,name,is_homebrew)';
 
-export async function listSpells(client: SupabaseClient, filters: ContentFilters): Promise<Spell[]> {
+export async function listSpells(
+  client: SupabaseClient,
+  filters: ContentFilters,
+  page = 1,
+): Promise<PagedResult<Spell>> {
+  const from = (page - 1) * PAGE_SIZE;
+  const to = from + PAGE_SIZE - 1;
   const query = applyContentFilters(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase's query builder type doesn't structurally match FilterableQuery's generic constraint
-    client.from('spells').select(SPELL_SELECT).order('name') as any,
+    client.from('spells').select(SPELL_SELECT, { count: 'exact' }).order('name').range(from, to) as any,
     filters,
   );
-  const { data, error } = await query;
+  const { data, error, count } = await query;
   if (error) throw new Error(`Failed to list spells: ${error.message}`);
-  return (data ?? []) as unknown as Spell[];
+  return { items: (data ?? []) as unknown as Spell[], total: count ?? 0 };
 }
 
 export async function getSpellById(client: SupabaseClient, id: string): Promise<Spell | null> {

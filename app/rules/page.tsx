@@ -5,8 +5,8 @@ import { listFacetCounts } from '@/lib/content/facets';
 import { RuleCard } from './RuleCard';
 import { RuleFilters } from './RuleFilters';
 import { Sidebar } from '../Sidebar';
-import { RevealGrid } from '../content/RevealGrid';
-import type { ContentFilters, SourceType, System } from '@/lib/content/types';
+import { Pagination } from '../content/Pagination';
+import { PAGE_SIZE, type ContentFilters, type SourceType, type System } from '@/lib/content/types';
 import styles from './page.module.css';
 
 const FILTER_LABELS: Record<string, (value: string, systems: System[]) => string> = {
@@ -40,6 +40,18 @@ function activeFilterChips(filters: ContentFilters, systems: System[]) {
   return chips;
 }
 
+function buildPageHref(filters: ContentFilters, page: number): string {
+  const params = new URLSearchParams();
+  if (filters.search) params.set('search', filters.search);
+  if (filters.systemId) params.set('systemId', filters.systemId);
+  if (filters.sourceType) params.set('sourceType', filters.sourceType);
+  if (filters.tags && filters.tags.length > 0) params.set('tags', filters.tags.join(','));
+  if (filters.category) params.set('category', filters.category);
+  if (page > 1) params.set('page', String(page));
+  const query = params.toString();
+  return query ? `/rules?${query}` : '/rules';
+}
+
 export default async function RulesPage({
   searchParams,
 }: {
@@ -49,6 +61,7 @@ export default async function RulesPage({
     sourceType?: string;
     tags?: string;
     category?: string;
+    page?: string;
   };
 }) {
   const client = createSupabaseClient();
@@ -60,10 +73,11 @@ export default async function RulesPage({
     tags: searchParams.tags?.split(',').filter(Boolean),
     category: searchParams.category,
   };
+  const page = Math.max(1, parseInt(searchParams.page ?? '1', 10) || 1);
 
-  const [{ data: systems }, rules, counts, tags, categoryCounts] = await Promise.all([
+  const [{ data: systems }, { items: rules, total }, counts, tags, categoryCounts] = await Promise.all([
     client.from('systems').select('id, name').order('name'),
-    listRules(client, filters),
+    listRules(client, filters, page),
     getCategoryCounts(client),
     listTagCounts(client, 'rules', filters.systemId),
     listFacetCounts(client, 'rules', 'category', filters.systemId),
@@ -71,6 +85,9 @@ export default async function RulesPage({
 
   const systemList = (systems ?? []) as System[];
   const chips = activeFilterChips(filters, systemList);
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const rangeStart = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+  const rangeEnd = Math.min(page * PAGE_SIZE, total);
 
   return (
     <main className={styles.page}>
@@ -90,7 +107,7 @@ export default async function RulesPage({
         </div>
       )}
       <p className={styles.resultsCount}>
-        Showing {rules.length} of {counts.rules}
+        Showing {rangeStart}-{rangeEnd} of {total}
       </p>
       <div className={styles.layout}>
         <Sidebar
@@ -109,11 +126,14 @@ export default async function RulesPage({
               <a href="/rules">Clear filters</a>
             </div>
           ) : (
-            <RevealGrid gridClassName={styles.grid}>
-              {rules.map((rule) => (
-                <RuleCard key={rule.id} rule={rule} />
-              ))}
-            </RevealGrid>
+            <>
+              <div className={styles.grid}>
+                {rules.map((rule) => (
+                  <RuleCard key={rule.id} rule={rule} />
+                ))}
+              </div>
+              <Pagination page={page} totalPages={totalPages} buildHref={(p) => buildPageHref(filters, p)} />
+            </>
           )}
         </div>
       </div>

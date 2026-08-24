@@ -5,8 +5,8 @@ import { listFacetCounts, listManaCostBucketCounts } from '@/lib/content/facets'
 import { SpellCard } from './SpellCard';
 import { SpellFilters } from './SpellFilters';
 import { Sidebar } from '../Sidebar';
-import { RevealGrid } from '../content/RevealGrid';
-import type { ContentFilters, SourceType, System } from '@/lib/content/types';
+import { Pagination } from '../content/Pagination';
+import { PAGE_SIZE, type ContentFilters, type SourceType, type System } from '@/lib/content/types';
 import styles from './page.module.css';
 
 const FILTER_LABELS: Record<string, (value: string, systems: System[]) => string> = {
@@ -43,6 +43,19 @@ function activeFilterChips(filters: ContentFilters, systems: System[]) {
   return chips;
 }
 
+function buildPageHref(filters: ContentFilters, page: number): string {
+  const params = new URLSearchParams();
+  if (filters.search) params.set('search', filters.search);
+  if (filters.systemId) params.set('systemId', filters.systemId);
+  if (filters.sourceType) params.set('sourceType', filters.sourceType);
+  if (filters.tags && filters.tags.length > 0) params.set('tags', filters.tags.join(','));
+  if (filters.school) params.set('school', filters.school);
+  if (filters.manaCostBucket) params.set('manaCostBucket', filters.manaCostBucket);
+  if (page > 1) params.set('page', String(page));
+  const query = params.toString();
+  return query ? `/spells?${query}` : '/spells';
+}
+
 export default async function SpellsPage({
   searchParams,
 }: {
@@ -53,6 +66,7 @@ export default async function SpellsPage({
     tags?: string;
     school?: string;
     manaCostBucket?: string;
+    page?: string;
   };
 }) {
   const client = createSupabaseClient();
@@ -65,10 +79,11 @@ export default async function SpellsPage({
     school: searchParams.school,
     manaCostBucket: searchParams.manaCostBucket as ContentFilters['manaCostBucket'],
   };
+  const page = Math.max(1, parseInt(searchParams.page ?? '1', 10) || 1);
 
-  const [{ data: systems }, spells, counts, tags, schoolCounts, manaCostCounts] = await Promise.all([
+  const [{ data: systems }, { items: spells, total }, counts, tags, schoolCounts, manaCostCounts] = await Promise.all([
     client.from('systems').select('id, name').order('name'),
-    listSpells(client, filters),
+    listSpells(client, filters, page),
     getCategoryCounts(client),
     listTagCounts(client, 'spells', filters.systemId),
     listFacetCounts(client, 'spells', 'school', filters.systemId),
@@ -77,6 +92,9 @@ export default async function SpellsPage({
 
   const systemList = (systems ?? []) as System[];
   const chips = activeFilterChips(filters, systemList);
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const rangeStart = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+  const rangeEnd = Math.min(page * PAGE_SIZE, total);
 
   return (
     <main className={styles.page}>
@@ -96,7 +114,7 @@ export default async function SpellsPage({
         </div>
       )}
       <p className={styles.resultsCount}>
-        Showing {spells.length} of {counts.spells}
+        Showing {rangeStart}-{rangeEnd} of {total}
       </p>
       <div className={styles.layout}>
         <Sidebar
@@ -116,11 +134,14 @@ export default async function SpellsPage({
               <a href="/spells">Clear filters</a>
             </div>
           ) : (
-            <RevealGrid gridClassName={styles.grid}>
-              {spells.map((spell) => (
-                <SpellCard key={spell.id} spell={spell} />
-              ))}
-            </RevealGrid>
+            <>
+              <div className={styles.grid}>
+                {spells.map((spell) => (
+                  <SpellCard key={spell.id} spell={spell} />
+                ))}
+              </div>
+              <Pagination page={page} totalPages={totalPages} buildHref={(p) => buildPageHref(filters, p)} />
+            </>
           )}
         </div>
       </div>

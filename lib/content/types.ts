@@ -69,6 +69,13 @@ export interface Rule {
   stats: Record<string, string>;
 }
 
+export const PAGE_SIZE = 36;
+
+export interface PagedResult<T> {
+  items: T[];
+  total: number;
+}
+
 export interface ContentFilters {
   systemId?: string;
   sourceType?: SourceType;

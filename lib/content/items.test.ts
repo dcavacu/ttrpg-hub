@@ -1,10 +1,11 @@
 import { listItems, getItemById, createItem, updateItem } from './items';
 
-function createMockBuilder(result: { data: unknown; error: { message: string } | null }) {
+function createMockBuilder(result: { data: unknown; error: { message: string } | null; count?: number }) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- minimal mock double, real typing adds no value here
   const builder: any = {};
   builder.select = vi.fn(() => builder);
   builder.order = vi.fn(() => builder);
+  builder.range = vi.fn(() => builder);
   builder.eq = vi.fn(() => builder);
   builder.ilike = vi.fn(() => builder);
   builder.insert = vi.fn(() => builder);
@@ -35,14 +36,23 @@ const sampleRow = {
 };
 
 describe('listItems', () => {
-  it('returns mapped rows on success', async () => {
-    const builder = createMockBuilder({ data: [sampleRow], error: null });
+  it('returns mapped rows and the total count on success', async () => {
+    const builder = createMockBuilder({ data: [sampleRow], error: null, count: 1 });
     const client = createMockClient(builder);
 
     const result = await listItems(client, {});
 
     expect(client.from).toHaveBeenCalledWith('items');
-    expect(result).toEqual([sampleRow]);
+    expect(result).toEqual({ items: [sampleRow], total: 1 });
+  });
+
+  it('requests the first page (rows 0-35) by default', async () => {
+    const builder = createMockBuilder({ data: [sampleRow], error: null, count: 1 });
+    const client = createMockClient(builder);
+
+    await listItems(client, {});
+
+    expect(builder.range).toHaveBeenCalledWith(0, 35);
   });
 
   it('throws with the Supabase error message on failure', async () => {
