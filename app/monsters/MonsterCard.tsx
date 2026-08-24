@@ -17,7 +17,7 @@ export function MonsterCard({ monster }: { monster: Monster }) {
           <span className={styles.name}>{monster.name}</span>
           {monster.rating_label && <span className={styles.rating}>{monster.rating_label}</span>}
         </div>
-        <div className={styles.meta}>{monster.system.name} &middot; {monster.source.name}</div>
+        <div className={styles.meta}>{monster.system.name}</div>
         {(monster.tier !== 'Normal' || monster.combat_role || monster.race) && (
           <div className={styles.badgeRow}>
             {monster.tier === 'Legendary' && (

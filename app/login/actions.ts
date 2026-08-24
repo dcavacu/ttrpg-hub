@@ -15,8 +15,8 @@ const SAFE_REDIRECT = /^\/(?![/\\])/;
 export async function login(formData: FormData) {
   const username = String(formData.get('username') ?? '').trim();
   const password = String(formData.get('password') ?? '');
-  const requestedRedirectTo = String(formData.get('redirectTo') ?? '/monsters');
-  const redirectTo = SAFE_REDIRECT.test(requestedRedirectTo) ? requestedRedirectTo : '/monsters';
+  const requestedRedirectTo = String(formData.get('redirectTo') ?? '/');
+  const redirectTo = SAFE_REDIRECT.test(requestedRedirectTo) ? requestedRedirectTo : '/';
   const secret = process.env.SITE_PASSWORD ?? '';
 
   const client = createSupabaseClient();

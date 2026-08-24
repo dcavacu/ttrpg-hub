@@ -16,7 +16,7 @@ export default function LoginPage({
         <h1>Enter the Compendium</h1>
         <p className={styles.sub}>By invitation only</p>
         <form className={styles.form} action={login}>
-          <input type="hidden" name="redirectTo" value={searchParams.redirectTo ?? '/monsters'} />
+          <input type="hidden" name="redirectTo" value={searchParams.redirectTo ?? '/'} />
           <label>
             Username
             <input type="text" name="username" required autoFocus autoComplete="username" />

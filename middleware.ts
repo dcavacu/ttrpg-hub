@@ -8,7 +8,7 @@ export async function middleware(request: NextRequest) {
   const session = await verifySessionToken(token, secret);
 
   if (pathname.startsWith('/login')) {
-    if (session) return NextResponse.redirect(new URL('/monsters', request.url));
+    if (session) return NextResponse.redirect(new URL('/', request.url));
     return NextResponse.next();
   }
 

@@ -17,7 +17,7 @@ export function SpellCard({ spell }: { spell: Spell }) {
           <span className={styles.name}>{spell.name}</span>
           {spell.level && <span className={styles.rating}>{spell.level}</span>}
         </div>
-        <div className={styles.meta}>{spell.system.name} &middot; {spell.source.name}</div>
+        <div className={styles.meta}>{spell.system.name}</div>
         {(spell.school || spell.mana_cost !== null) && (
           <div className={styles.badgeRow}>
             {spell.school && <span className={styles.schoolChip}>{spell.school}</span>}

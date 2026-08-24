@@ -17,7 +17,7 @@ export function ItemCard({ item }: { item: Item }) {
           {item.rarity && <span className={styles.rating}>{item.rarity}</span>}
         </div>
         <div className={styles.meta}>
-          {[item.system.name, item.item_type, item.source.name].filter(Boolean).join(' · ')}
+          {[item.system.name, item.item_type].filter(Boolean).join(' · ')}
         </div>
         <span className={item.is_homebrew ? styles.homebrew : styles.official}>
           {item.is_homebrew ? 'Homebrew' : 'Official'}

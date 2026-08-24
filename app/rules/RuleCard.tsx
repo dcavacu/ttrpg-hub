@@ -16,7 +16,7 @@ export function RuleCard({ rule }: { rule: Rule }) {
           <span className={styles.name}>{rule.name}</span>
           {rule.category && <span className={styles.rating}>{rule.category}</span>}
         </div>
-        <div className={styles.meta}>{rule.system.name} &middot; {rule.source.name}</div>
+        <div className={styles.meta}>{rule.system.name}</div>
         <span className={rule.is_homebrew ? styles.homebrew : styles.official}>
           {rule.is_homebrew ? 'Homebrew' : 'Official'}
         </span>
