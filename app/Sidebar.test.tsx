@@ -76,20 +76,27 @@ describe('Sidebar facets', () => {
     },
   ];
 
-  it('shows each facet option label and count, and navigates with the facet added when clicking an unselected option', async () => {
+  it('renders a dropdown with an All option and each facet option label/count, defaulting to All', async () => {
     render(<Sidebar counts={counts} tags={tags} facets={facets} initial={{}} category="monsters" />);
-    const option = screen.getByRole('button', { name: /legendary/i });
-    expect(option).toHaveTextContent('Legendary');
-    expect(option).toHaveTextContent('(3)');
-    await userEvent.click(option);
+    const select = screen.getByLabelText('Tier') as HTMLSelectElement;
+    expect(select.value).toBe('');
+    expect(screen.getByRole('option', { name: 'All' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Legendary (3)' })).toBeInTheDocument();
+  });
+
+  it('navigates with the facet added when choosing a value', async () => {
+    render(<Sidebar counts={counts} tags={tags} facets={facets} initial={{}} category="monsters" />);
+    await userEvent.selectOptions(screen.getByLabelText('Tier'), 'Legendary');
     expect(push).toHaveBeenLastCalledWith('/monsters?tier=Legendary');
   });
 
-  it('clears an already-selected facet option when clicked again', async () => {
+  it('clears an already-selected facet when choosing All', async () => {
     render(
       <Sidebar counts={counts} tags={tags} facets={facets} initial={{ tier: 'Legendary' }} category="monsters" />,
     );
-    await userEvent.click(screen.getByRole('button', { name: /legendary/i }));
+    const select = screen.getByLabelText('Tier') as HTMLSelectElement;
+    expect(select.value).toBe('Legendary');
+    await userEvent.selectOptions(select, '');
     expect(push).toHaveBeenLastCalledWith('/monsters');
   });
 
@@ -103,7 +110,7 @@ describe('Sidebar facets', () => {
         category="monsters"
       />,
     );
-    await userEvent.click(screen.getByRole('button', { name: /legendary/i }));
+    await userEvent.selectOptions(screen.getByLabelText('Tier'), 'Legendary');
     expect(push).toHaveBeenLastCalledWith('/monsters?search=dragon&tags=Beast&tier=Legendary');
   });
 });

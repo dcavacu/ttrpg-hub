@@ -92,32 +92,12 @@ details[open] > summary.heading::after {
   color: var(--parchment-dim);
 }
 
-.facetOption {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.facetSelect {
+  background: var(--panel);
+  border: 1px solid var(--hairline-strong);
+  border-radius: 3px;
+  padding: 8px 10px;
+  color: var(--parchment);
   font-size: 0.85rem;
-  color: var(--parchment-dim);
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
   font-family: inherit;
-  text-align: left;
-}
-
-.facetOption:hover {
-  color: var(--parchment);
-}
-
-.facetOptionActive {
-  color: var(--parchment);
-  font-weight: 600;
-}
-
-.swatch {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex: none;
 }

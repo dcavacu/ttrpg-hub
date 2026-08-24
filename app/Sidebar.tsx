@@ -67,10 +67,8 @@ export function Sidebar({
     pushTagFilters(router, category, { ...initial, tags: next });
   }
 
-  function selectFacetOption(key: keyof ContentFilters, value: string) {
-    const current = initial[key];
-    const next = { ...initial, [key]: current === value ? undefined : value };
-    pushTagFilters(router, category, next);
+  function selectFacetValue(key: keyof ContentFilters, value: string) {
+    pushTagFilters(router, category, { ...initial, [key]: value || undefined });
   }
 
   return (
@@ -91,27 +89,25 @@ export function Sidebar({
         </ul>
       </section>
       {facets?.map((facet) => (
-        <details key={facet.key} className={styles.section} open>
-          <summary className={styles.heading}>{facet.label}</summary>
-          <ul className={styles.tagList}>
-            {facet.options.map((option) => {
-              const active = initial[facet.key] === option.value;
-              return (
-                <li key={option.value}>
-                  <button
-                    type="button"
-                    className={active ? `${styles.facetOption} ${styles.facetOptionActive}` : styles.facetOption}
-                    aria-pressed={active}
-                    onClick={() => selectFacetOption(facet.key, option.value)}
-                  >
-                    <span className={styles.swatch} style={{ background: facet.color }} />
-                    {option.label} <span className={styles.tagCount}>({option.count})</span>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </details>
+        <div key={facet.key} className={styles.section}>
+          <label className={styles.heading} htmlFor={`facet-${String(facet.key)}`}>
+            {facet.label}
+          </label>
+          <select
+            id={`facet-${String(facet.key)}`}
+            className={styles.facetSelect}
+            style={{ borderColor: facet.color }}
+            value={(initial[facet.key] as string | undefined) ?? ''}
+            onChange={(e) => selectFacetValue(facet.key, e.target.value)}
+          >
+            <option value="">All</option>
+            {facet.options.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label} ({option.count})
+              </option>
+            ))}
+          </select>
+        </div>
       ))}
       <details className={styles.section} open>
         <summary className={styles.heading}>Tags</summary>
