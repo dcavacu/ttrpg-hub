@@ -105,6 +105,21 @@ details[open] > summary.heading::after {
 .filtersGroup {
   display: flex;
   flex-direction: column;
+  position: relative;
+}
+
+/* Deliberately a checkbox+label toggle rather than <details>/<summary>:
+   Chromium's native closed-<details> hiding uses content-visibility:
+   hidden on the content subtree, which suppresses text/accessibility
+   regardless of any display override on a descendant -- so overriding
+   `display` on a child to force it "open" on desktop silently produced
+   an invisible, inaccessible (but still layout-occupying) filter panel.
+   A checkbox-driven sibling selector is fully within our own control
+   and has no such native-hiding gotcha. */
+.filtersCheckbox {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .filtersContent {
@@ -113,10 +128,9 @@ details[open] > summary.heading::after {
   gap: 24px;
 }
 
-/* The "Filters" summary toggle only functions as a real collapsible
-   affordance on narrow viewports (see mobile override below). On
-   desktop it stays hidden so the section reads as a normal,
-   always-expanded block of the sidebar. */
+/* The "Filters" toggle only functions as a real collapsible affordance
+   on narrow viewports (see mobile override below). On desktop it stays
+   hidden so the section reads as a normal, always-expanded block. */
 .filtersToggle {
   display: none;
 }
@@ -127,7 +141,6 @@ details[open] > summary.heading::after {
     align-items: center;
     justify-content: space-between;
     cursor: pointer;
-    list-style: none;
     user-select: none;
     padding: 10px 12px;
     margin-bottom: 12px;
@@ -140,10 +153,6 @@ details[open] > summary.heading::after {
     color: var(--parchment);
   }
 
-  .filtersToggle::-webkit-details-marker {
-    display: none;
-  }
-
   .filtersToggle::after {
     content: "\25B8";
     font-size: 0.8em;
@@ -151,20 +160,20 @@ details[open] > summary.heading::after {
     transition: transform 120ms ease;
   }
 
-  .filtersGroup[open] > .filtersToggle::after {
+  .filtersCheckbox:checked ~ .filtersToggle::after {
     transform: rotate(90deg);
   }
-}
 
-/* On desktop the filter content should always be visibly expanded,
-   regardless of the <details> element's native open/closed state
-   (which defaults to closed so mobile doesn't bury results below a
-   wall of filters). Author-level rules override the UA stylesheet's
-   `details:not([open]) > *:not(summary) { display: none }` rule
-   irrespective of specificity, since author styles always win over
-   user-agent styles in the cascade. */
-@media (min-width: 901px) {
-  .filtersGroup:not([open]) > .filtersContent {
+  .filtersCheckbox:focus-visible ~ .filtersToggle {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+
+  .filtersContent {
+    display: none;
+  }
+
+  .filtersCheckbox:checked ~ .filtersContent {
     display: flex;
   }
 }

@@ -1,13 +1,31 @@
 .page {
+  position: relative;
   max-width: 1120px;
   margin: 0 auto;
-  padding: 56px 32px 80px;
+  padding: 56px 32px 64px;
+}
+
+/* A very faint mottled-parchment atmosphere behind the whole page --
+   just a few soft, irregularly placed brass-toned blooms rather than a
+   flat tint, so the ground reads as aged paper instead of a solid
+   color. Kept subtle enough not to fight body-text contrast. */
+.page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 620px 380px at 6% -4%, rgba(138, 109, 63, 0.07), transparent 60%),
+    radial-gradient(ellipse 520px 460px at 104% 22%, rgba(138, 109, 63, 0.06), transparent 58%),
+    radial-gradient(ellipse 680px 420px at 22% 108%, rgba(138, 109, 63, 0.06), transparent 60%),
+    radial-gradient(ellipse 460px 460px at 90% 96%, rgba(138, 109, 63, 0.05), transparent 55%);
 }
 
 .hero {
   max-width: 720px;
   margin: 0 auto;
-  padding-bottom: 48px;
+  padding-bottom: 8px;
   text-align: center;
 }
 
@@ -17,14 +35,15 @@
   letter-spacing: 0.28em;
   text-transform: uppercase;
   color: var(--brass-dim);
-  margin: 0 0 18px;
+  margin: 0 0 20px;
 }
 
 .hero h1 {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: clamp(2rem, 4.5vw, 2.8rem);
-  margin: 0 0 18px;
+  font-size: clamp(2.1rem, 5vw, 3.2rem);
+  line-height: 1.15;
+  margin: 0 0 20px;
   letter-spacing: 0.01em;
 }
 
@@ -33,7 +52,45 @@
   line-height: 1.6;
   color: var(--parchment-dim);
   font-style: italic;
-  margin: 0 0 28px;
+  margin: 0 0 30px;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  max-width: 280px;
+  margin: 0 auto 44px;
+}
+
+.dividerFooter {
+  margin: 56px auto 18px;
+}
+
+.dividerLine {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--brass-dim), transparent);
+}
+
+.dividerGem {
+  flex-shrink: 0;
+  width: 7px;
+  height: 7px;
+  background: var(--brass-dim);
+  transform: rotate(45deg);
+}
+
+.colophon {
+  margin: 0;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: var(--text-2xs);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--brass-dim);
+  opacity: 0.7;
 }
 
 .shelf {
@@ -82,7 +139,30 @@
   box-shadow: 0 20px 34px -16px rgba(90, 60, 20, 0.55), 0 6px 14px -4px rgba(34, 29, 21, 0.35);
 }
 
+/* A chapter-numeral watermark, tying the "Compendium" concept to the
+   tome/manuscript motif. Stacking is deliberate: the frame's ::before/
+   ::after both sit at z-index:-1, so an equal/auto z-index here would
+   actually paint UNDER ::after (the parchment fill, generated content
+   is ordered last among same-level siblings) -- invisible, not a
+   watermark. Left at the implicit z-index:auto/0 paint level; the real
+   content below is bumped to z-index:1 so it layers above this. */
+.tileNumeral {
+  position: absolute;
+  top: -4px;
+  right: 14px;
+  font-family: var(--font-display);
+  font-size: 3.4rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--tile-strong);
+  opacity: 0.1;
+  pointer-events: none;
+  user-select: none;
+}
+
 .tileTop {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -115,6 +195,8 @@
 }
 
 .tile h2 {
+  position: relative;
+  z-index: 1;
   font-family: var(--font-display);
   font-size: var(--text-lg);
   font-weight: 600;
@@ -123,6 +205,8 @@
 }
 
 .tile p {
+  position: relative;
+  z-index: 1;
   margin: 0;
   font-size: var(--text-sm);
   line-height: 1.55;
@@ -137,6 +221,8 @@
 }
 
 .tileCta {
+  position: relative;
+  z-index: 1;
   font-family: var(--font-display);
   font-size: var(--text-2xs);
   letter-spacing: 0.1em;

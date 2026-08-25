@@ -88,8 +88,11 @@ export function Sidebar({
           ))}
         </ul>
       </section>
-      <details className={styles.filtersGroup}>
-        <summary className={styles.filtersToggle}>Filters</summary>
+      <div className={styles.filtersGroup}>
+        <input type="checkbox" id="filters-toggle" className={styles.filtersCheckbox} />
+        <label htmlFor="filters-toggle" className={styles.filtersToggle}>
+          Filters
+        </label>
         <div className={styles.filtersContent}>
           {facets?.map((facet) => (
             <div key={facet.key} className={styles.section}>
@@ -131,7 +134,7 @@ export function Sidebar({
             </ul>
           </details>
         </div>
-      </details>
+      </div>
     </aside>
   );
 }
