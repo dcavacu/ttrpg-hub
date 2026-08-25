@@ -6,6 +6,7 @@ import { listTagCounts } from '@/lib/content/sidebar';
 import { updateSpellAction } from '../../actions';
 import { SpellForm } from '../../SpellForm';
 import type { System } from '@/lib/content/types';
+import styles from '../../FormPage.module.css';
 
 export default async function EditSpellPage({
   params,
@@ -26,16 +27,18 @@ export default async function EditSpellPage({
   const boundAction = updateSpellAction.bind(null, params.id);
 
   return (
-    <main>
-      <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)' }}>Edit {spell.name}</h1>
-      <SpellForm
-        action={boundAction}
-        systems={(systems ?? []) as System[]}
-        sources={sources}
-        tags={tagCounts.map((t) => t.tag)}
-        spell={spell}
-        error={searchParams.error}
-      />
+    <main className={styles.page}>
+      <div className={styles.card}>
+        <h1 className={styles.heading}>Edit {spell.name}</h1>
+        <SpellForm
+          action={boundAction}
+          systems={(systems ?? []) as System[]}
+          sources={sources}
+          tags={tagCounts.map((t) => t.tag)}
+          spell={spell}
+          error={searchParams.error}
+        />
+      </div>
     </main>
   );
 }

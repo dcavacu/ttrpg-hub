@@ -4,6 +4,7 @@ import { listTagCounts } from '@/lib/content/sidebar';
 import { createMonsterAction } from '../actions';
 import { MonsterForm } from '../MonsterForm';
 import type { System } from '@/lib/content/types';
+import styles from '../FormPage.module.css';
 
 export default async function NewMonsterPage({ searchParams }: { searchParams: { error?: string } }) {
   const client = createSupabaseClient();
@@ -14,15 +15,17 @@ export default async function NewMonsterPage({ searchParams }: { searchParams: {
   ]);
 
   return (
-    <main>
-      <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)' }}>Add a monster</h1>
-      <MonsterForm
-        action={createMonsterAction}
-        systems={(systems ?? []) as System[]}
-        sources={sources}
-        tags={tagCounts.map((t) => t.tag)}
-        error={searchParams.error}
-      />
+    <main className={styles.page}>
+      <div className={styles.card}>
+        <h1 className={styles.heading}>Add a monster</h1>
+        <MonsterForm
+          action={createMonsterAction}
+          systems={(systems ?? []) as System[]}
+          sources={sources}
+          tags={tagCounts.map((t) => t.tag)}
+          error={searchParams.error}
+        />
+      </div>
     </main>
   );
 }

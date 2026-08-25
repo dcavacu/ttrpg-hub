@@ -4,6 +4,7 @@ import { listTagCounts } from '@/lib/content/sidebar';
 import { createSpellAction } from '../actions';
 import { SpellForm } from '../SpellForm';
 import type { System } from '@/lib/content/types';
+import styles from '../FormPage.module.css';
 
 export default async function NewSpellPage({ searchParams }: { searchParams: { error?: string } }) {
   const client = createSupabaseClient();
@@ -14,15 +15,17 @@ export default async function NewSpellPage({ searchParams }: { searchParams: { e
   ]);
 
   return (
-    <main>
-      <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)' }}>Add a spell</h1>
-      <SpellForm
-        action={createSpellAction}
-        systems={(systems ?? []) as System[]}
-        sources={sources}
-        tags={tagCounts.map((t) => t.tag)}
-        error={searchParams.error}
-      />
+    <main className={styles.page}>
+      <div className={styles.card}>
+        <h1 className={styles.heading}>Add a spell</h1>
+        <SpellForm
+          action={createSpellAction}
+          systems={(systems ?? []) as System[]}
+          sources={sources}
+          tags={tagCounts.map((t) => t.tag)}
+          error={searchParams.error}
+        />
+      </div>
     </main>
   );
 }

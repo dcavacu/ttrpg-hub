@@ -22,7 +22,7 @@
 .form input:not([type="checkbox"]),
 .form select,
 .form textarea {
-  background: var(--panel);
+  background: var(--panel-2);
   border: 1px solid var(--hairline-strong);
   border-radius: 3px;
   padding: 10px 12px;

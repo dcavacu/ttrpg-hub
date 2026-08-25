@@ -6,6 +6,7 @@ import { listTagCounts } from '@/lib/content/sidebar';
 import { updateMonsterAction } from '../../actions';
 import { MonsterForm } from '../../MonsterForm';
 import type { System } from '@/lib/content/types';
+import styles from '../../FormPage.module.css';
 
 export default async function EditMonsterPage({
   params,
@@ -26,16 +27,18 @@ export default async function EditMonsterPage({
   const boundAction = updateMonsterAction.bind(null, params.id);
 
   return (
-    <main>
-      <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)' }}>Edit {monster.name}</h1>
-      <MonsterForm
-        action={boundAction}
-        systems={(systems ?? []) as System[]}
-        sources={sources}
-        tags={tagCounts.map((t) => t.tag)}
-        monster={monster}
-        error={searchParams.error}
-      />
+    <main className={styles.page}>
+      <div className={styles.card}>
+        <h1 className={styles.heading}>Edit {monster.name}</h1>
+        <MonsterForm
+          action={boundAction}
+          systems={(systems ?? []) as System[]}
+          sources={sources}
+          tags={tagCounts.map((t) => t.tag)}
+          monster={monster}
+          error={searchParams.error}
+        />
+      </div>
     </main>
   );
 }

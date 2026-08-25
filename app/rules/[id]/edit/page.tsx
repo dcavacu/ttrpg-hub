@@ -6,6 +6,7 @@ import { listTagCounts } from '@/lib/content/sidebar';
 import { updateRuleAction } from '../../actions';
 import { RuleForm } from '../../RuleForm';
 import type { System } from '@/lib/content/types';
+import styles from '../../FormPage.module.css';
 
 export default async function EditRulePage({
   params,
@@ -26,16 +27,18 @@ export default async function EditRulePage({
   const boundAction = updateRuleAction.bind(null, params.id);
 
   return (
-    <main>
-      <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)' }}>Edit {rule.name}</h1>
-      <RuleForm
-        action={boundAction}
-        systems={(systems ?? []) as System[]}
-        sources={sources}
-        tags={tagCounts.map((t) => t.tag)}
-        rule={rule}
-        error={searchParams.error}
-      />
+    <main className={styles.page}>
+      <div className={styles.card}>
+        <h1 className={styles.heading}>Edit {rule.name}</h1>
+        <RuleForm
+          action={boundAction}
+          systems={(systems ?? []) as System[]}
+          sources={sources}
+          tags={tagCounts.map((t) => t.tag)}
+          rule={rule}
+          error={searchParams.error}
+        />
+      </div>
     </main>
   );
 }

@@ -6,6 +6,7 @@ import { listTagCounts } from '@/lib/content/sidebar';
 import { updateItemAction } from '../../actions';
 import { ItemForm } from '../../ItemForm';
 import type { System } from '@/lib/content/types';
+import styles from '../../FormPage.module.css';
 
 export default async function EditItemPage({
   params,
@@ -26,16 +27,18 @@ export default async function EditItemPage({
   const boundAction = updateItemAction.bind(null, params.id);
 
   return (
-    <main>
-      <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)' }}>Edit {item.name}</h1>
-      <ItemForm
-        action={boundAction}
-        systems={(systems ?? []) as System[]}
-        sources={sources}
-        tags={tagCounts.map((t) => t.tag)}
-        item={item}
-        error={searchParams.error}
-      />
+    <main className={styles.page}>
+      <div className={styles.card}>
+        <h1 className={styles.heading}>Edit {item.name}</h1>
+        <ItemForm
+          action={boundAction}
+          systems={(systems ?? []) as System[]}
+          sources={sources}
+          tags={tagCounts.map((t) => t.tag)}
+          item={item}
+          error={searchParams.error}
+        />
+      </div>
     </main>
   );
 }

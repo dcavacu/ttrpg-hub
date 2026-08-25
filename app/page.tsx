@@ -32,7 +32,6 @@ export default async function Page() {
 
       <section className={styles.shelf}>
         <a className={`${styles.tile} ${styles.monsters}`} href="/monsters">
-          <span className={styles.tileNumeral} aria-hidden="true">I</span>
           <div className={styles.tileTop}>
             <div className={styles.tileIcon}>
               <SwordIcon />
@@ -48,7 +47,6 @@ export default async function Page() {
         </a>
 
         <a className={`${styles.tile} ${styles.items}`} href="/items">
-          <span className={styles.tileNumeral} aria-hidden="true">II</span>
           <div className={styles.tileTop}>
             <div className={styles.tileIcon}>
               <PotionIcon />
@@ -61,7 +59,6 @@ export default async function Page() {
         </a>
 
         <a className={`${styles.tile} ${styles.spells}`} href="/spells">
-          <span className={styles.tileNumeral} aria-hidden="true">III</span>
           <div className={styles.tileTop}>
             <div className={styles.tileIcon}>
               <WandIcon />
@@ -76,7 +73,6 @@ export default async function Page() {
         </a>
 
         <a className={`${styles.tile} ${styles.rules}`} href="/rules">
-          <span className={styles.tileNumeral} aria-hidden="true">IV</span>
           <div className={styles.tileTop}>
             <div className={styles.tileIcon}>
               <ScrollIcon />
@@ -89,7 +85,6 @@ export default async function Page() {
         </a>
 
         <a className={`${styles.tile} ${styles.sheets}`} href="/character-sheet">
-          <span className={styles.tileNumeral} aria-hidden="true">V</span>
           <div className={styles.tileTop}>
             <div className={styles.tileIcon}>
               <PersonIcon />
