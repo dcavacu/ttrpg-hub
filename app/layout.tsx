@@ -30,7 +30,7 @@ const ebGaramond = EB_Garamond({
 
 export const metadata: Metadata = {
   title: "The Compendium",
-  description: "A personal, invite-only reference compendium for monsters, items, spells, and rules across your TTRPG systems.",
+  description: "A personal reference compendium for monsters, items, spells, and rules across your TTRPG systems.",
 };
 
 export default async function RootLayout({

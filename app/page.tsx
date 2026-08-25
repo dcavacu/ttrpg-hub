@@ -11,7 +11,7 @@ export default async function Page() {
   return (
     <main className={styles.page}>
       <section className={styles.hero}>
-        <p className={styles.eyebrow}>A Personal, Invite-Only Archive</p>
+        <p className={styles.eyebrow}>A Personal Archive</p>
         <h1>
           Every creature, item, spell &amp; rule
           <br />

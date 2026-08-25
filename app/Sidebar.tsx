@@ -86,6 +86,11 @@ export function Sidebar({
               </Link>
             </li>
           ))}
+          <li>
+            <Link href="/character-sheet" className={styles.categoryLink}>
+              Character Sheets <span className={styles.count}>(9)</span>
+            </Link>
+          </li>
         </ul>
       </section>
       <div className={styles.filtersGroup}>
