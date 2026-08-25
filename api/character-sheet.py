@@ -7,7 +7,13 @@ history for what changed and why.
 """
 import io
 import os
+import sys
 import tempfile
+
+# Vercel's Python runtime does not add this file's own directory to
+# sys.path before importing it, so sibling modules in api/ (auth.py,
+# class_configs.py, sheet_engine.py) are otherwise unimportable.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from flask import Flask, abort, request, send_file
 
