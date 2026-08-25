@@ -9,6 +9,15 @@ const defaults: SVGProps<SVGSVGElement> = {
   strokeLinejoin: 'round',
 };
 
+export function PersonIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...defaults} {...props}>
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 21c0-4.5 3.5-8 8-8s8 3.5 8 8" />
+    </svg>
+  );
+}
+
 export function BookIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...defaults} {...props}>

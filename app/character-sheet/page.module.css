@@ -1,0 +1,75 @@
+.page {
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 36px 24px 64px;
+}
+
+.page h1 {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  margin: 0 0 12px;
+  color: var(--cat-sheets);
+}
+
+.lede {
+  color: var(--parchment-dim);
+  font-size: var(--text-base);
+  line-height: 1.6;
+  margin: 0 0 28px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 420px;
+}
+
+.form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--parchment-dim);
+}
+
+.form select,
+.form input[type="file"] {
+  background: var(--panel);
+  border: 1px solid var(--hairline-strong);
+  border-radius: 3px;
+  padding: 10px 12px;
+  color: var(--parchment);
+  font-family: inherit;
+  font-size: 0.95rem;
+}
+
+.form input[type="color"] {
+  width: 64px;
+  height: 40px;
+  padding: 2px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 3px;
+  background: var(--panel);
+  cursor: pointer;
+}
+
+.form button {
+  align-self: flex-start;
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: var(--text-xs);
+  background: var(--brass);
+  color: var(--parchment);
+  border: none;
+  border-radius: 3px;
+  padding: 12px 24px;
+  cursor: pointer;
+  margin-top: 6px;
+}
+
+.form button:hover {
+  background: #d1ab6d;
+}

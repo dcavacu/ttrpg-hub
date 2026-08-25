@@ -1,7 +1,7 @@
 import { createSupabaseClient } from '@/lib/supabase/client';
 import { getCategoryCounts } from '@/lib/content/sidebar';
 import { HomeSearch } from './HomeSearch';
-import { SwordIcon, PotionIcon, WandIcon, ScrollIcon } from './content/icons';
+import { SwordIcon, PotionIcon, WandIcon, ScrollIcon, PersonIcon } from './content/icons';
 import styles from './page.module.css';
 
 export default async function Page() {
@@ -76,6 +76,18 @@ export default async function Page() {
           <h2>Rules</h2>
           <p>Core mechanics, conditions and the fine print that keeps an argument at the table short.</p>
           <span className={styles.tileCta}>Read the fine print</span>
+        </a>
+
+        <a className={`${styles.tile} ${styles.sheets}`} href="/character-sheet">
+          <div className={styles.tileTop}>
+            <div className={styles.tileIcon}>
+              <PersonIcon />
+            </div>
+            <span className={styles.tileCount}>9 classes</span>
+          </div>
+          <h2>Character Sheets</h2>
+          <p>Pick a class, drop in a portrait and a color, and download a ready-to-fill PDF sheet for your hero.</p>
+          <span className={styles.tileCta}>Build a sheet</span>
         </a>
       </section>
     </main>

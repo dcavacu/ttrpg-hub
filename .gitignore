@@ -38,3 +38,7 @@ next-env.d.ts
 
 # claude code tooling
 .claude/
+
+# Python (Vercel serverless functions under /api)
+__pycache__/
+*.pyc
