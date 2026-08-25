@@ -17,7 +17,7 @@
   width: 100%;
   max-width: 400px;
   padding: 46px 38px 34px;
-  box-shadow: 0 40px 80px -30px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 30px 60px -24px rgba(90, 60, 20, 0.55), 0 12px 30px -14px rgba(0, 0, 0, 0.5);
 }
 
 .card::before,
