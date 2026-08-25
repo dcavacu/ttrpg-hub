@@ -68,15 +68,7 @@
   font-weight: 600;
   font-size: var(--text-xl);
   text-align: center;
-  margin: 0 0 6px;
-}
-
-.sub {
-  text-align: center;
-  color: var(--parchment-dim);
-  font-style: italic;
-  font-size: var(--text-sm);
-  margin: 0 0 26px;
+  margin: 0 0 28px;
 }
 
 .form {

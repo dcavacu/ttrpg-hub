@@ -14,7 +14,6 @@ export default function LoginPage({
           <SealIcon className={styles.sealIcon} />
         </div>
         <h1>Enter the Compendium</h1>
-        <p className={styles.sub}>By invitation only</p>
         <form className={styles.form} action={login}>
           <input type="hidden" name="redirectTo" value={searchParams.redirectTo ?? '/'} />
           <label>
