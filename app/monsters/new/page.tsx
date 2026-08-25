@@ -15,7 +15,7 @@ export default async function NewMonsterPage({ searchParams }: { searchParams: {
 
   return (
     <main>
-      <h1>Add a monster</h1>
+      <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)' }}>Add a monster</h1>
       <MonsterForm
         action={createMonsterAction}
         systems={(systems ?? []) as System[]}

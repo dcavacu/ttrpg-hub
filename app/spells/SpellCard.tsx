@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { Spell } from '@/lib/content/types';
+import { renderInlineMarkdown } from '@/lib/content/markdown';
 import { DropletIcon } from '../content/icons';
 import styles from './SpellCard.module.css';
 
@@ -31,7 +32,7 @@ export function SpellCard({ spell }: { spell: Spell }) {
         <span className={spell.is_homebrew ? styles.homebrew : styles.official}>
           {spell.is_homebrew ? 'Homebrew' : 'Official'}
         </span>
-        {spell.description && <p className={styles.desc}>{spell.description}</p>}
+        {spell.description && <p className={styles.desc}>{renderInlineMarkdown(spell.description)}</p>}
       </Link>
       <ul className={styles.tags}>
         {spell.tags.map((tag) => (

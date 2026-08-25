@@ -88,44 +88,49 @@ export function Sidebar({
           ))}
         </ul>
       </section>
-      {facets?.map((facet) => (
-        <div key={facet.key} className={styles.section}>
-          <label className={styles.heading} htmlFor={`facet-${String(facet.key)}`}>
-            {facet.label}
-          </label>
-          <select
-            id={`facet-${String(facet.key)}`}
-            className={styles.facetSelect}
-            style={{ borderColor: facet.color }}
-            value={(initial[facet.key] as string | undefined) ?? ''}
-            onChange={(e) => selectFacetValue(facet.key, e.target.value)}
-          >
-            <option value="">All</option>
-            {facet.options.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label} ({option.count})
-              </option>
-            ))}
-          </select>
-        </div>
-      ))}
-      <details className={styles.section} open>
-        <summary className={styles.heading}>Tags</summary>
-        <ul className={styles.tagList}>
-          {tags.map(({ tag, count }) => (
-            <li key={tag}>
-              <label className={styles.tagLabel}>
-                <input
-                  type="checkbox"
-                  aria-label={tag}
-                  checked={initial.tags?.includes(tag) ?? false}
-                  onChange={(e) => toggleTag(tag, e.target.checked)}
-                />
-                {tag} <span className={styles.tagCount}>({count})</span>
+      <details className={styles.filtersGroup}>
+        <summary className={styles.filtersToggle}>Filters</summary>
+        <div className={styles.filtersContent}>
+          {facets?.map((facet) => (
+            <div key={facet.key} className={styles.section}>
+              <label className={styles.heading} htmlFor={`facet-${String(facet.key)}`}>
+                {facet.label}
               </label>
-            </li>
+              <select
+                id={`facet-${String(facet.key)}`}
+                className={styles.facetSelect}
+                style={{ borderColor: facet.color }}
+                value={(initial[facet.key] as string | undefined) ?? ''}
+                onChange={(e) => selectFacetValue(facet.key, e.target.value)}
+              >
+                <option value="">All</option>
+                {facet.options.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label} ({option.count})
+                  </option>
+                ))}
+              </select>
+            </div>
           ))}
-        </ul>
+          <details className={styles.section} open>
+            <summary className={styles.heading}>Tags</summary>
+            <ul className={styles.tagList}>
+              {tags.map(({ tag, count }) => (
+                <li key={tag}>
+                  <label className={styles.tagLabel}>
+                    <input
+                      type="checkbox"
+                      aria-label={tag}
+                      checked={initial.tags?.includes(tag) ?? false}
+                      onChange={(e) => toggleTag(tag, e.target.checked)}
+                    />
+                    {tag} <span className={styles.tagCount}>({count})</span>
+                  </label>
+                </li>
+              ))}
+            </ul>
+          </details>
+        </div>
       </details>
     </aside>
   );

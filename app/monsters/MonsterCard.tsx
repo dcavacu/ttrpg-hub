@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { Monster } from '@/lib/content/types';
+import { renderInlineMarkdown } from '@/lib/content/markdown';
 import { ShieldIcon, ChevronIcon, SwordIcon, RangedIcon } from '../content/icons';
 import styles from './MonsterCard.module.css';
 
@@ -42,7 +43,7 @@ export function MonsterCard({ monster }: { monster: Monster }) {
         <span className={monster.is_homebrew ? styles.homebrew : styles.official}>
           {monster.is_homebrew ? 'Homebrew' : 'Official'}
         </span>
-        {monster.description && <p className={styles.desc}>{monster.description}</p>}
+        {monster.description && <p className={styles.desc}>{renderInlineMarkdown(monster.description)}</p>}
       </Link>
       <ul className={styles.tags}>
         {monster.tags.map((tag) => (

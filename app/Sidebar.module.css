@@ -101,3 +101,70 @@ details[open] > summary.heading::after {
   font-size: 0.85rem;
   font-family: inherit;
 }
+
+.filtersGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.filtersContent {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* The "Filters" summary toggle only functions as a real collapsible
+   affordance on narrow viewports (see mobile override below). On
+   desktop it stays hidden so the section reads as a normal,
+   always-expanded block of the sidebar. */
+.filtersToggle {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .filtersToggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+    background: var(--panel-2);
+    border: 1px solid var(--hairline-strong);
+    border-radius: 3px;
+    font-family: var(--font-display);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--parchment);
+  }
+
+  .filtersToggle::-webkit-details-marker {
+    display: none;
+  }
+
+  .filtersToggle::after {
+    content: "\25B8";
+    font-size: 0.8em;
+    color: var(--parchment-dim);
+    transition: transform 120ms ease;
+  }
+
+  .filtersGroup[open] > .filtersToggle::after {
+    transform: rotate(90deg);
+  }
+}
+
+/* On desktop the filter content should always be visibly expanded,
+   regardless of the <details> element's native open/closed state
+   (which defaults to closed so mobile doesn't bury results below a
+   wall of filters). Author-level rules override the UA stylesheet's
+   `details:not([open]) > *:not(summary) { display: none }` rule
+   irrespective of specificity, since author styles always win over
+   user-agent styles in the cascade. */
+@media (min-width: 901px) {
+  .filtersGroup:not([open]) > .filtersContent {
+    display: flex;
+  }
+}

@@ -27,7 +27,7 @@ export default async function EditSpellPage({
 
   return (
     <main>
-      <h1>Edit {spell.name}</h1>
+      <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)' }}>Edit {spell.name}</h1>
       <SpellForm
         action={boundAction}
         systems={(systems ?? []) as System[]}

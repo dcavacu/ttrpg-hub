@@ -15,7 +15,7 @@ export default async function NewItemPage({ searchParams }: { searchParams: { er
 
   return (
     <main>
-      <h1>Add an item</h1>
+      <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)' }}>Add an item</h1>
       <ItemForm
         action={createItemAction}
         systems={(systems ?? []) as System[]}

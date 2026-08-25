@@ -27,7 +27,7 @@ export default async function EditRulePage({
 
   return (
     <main>
-      <h1>Edit {rule.name}</h1>
+      <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)' }}>Edit {rule.name}</h1>
       <RuleForm
         action={boundAction}
         systems={(systems ?? []) as System[]}

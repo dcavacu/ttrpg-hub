@@ -34,12 +34,14 @@ describe('Sidebar', () => {
 
   it('navigates with the tag added when checking an unchecked tag', async () => {
     render(<Sidebar counts={counts} tags={tags} initial={{}} category="monsters" />);
+    await userEvent.click(screen.getByText('Filters'));
     await userEvent.click(screen.getByLabelText('Dragon'));
     expect(push).toHaveBeenLastCalledWith('/monsters?tags=Dragon');
   });
 
   it('navigates with the tag removed when unchecking a checked tag', async () => {
     render(<Sidebar counts={counts} tags={tags} initial={{ tags: ['Dragon'] }} category="monsters" />);
+    await userEvent.click(screen.getByText('Filters'));
     await userEvent.click(screen.getByLabelText('Dragon'));
     expect(push).toHaveBeenLastCalledWith('/monsters');
   });
@@ -48,18 +50,21 @@ describe('Sidebar', () => {
     render(
       <Sidebar counts={counts} tags={tags} initial={{ search: 'dragon', tags: ['Beast'] }} category="monsters" />,
     );
+    await userEvent.click(screen.getByText('Filters'));
     await userEvent.click(screen.getByLabelText('Dragon'));
     expect(push).toHaveBeenLastCalledWith('/monsters?search=dragon&tags=Beast%2CDragon');
   });
 
   it('navigates tag toggles relative to the current category', async () => {
     render(<Sidebar counts={counts} tags={tags} initial={{}} category="items" />);
+    await userEvent.click(screen.getByText('Filters'));
     await userEvent.click(screen.getByLabelText('Dragon'));
     expect(push).toHaveBeenLastCalledWith('/items?tags=Dragon');
   });
 
-  it('shows a count next to each tag', () => {
+  it('shows a count next to each tag', async () => {
     render(<Sidebar counts={counts} tags={tags} initial={{}} category="monsters" />);
+    await userEvent.click(screen.getByText('Filters'));
     expect(screen.getByText('(36)')).toBeInTheDocument();
   });
 });
@@ -78,6 +83,7 @@ describe('Sidebar facets', () => {
 
   it('renders a dropdown with an All option and each facet option label/count, defaulting to All', async () => {
     render(<Sidebar counts={counts} tags={tags} facets={facets} initial={{}} category="monsters" />);
+    await userEvent.click(screen.getByText('Filters'));
     const select = screen.getByLabelText('Tier') as HTMLSelectElement;
     expect(select.value).toBe('');
     expect(screen.getByRole('option', { name: 'All' })).toBeInTheDocument();
@@ -86,6 +92,7 @@ describe('Sidebar facets', () => {
 
   it('navigates with the facet added when choosing a value', async () => {
     render(<Sidebar counts={counts} tags={tags} facets={facets} initial={{}} category="monsters" />);
+    await userEvent.click(screen.getByText('Filters'));
     await userEvent.selectOptions(screen.getByLabelText('Tier'), 'Legendary');
     expect(push).toHaveBeenLastCalledWith('/monsters?tier=Legendary');
   });
@@ -94,6 +101,7 @@ describe('Sidebar facets', () => {
     render(
       <Sidebar counts={counts} tags={tags} facets={facets} initial={{ tier: 'Legendary' }} category="monsters" />,
     );
+    await userEvent.click(screen.getByText('Filters'));
     const select = screen.getByLabelText('Tier') as HTMLSelectElement;
     expect(select.value).toBe('Legendary');
     await userEvent.selectOptions(select, '');
@@ -110,6 +118,7 @@ describe('Sidebar facets', () => {
         category="monsters"
       />,
     );
+    await userEvent.click(screen.getByText('Filters'));
     await userEvent.selectOptions(screen.getByLabelText('Tier'), 'Legendary');
     expect(push).toHaveBeenLastCalledWith('/monsters?search=dragon&tags=Beast&tier=Legendary');
   });

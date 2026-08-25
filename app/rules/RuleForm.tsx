@@ -47,9 +47,9 @@ export function RuleForm({
           ))}
         </select>
       </label>
-      <label htmlFor="is_homebrew">
-        Homebrew
+      <label htmlFor="is_homebrew" className={styles.checkboxLabel}>
         <input id="is_homebrew" name="is_homebrew" type="checkbox" defaultChecked={rule?.is_homebrew} />
+        Homebrew
       </label>
       <label htmlFor="category">
         Category

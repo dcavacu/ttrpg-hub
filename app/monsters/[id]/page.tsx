@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { createSupabaseClient } from '@/lib/supabase/client';
 import { getMonsterById } from '@/lib/content/monsters';
 import { splitDescriptionSections } from '@/lib/content/format-description';
+import { renderInlineMarkdown } from '@/lib/content/markdown';
 import { ShieldIcon, ChevronIcon, SwordIcon, RangedIcon } from '../../content/icons';
 import styles from './page.module.css';
 
@@ -58,7 +59,7 @@ export default async function MonsterDetailPage({ params }: { params: { id: stri
         {splitDescriptionSections(monster.description).map((section, i) => (
           <div key={i} className={styles.descSection}>
             {section.heading && <h2 className={styles.phaseHeading}>{section.heading}</h2>}
-            <p>{section.text}</p>
+            <p>{renderInlineMarkdown(section.text)}</p>
           </div>
         ))}
       </div>

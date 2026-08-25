@@ -24,16 +24,23 @@
   font-size: var(--text-sm);
 }
 
-.removeButton {
+/* Compound selector deliberately raises specificity above the
+   `.form button` rule in the various *Form.module.css files (the
+   StatsEditor is always rendered inside one of those <form> elements),
+   which otherwise wins the cascade over a single-class selector and
+   makes this destructive "remove stat" action look like a primary
+   brass-fill button. */
+.row .removeButton {
   background: transparent;
   border: 1px solid var(--hairline-strong);
   border-radius: 3px;
-  padding: 0 12px;
+  padding: 4px 8px;
   color: var(--parchment-dim);
+  font-weight: 400;
   cursor: pointer;
 }
 
-.removeButton:hover {
+.row .removeButton:hover {
   border-color: var(--seal-crimson);
   color: var(--seal-crimson);
 }

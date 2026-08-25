@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { createSupabaseClient } from '@/lib/supabase/client';
 import { getSpellById } from '@/lib/content/spells';
 import { splitDescriptionSections } from '@/lib/content/format-description';
+import { renderInlineMarkdown } from '@/lib/content/markdown';
 import { DropletIcon } from '../../content/icons';
 import styles from './page.module.css';
 
@@ -47,7 +48,7 @@ export default async function SpellDetailPage({ params }: { params: { id: string
         {splitDescriptionSections(spell.description).map((section, i) => (
           <div key={i} className={styles.descSection}>
             {section.heading && <h2 className={styles.phaseHeading}>{section.heading}</h2>}
-            <p>{section.text}</p>
+            <p>{renderInlineMarkdown(section.text)}</p>
           </div>
         ))}
       </div>

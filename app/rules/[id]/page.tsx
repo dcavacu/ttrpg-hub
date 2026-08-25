@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { createSupabaseClient } from '@/lib/supabase/client';
 import { getRuleById } from '@/lib/content/rules';
 import { splitDescriptionSections } from '@/lib/content/format-description';
+import { renderInlineMarkdown } from '@/lib/content/markdown';
 import styles from './page.module.css';
 
 export default async function RuleDetailPage({ params }: { params: { id: string } }) {
@@ -36,7 +37,7 @@ export default async function RuleDetailPage({ params }: { params: { id: string 
         {splitDescriptionSections(rule.description).map((section, i) => (
           <div key={i} className={styles.descSection}>
             {section.heading && <h2 className={styles.phaseHeading}>{section.heading}</h2>}
-            <p>{section.text}</p>
+            <p>{renderInlineMarkdown(section.text)}</p>
           </div>
         ))}
       </div>

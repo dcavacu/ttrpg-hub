@@ -27,7 +27,7 @@ export default async function EditMonsterPage({
 
   return (
     <main>
-      <h1>Edit {monster.name}</h1>
+      <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)' }}>Edit {monster.name}</h1>
       <MonsterForm
         action={boundAction}
         systems={(systems ?? []) as System[]}

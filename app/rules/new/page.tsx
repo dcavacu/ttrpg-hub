@@ -15,7 +15,7 @@ export default async function NewRulePage({ searchParams }: { searchParams: { er
 
   return (
     <main>
-      <h1>Add a rule</h1>
+      <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)' }}>Add a rule</h1>
       <RuleForm
         action={createRuleAction}
         systems={(systems ?? []) as System[]}

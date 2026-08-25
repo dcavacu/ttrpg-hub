@@ -15,7 +15,7 @@ export default async function NewSpellPage({ searchParams }: { searchParams: { e
 
   return (
     <main>
-      <h1>Add a spell</h1>
+      <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)' }}>Add a spell</h1>
       <SpellForm
         action={createSpellAction}
         systems={(systems ?? []) as System[]}

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { Rule } from '@/lib/content/types';
+import { renderInlineMarkdown } from '@/lib/content/markdown';
 import styles from './RuleCard.module.css';
 
 function systemAccentClass(systemName: string): string {
@@ -20,7 +21,7 @@ export function RuleCard({ rule }: { rule: Rule }) {
         <span className={rule.is_homebrew ? styles.homebrew : styles.official}>
           {rule.is_homebrew ? 'Homebrew' : 'Official'}
         </span>
-        {rule.description && <p className={styles.desc}>{rule.description}</p>}
+        {rule.description && <p className={styles.desc}>{renderInlineMarkdown(rule.description)}</p>}
       </Link>
       <ul className={styles.tags}>
         {rule.tags.map((tag) => (

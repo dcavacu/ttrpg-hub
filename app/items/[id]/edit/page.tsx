@@ -27,7 +27,7 @@ export default async function EditItemPage({
 
   return (
     <main>
-      <h1>Edit {item.name}</h1>
+      <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)' }}>Edit {item.name}</h1>
       <ItemForm
         action={boundAction}
         systems={(systems ?? []) as System[]}
