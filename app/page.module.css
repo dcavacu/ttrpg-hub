@@ -93,10 +93,32 @@
   opacity: 0.7;
 }
 
+/* Explicit column counts per tier rather than auto-fit, deliberately:
+   auto-fit's greedy wrapping left 5 tiles as a 4-then-1 layout on
+   mid-width screens -- a lone half-empty row. At each tier below, every
+   row is either fully populated or (2-column tier) has its final tile
+   spanned to fill the row on its own terms, so there's never a tile
+   sitting next to empty space. */
 .shelf {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  grid-template-columns: repeat(5, 1fr);
   gap: 20px;
+}
+
+@media (max-width: 1024px) {
+  .shelf {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .shelf > a:last-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 640px) {
+  .shelf {
+    grid-template-columns: 1fr;
+  }
 }
 
 .tile {
