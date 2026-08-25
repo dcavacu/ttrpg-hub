@@ -16,6 +16,12 @@
   --ink-2: #ffffff;
   --panel: #ffffff;
   --panel-2: #f7f2e6;
+  /* Warm parchment fill for framed fantasy panels (home tiles, login
+     card) — deliberately deeper than --panel/--ink so a framed panel
+     reads as a distinct object against the page ground, not a shade
+     that blends into it. */
+  --parchment-panel: #fbf3df;
+  --parchment-panel-edge: #f0dfb4;
   --parchment: #221d15;
   --parchment-dim: #6b6152;
   --brass: #c19a5b;
