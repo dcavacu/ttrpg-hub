@@ -20,7 +20,7 @@
   font-size: var(--text-sm);
   font-weight: 600;
   color: var(--parchment-dim);
-  opacity: 0.4;
+  opacity: 0.6;
 }
 
 .pageStatus {

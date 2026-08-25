@@ -22,6 +22,11 @@
      that blends into it. */
   --parchment-panel: #fbf3df;
   --parchment-panel-edge: #f0dfb4;
+  /* Frame ring for framed panels (home tiles, login card) — kept to
+     shades of --brass-dim rather than the raw --brass highlight, since
+     that highlight measured under 1.8:1 against both --ink and
+     --parchment-panel (near-invisible at the ring's lightest corner). */
+  --frame-ring: linear-gradient(135deg, #9c7d4c 0%, var(--brass-dim) 50%, #5c4322 100%);
   --parchment: #221d15;
   --parchment-dim: #6b6152;
   --brass: #c19a5b;
@@ -95,4 +100,20 @@ summary:focus-visible {
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
   border-radius: 2px;
+}
+
+input[type="checkbox"] {
+  accent-color: var(--brass-dim);
+}
+
+/* Every plain <select> in the app gets the same brass chevron instead
+   of the OS-default arrow, so custom border/background colors on the
+   control don't sit next to a mismatched native affordance. */
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%238a6d3f' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 11px 7px;
+  padding-right: 34px;
 }
