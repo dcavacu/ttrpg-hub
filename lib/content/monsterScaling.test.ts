@@ -150,6 +150,67 @@ describe('previewRescale — Legendary tier', () => {
   });
 });
 
+describe('previewRescale — HP scaling relative to the monster\'s current HP', () => {
+  it('scales a hand-tuned monster\'s HP by the table ratio between its current and target level, instead of snapping to the table\'s raw value', () => {
+    // Acidpod: Lvl 1, HP 8, Heavy armor -- well under the table's Lvl 1
+    // Heavy value (16). Rescaling to Lvl 3 (Heavy: 25) should preserve
+    // that ~50% relative tuning: round(8 * (25/16)) = 13, not the table's
+    // raw 25.
+    const result = previewRescale('Normal', 'Heavy', 'Lvl 1', '3', '8');
+    expect(result!.hpScaled).toBe(true);
+    expect(result!.hp).toBe(Math.round(8 * (25 / 16)));
+    expect(result!.hp).not.toBe(25); // the bug this fixes: no longer the raw table value
+  });
+
+  it('is a no-op when rescaling to the level the monster is already at', () => {
+    // This is exactly the bug report: applying "rescale to 1" on a Lvl 1
+    // monster previously overwrote its actual (hand-tuned) HP with the
+    // table's flat default. Same level in and out -> ratio of 1 -> HP
+    // unchanged.
+    const result = previewRescale('Normal', 'Heavy', 'Lvl 1', '1', '8');
+    expect(result!.hp).toBe(8);
+    expect(result!.hpScaled).toBe(true);
+  });
+
+  it('scales up proportionally for a monster built stronger than the table baseline', () => {
+    // Lvl 3 None column is 41; a monster with 62 HP at Lvl 3 is running
+    // ~1.5x the book's baseline. At Lvl 6 (None: 68) it should keep that
+    // same ~1.5x, not reset to 68.
+    const result = previewRescale('Normal', undefined, 'Lvl 3', '6', '62');
+    expect(result!.hp).toBe(Math.round(62 * (68 / 41)));
+  });
+
+  it('scales Legendary HP the same way, using the effective (armor-adjusted) column on both sides', () => {
+    // Party Lvl 2 Medium is 75; a boss built at 60 HP there is running
+    // ~0.8x baseline. At party Lvl 5 (Medium: 150) it should stay ~0.8x.
+    const result = previewRescale('Legendary', 'Medium', 'Level 2 Boss', '5', '60');
+    expect(result!.hpScaled).toBe(true);
+    expect(result!.hp).toBe(Math.round(60 * (150 / 75)));
+  });
+
+  it('falls back to the table\'s raw value when the current level can\'t be read from the rating label', () => {
+    const result = previewRescale('Normal', undefined, 'CR 10', '6', '40');
+    expect(result!.hpScaled).toBe(false);
+    expect(result!.hp).toBe(68); // NORMAL_MONSTER_TABLE level 6, None column
+  });
+
+  it('falls back to the table\'s raw value when the current HP is missing or not a plain number', () => {
+    const missing = previewRescale('Normal', undefined, 'Lvl 3', '6', undefined);
+    expect(missing!.hpScaled).toBe(false);
+    expect(missing!.hp).toBe(68);
+
+    const nonNumeric = previewRescale('Normal', undefined, 'Lvl 3', '6', 'unknown');
+    expect(nonNumeric!.hpScaled).toBe(false);
+    expect(nonNumeric!.hp).toBe(68);
+  });
+
+  it('omitting currentHp entirely behaves exactly like the pre-scaling raw-value lookup (backward compatible)', () => {
+    const result = previewRescale('Normal', undefined, 'Lvl 3', '6');
+    expect(result!.hpScaled).toBe(false);
+    expect(result!.hp).toBe(68);
+  });
+});
+
 describe('applyRescaleToStats', () => {
   it('sets HP from the preview, leaving other stats untouched', () => {
     const preview = previewRescale('Normal', undefined, 'Lvl 3', '6')!;

@@ -33,8 +33,8 @@ export function RescaleTool({
   const boundAction = rescaleMonsterAction.bind(null, id);
 
   const preview = useMemo(
-    () => previewRescale(tier, armor, ratingLabel, targetLevel),
-    [tier, armor, ratingLabel, targetLevel],
+    () => previewRescale(tier, armor, ratingLabel, targetLevel, hp),
+    [tier, armor, ratingLabel, targetLevel, hp],
   );
 
   if (tier === 'Minion') return null;
@@ -47,10 +47,12 @@ export function RescaleTool({
       <summary className={styles.toggle}>Rescale to a different level</summary>
       <div className={styles.body}>
         <p className={styles.lede}>
-          Recalculates HP{isLegendary ? ' and Armor' : ''} from the Game Master Guide&apos;s{' '}
-          {isLegendary ? 'Legendary Monster' : 'Monster'} Builder table. Ability damage written into the
-          description isn&apos;t rewritten automatically — the reference numbers below are for you to apply by
-          hand in the description if you want them updated too.
+          Scales HP{isLegendary ? ' and Armor' : ''} to the target level, keeping this monster&apos;s current HP
+          proportional to the Game Master Guide&apos;s{' '}
+          {isLegendary ? 'Legendary Monster' : 'Monster'} Builder table rather than resetting it to the table&apos;s
+          flat value — a monster built tougher or squishier than the book&apos;s baseline stays that way. Ability
+          damage written into the description isn&apos;t rewritten automatically — the reference numbers below are
+          for you to apply by hand in the description if you want them updated too.
         </p>
         <label className={styles.levelLabel} htmlFor="rescale-target-level">
           Target level{currentLevel ? ` (currently ${currentLevel})` : ''}
@@ -66,6 +68,13 @@ export function RescaleTool({
             ))}
           </select>
         </label>
+
+        {preview && !preview.hpScaled && (
+          <p className={styles.fallbackNote}>
+            Couldn&apos;t read a current level or HP to scale from, so HP below is the table&apos;s flat value for
+            level {targetLevel} rather than scaled from this monster&apos;s own stats.
+          </p>
+        )}
 
         {preview && (
           <table className={styles.previewTable}>

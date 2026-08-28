@@ -45,10 +45,13 @@ export async function updateMonsterAction(id: string, formData: FormData) {
 /** Recalculates HP (and Armor, for a legendary monster bumped up from
  * unarmored) for a target level, per the Game Master Guide's monster-
  * builder tables, and saves it -- leaving name/description/tags/etc.
- * untouched. Ability/attack damage written into the description is not
- * rewritten (it's free-form prose, not a structured field); the client
- * shows the level's reference damage numbers so the player can apply them
- * by hand via the normal edit form. */
+ * untouched. HP is scaled relative to the monster's own current HP
+ * (see previewRescale), not snapped to the table's flat value, so a
+ * hand-tuned monster keeps its relative strength as it moves levels.
+ * Ability/attack damage written into the description is not rewritten
+ * (it's free-form prose, not a structured field); the client shows the
+ * level's reference damage numbers so the player can apply them by hand
+ * via the normal edit form. */
 export async function rescaleMonsterAction(id: string, formData: FormData) {
   const targetLevelLabel = String(formData.get('targetLevel') ?? '').trim();
   const client = createSupabaseClient();
@@ -57,7 +60,13 @@ export async function rescaleMonsterAction(id: string, formData: FormData) {
     redirect(`/monsters/${id}?error=${encodeURIComponent('Monster not found.')}`);
   }
 
-  const preview = previewRescale(monster.tier, monster.stats.Armor, monster.rating_label, targetLevelLabel);
+  const preview = previewRescale(
+    monster.tier,
+    monster.stats.Armor,
+    monster.rating_label,
+    targetLevelLabel,
+    monster.stats.HP,
+  );
   if (!preview) {
     redirect(`/monsters/${id}?error=${encodeURIComponent('Could not rescale to that level.')}`);
   }

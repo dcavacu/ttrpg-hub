@@ -60,6 +60,17 @@
   font-size: 0.95rem;
 }
 
+.fallbackNote {
+  margin: 0;
+  font-size: var(--text-sm);
+  border-left: 3px solid var(--brass-dim);
+  background: var(--parchment-panel);
+  padding: 8px 12px;
+  border-radius: 0 3px 3px 0;
+  color: var(--parchment-dim);
+  max-width: 60ch;
+}
+
 .previewTable {
   width: 100%;
   max-width: 420px;

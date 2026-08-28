@@ -114,6 +114,10 @@ export interface RescalePreview {
   levelLabel: string;
   ratingLabel: string;
   hp: number;
+  /** false when hp is the table's raw value for the target level (no
+   * current level/HP to scale from); true when it was scaled relative to
+   * the monster's own current HP -- see previewRescale's doc comment. */
+  hpScaled: boolean;
   armor: ArmorTier;
   saveDC: number;
   /** Ordinary (Normal/Minion-tier) monsters only. */
@@ -127,20 +131,37 @@ export interface RescalePreview {
 }
 
 /** Computes what a monster's stats *should* be at a given target level,
- * per the tier-appropriate Game Master Guide table, without mutating
- * anything. `currentArmor`/`currentRatingLabel` come from the monster's
- * existing stats.Armor / rating_label. Returns null for a level label
+ * per the tier-appropriate Game Master Guide table. `currentArmor` /
+ * `currentRatingLabel` / `currentHp` come from the monster's existing
+ * stats.Armor / rating_label / stats.HP. Returns null for a level label
  * that isn't a real row in the relevant table, or for Minion tier (the
  * rules track minions by die size, not HP -- there's no table for them
- * here). */
+ * here). Never mutates anything.
+ *
+ * HP is scaled relative to the monster's own current HP rather than
+ * snapped to the table's raw value -- a hand-tuned monster (e.g. built
+ * at half the book's suggested HP for a "glass cannon" feel) should stay
+ * at roughly that same relative strength at the new level, not jump to
+ * the table's flat default and erase the tuning:
+ *
+ *     newHp = round(currentHp * (targetLevelTableHp / currentLevelTableHp))
+ *
+ * (same armor column on both sides of the ratio). This falls back to the
+ * table's raw value (hpScaled: false in the result) only when there's no
+ * usable baseline to scale from -- the current level can't be read from
+ * the rating label, or the current HP isn't a plain number. */
 export function previewRescale(
   tier: 'Normal' | 'Legendary' | 'Minion',
   currentArmor: string | null | undefined,
   currentRatingLabel: string | null | undefined,
   targetLevelLabel: string,
+  currentHp?: string | null,
 ): RescalePreview | null {
   if (tier === 'Minion') return null;
   const armor = normalizeArmorTier(currentArmor);
+  const currentLevelLabel = extractLevelLabel(currentRatingLabel);
+  const currentHpNum = currentHp != null ? Number(currentHp) : NaN;
+  const canScale = currentLevelLabel !== null && Number.isFinite(currentHpNum);
 
   if (tier === 'Legendary') {
     const row = LEGENDARY_MONSTER_TABLE.find((r) => r.levelLabel === targetLevelLabel);
@@ -149,11 +170,14 @@ export function previewRescale(
     // the book ("if unarmored make sure they have some other defensive
     // ability") -- the table itself only has Medium/Heavy columns.
     const effectiveArmor: ArmorTier = armor === 'Heavy' ? 'Heavy' : 'Medium';
-    const hp = row.hpByArmor[effectiveArmor];
+    const targetHp = row.hpByArmor[effectiveArmor];
+    const currentRow = canScale ? LEGENDARY_MONSTER_TABLE.find((r) => r.levelLabel === currentLevelLabel) : undefined;
+    const hp = currentRow ? Math.round(currentHpNum * (targetHp / currentRow.hpByArmor[effectiveArmor])) : targetHp;
     return {
       levelLabel: targetLevelLabel,
       ratingLabel: replaceLevelLabel(currentRatingLabel, targetLevelLabel),
       hp,
+      hpScaled: !!currentRow,
       armor: effectiveArmor,
       saveDC: row.saveDC,
       hpLastStand: row.hpLastStand,
@@ -164,10 +188,14 @@ export function previewRescale(
 
   const row = NORMAL_MONSTER_TABLE.find((r) => r.levelLabel === targetLevelLabel);
   if (!row) return null;
+  const targetHp = row.hpByArmor[armor];
+  const currentRow = canScale ? NORMAL_MONSTER_TABLE.find((r) => r.levelLabel === currentLevelLabel) : undefined;
+  const hp = currentRow ? Math.round(currentHpNum * (targetHp / currentRow.hpByArmor[armor])) : targetHp;
   return {
     levelLabel: targetLevelLabel,
     ratingLabel: replaceLevelLabel(currentRatingLabel, targetLevelLabel),
-    hp: row.hpByArmor[armor],
+    hp,
+    hpScaled: !!currentRow,
     armor,
     saveDC: row.saveDC,
     damagePerRound: row.damagePerRound,
