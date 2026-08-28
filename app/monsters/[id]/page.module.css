@@ -56,7 +56,7 @@
 }
 
 .description {
-  max-width: 66ch;
+  max-width: none;
 }
 
 .descSection {
