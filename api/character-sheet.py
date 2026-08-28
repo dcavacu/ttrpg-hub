@@ -55,10 +55,16 @@ def generate():
     if accent:
         config["accent"] = accent
 
+    # Checkboxes are only present in form data at all when checked -- absent
+    # (None) means unchecked, so any presence of the field counts as "on".
+    printable = request.form.get("printable") is not None
+    config["printable"] = printable
+
     portrait_bytes = None
-    portrait_file = request.files.get("portrait")
-    if portrait_file and portrait_file.filename:
-        portrait_bytes = portrait_file.read()
+    if not printable:
+        portrait_file = request.files.get("portrait")
+        if portrait_file and portrait_file.filename:
+            portrait_bytes = portrait_file.read()
 
     tmp = tempfile.NamedTemporaryFile(suffix=".pdf", delete=False)
     out_path = tmp.name

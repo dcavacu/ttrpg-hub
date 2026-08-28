@@ -114,6 +114,16 @@
   cursor: pointer;
 }
 
+.fieldDisabled {
+  opacity: 0.5;
+}
+
+.form .checkboxLabel {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
 .actions {
   display: flex;
   align-items: center;

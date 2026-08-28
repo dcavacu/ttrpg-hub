@@ -48,6 +48,13 @@ GAP = 5
 LEVEL_TOP_NO_BANNER = 600
 BANNER_Y0, BANNER_Y1 = 575, 604
 
+# The one substitute color used everywhere config["accent"] would otherwise
+# appear, when config["printable"] is truthy -- dark enough that white text
+# printed over it (banner fills, card headers) stays legible, but still
+# reads as "grey" rather than "black" against the pure-black ink used
+# elsewhere on the sheet (HP labels, borders, the wounds skull).
+PRINTABLE_GREY = (0.35, 0.35, 0.35)
+
 SKILLS = [
     ("Arcana", "INT"), ("Examination", "INT"), ("Finesse", "DEX"),
     ("Influence", "WIL"), ("Insight", "WIL"), ("Lore", "INT"),
@@ -474,10 +481,11 @@ def draw_resource_banner(config, accent):
 
 
 def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None):
-    accent = config["accent"]
+    printable = config.get("printable", False)
+    accent = PRINTABLE_GREY if printable else config["accent"]
     name = config["name"]
 
-    if config.get("background") == "checker":
+    if not printable and config.get("background") == "checker":
         draw_checker_background(c, accent, page_w=page_w)
     else:
         c.setFillColor(colors.white)
@@ -553,7 +561,7 @@ def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None):
     bx, by, bw, bh = left_start, portrait_bottom, left_end - left_start, PORTRAIT_LEFT_H
     pr = min(RADIUS + 2, bw / 2, bh / 2)
     rounded_box(c, bx, by, bw, bh, radius=pr)
-    if portrait_bytes:
+    if portrait_bytes and not printable:
         try:
             img = ImageReader(io.BytesIO(portrait_bytes))
             iw, ih = img.getSize()
@@ -845,8 +853,9 @@ def draw_mana_tracker(c, now_rect, max_rect, pool_label):
 
 
 def draw_spell_page(c, config):
-    accent = config["accent"]
-    if config.get("background") == "checker":
+    printable = config.get("printable", False)
+    accent = PRINTABLE_GREY if printable else config["accent"]
+    if not printable and config.get("background") == "checker":
         draw_checker_background(c, accent)
     else:
         c.setFillColor(colors.white)
@@ -878,9 +887,10 @@ def draw_spell_page(c, config):
 # extra page: printed reference (Domain/Blessings/Totems, Menu/Quirks, ...)
 # --------------------------------------------------------------------------
 def draw_reference_page(c, config):
-    accent = config["accent"]
+    printable = config.get("printable", False)
+    accent = PRINTABLE_GREY if printable else config["accent"]
     ref = config["reference_page"]
-    if config.get("background") == "checker":
+    if not printable and config.get("background") == "checker":
         draw_checker_background(c, accent)
     else:
         c.setFillColor(colors.white)

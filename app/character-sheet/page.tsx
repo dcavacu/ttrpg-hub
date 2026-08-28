@@ -21,6 +21,7 @@ type Feedback = { type: 'success' | 'error'; message: string };
 export default function CharacterSheetPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
+  const [printable, setPrintable] = useState(false);
   const clearTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -100,13 +101,29 @@ export default function CharacterSheetPage() {
               ))}
             </select>
           </label>
-          <label htmlFor="portrait">
+          <label htmlFor="portrait" className={printable ? styles.fieldDisabled : undefined}>
             Portrait (PNG, JPG, or WebP)
-            <input id="portrait" name="portrait" type="file" accept="image/png,image/jpeg,image/webp" />
+            <input
+              id="portrait"
+              name="portrait"
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              disabled={printable}
+            />
           </label>
-          <label htmlFor="color">
+          <label htmlFor="color" className={printable ? styles.fieldDisabled : undefined}>
             Accent color
-            <input id="color" name="color" type="color" defaultValue="#8a2e2e" />
+            <input id="color" name="color" type="color" defaultValue="#8a2e2e" disabled={printable} />
+          </label>
+          <label htmlFor="printable" className={styles.checkboxLabel}>
+            <input
+              id="printable"
+              name="printable"
+              type="checkbox"
+              checked={printable}
+              onChange={(e) => setPrintable(e.target.checked)}
+            />
+            Printable (black &amp; white, no background pattern or portrait — easier on ink)
           </label>
           <div className={styles.actions}>
             <button type="submit" disabled={isSubmitting}>
