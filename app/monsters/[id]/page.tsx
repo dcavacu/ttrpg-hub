@@ -5,9 +5,16 @@ import { getMonsterById } from '@/lib/content/monsters';
 import { splitDescriptionSections } from '@/lib/content/format-description';
 import { renderInlineMarkdown } from '@/lib/content/markdown';
 import { ShieldIcon, ChevronIcon, SwordIcon, RangedIcon } from '../../content/icons';
+import { RescaleTool } from './RescaleTool';
 import styles from './page.module.css';
 
-export default async function MonsterDetailPage({ params }: { params: { id: string } }) {
+export default async function MonsterDetailPage({
+  params,
+  searchParams,
+}: {
+  params: { id: string };
+  searchParams: { error?: string };
+}) {
   const client = createSupabaseClient();
   const monster = await getMonsterById(client, params.id);
   if (!monster) notFound();
@@ -24,6 +31,7 @@ export default async function MonsterDetailPage({ params }: { params: { id: stri
       <p className={styles.subtitle}>
         {[monster.system.name, monster.rating_label].filter(Boolean).join(' · ')}
       </p>
+      {searchParams.error && <p role="alert" className={styles.errorBanner}>{searchParams.error}</p>}
       {(monster.tier !== 'Normal' || monster.combat_role || monster.race) && (
         <div className={styles.badgeRow}>
           {monster.tier === 'Legendary' && (
@@ -54,6 +62,15 @@ export default async function MonsterDetailPage({ params }: { params: { id: stri
             </div>
           ))}
         </dl>
+      )}
+      {monster.system.name === 'Nimble' && monster.tier !== 'Minion' && (
+        <RescaleTool
+          id={monster.id}
+          tier={monster.tier}
+          armor={monster.stats.Armor}
+          hp={monster.stats.HP}
+          ratingLabel={monster.rating_label}
+        />
       )}
       <div className={styles.description}>
         {splitDescriptionSections(monster.description).map((section, i) => (

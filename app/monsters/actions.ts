@@ -2,8 +2,9 @@
 
 import { redirect } from 'next/navigation';
 import { createSupabaseClient } from '@/lib/supabase/client';
-import { createMonster, updateMonster, type MonsterInput } from '@/lib/content/monsters';
+import { createMonster, updateMonster, getMonsterById, type MonsterInput } from '@/lib/content/monsters';
 import { validateMonsterInput } from '@/lib/content/validate-monster';
+import { previewRescale, applyRescaleToStats } from '@/lib/content/monsterScaling';
 import { readInput } from './read-input';
 
 export async function createMonsterAction(formData: FormData) {
@@ -37,6 +38,47 @@ export async function updateMonsterAction(id: string, formData: FormData) {
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     redirect(`/monsters/${id}/edit?error=${encodeURIComponent(`Could not save: ${message}`)}`);
+  }
+  redirect(`/monsters/${id}`);
+}
+
+/** Recalculates HP (and Armor, for a legendary monster bumped up from
+ * unarmored) for a target level, per the Game Master Guide's monster-
+ * builder tables, and saves it -- leaving name/description/tags/etc.
+ * untouched. Ability/attack damage written into the description is not
+ * rewritten (it's free-form prose, not a structured field); the client
+ * shows the level's reference damage numbers so the player can apply them
+ * by hand via the normal edit form. */
+export async function rescaleMonsterAction(id: string, formData: FormData) {
+  const targetLevelLabel = String(formData.get('targetLevel') ?? '').trim();
+  const client = createSupabaseClient();
+  const monster = await getMonsterById(client, id);
+  if (!monster) {
+    redirect(`/monsters/${id}?error=${encodeURIComponent('Monster not found.')}`);
+  }
+
+  const preview = previewRescale(monster.tier, monster.stats.Armor, monster.rating_label, targetLevelLabel);
+  if (!preview) {
+    redirect(`/monsters/${id}?error=${encodeURIComponent('Could not rescale to that level.')}`);
+  }
+
+  try {
+    await updateMonster(client, id, {
+      name: monster.name,
+      system_id: monster.system.id,
+      source_id: monster.source.id,
+      is_homebrew: monster.is_homebrew,
+      rating_label: preview.ratingLabel,
+      combat_role: monster.combat_role,
+      race: monster.race,
+      tier: monster.tier,
+      tags: monster.tags,
+      description: monster.description,
+      stats: applyRescaleToStats(monster.stats, preview),
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    redirect(`/monsters/${id}?error=${encodeURIComponent(`Could not rescale: ${message}`)}`);
   }
   redirect(`/monsters/${id}`);
 }

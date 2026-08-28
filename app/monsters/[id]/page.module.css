@@ -32,6 +32,16 @@
   margin: 0 0 16px;
 }
 
+.errorBanner {
+  color: var(--seal-crimson);
+  font-size: var(--text-sm);
+  border-left: 3px solid var(--seal-crimson);
+  background: rgba(150, 63, 63, 0.08);
+  padding: 8px 12px;
+  border-radius: 0 3px 3px 0;
+  margin: 0 0 16px;
+}
+
 .stats {
   border-top: 1px solid var(--hairline);
   border-bottom: 1px solid var(--hairline);
