@@ -28,6 +28,16 @@ export async function getSpellById(client: SupabaseClient, id: string): Promise<
   return (data as unknown as Spell) ?? null;
 }
 
+/** For the Favorites page: a batch lookup by id list, in no particular
+ * order. Empty input short-circuits rather than sending Supabase an
+ * empty .in() filter. */
+export async function getSpellsByIds(client: SupabaseClient, ids: string[]): Promise<Spell[]> {
+  if (ids.length === 0) return [];
+  const { data, error } = await client.from('spells').select(SPELL_SELECT).in('id', ids);
+  if (error) throw new Error(`Failed to load spells: ${error.message}`);
+  return (data ?? []) as unknown as Spell[];
+}
+
 export interface SpellInput {
   name: string;
   system_id: string;

@@ -113,6 +113,14 @@ create table users (
   created_at timestamptz not null default now()
 );
 
+-- GM-only tooling gate (2026-09-03): the Encounter Builder / Combat
+-- Tracker is only meaningful for whoever is running the table, not the
+-- players. Must be run manually in the Supabase SQL editor, same as the
+-- other alter statements above -- there's no migration runner, and this
+-- app only has the REST/service-role client, not a direct Postgres
+-- connection, so it can't be applied from application code.
+alter table users add column if not exists is_gm boolean not null default false;
+
 -- Unlike the content tables above, users stores password hashes — a
 -- different risk class that warrants defense-in-depth rather than relying
 -- solely on the app never shipping the anon key to the browser. RLS is

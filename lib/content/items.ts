@@ -28,6 +28,17 @@ export async function getItemById(client: SupabaseClient, id: string): Promise<I
   return (data as unknown as Item) ?? null;
 }
 
+/** For the Favorites page: a batch lookup by id list, in no particular
+ * order (the caller re-sorts to match the caller's own id order if it
+ * matters). Empty input short-circuits rather than sending Supabase an
+ * empty .in() filter. */
+export async function getItemsByIds(client: SupabaseClient, ids: string[]): Promise<Item[]> {
+  if (ids.length === 0) return [];
+  const { data, error } = await client.from('items').select(ITEM_SELECT).in('id', ids);
+  if (error) throw new Error(`Failed to load items: ${error.message}`);
+  return (data ?? []) as unknown as Item[];
+}
+
 export interface ItemInput {
   name: string;
   system_id: string;

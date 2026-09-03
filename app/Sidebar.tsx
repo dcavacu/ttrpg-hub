@@ -88,7 +88,7 @@ export function Sidebar({
           ))}
           <li>
             <Link href="/character-sheet" className={styles.categoryLink}>
-              Character Sheets <span className={styles.count}>(9)</span>
+              Character Sheets <span className={styles.count}>(11)</span>
             </Link>
           </li>
         </ul>

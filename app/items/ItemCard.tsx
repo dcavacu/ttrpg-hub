@@ -2,6 +2,7 @@ import Link from 'next/link';
 import type { Item } from '@/lib/content/types';
 import { renderInlineMarkdown } from '@/lib/content/markdown';
 import { ShieldIcon } from '../content/icons';
+import { FavoriteStar } from '../content/FavoriteStar';
 import styles from './ItemCard.module.css';
 
 function systemAccentClass(systemName: string): string {
@@ -21,6 +22,7 @@ function isHighRarity(rarity: string): boolean {
 export function ItemCard({ item }: { item: Item }) {
   return (
     <article className={`${styles.card} ${systemAccentClass(item.system.name)}`}>
+      <FavoriteStar category="items" id={item.id} />
       <Link href={`/items/${item.id}`} className={styles.cardLink}>
         <div className={styles.head}>
           <span className={styles.name}>{item.name}</span>

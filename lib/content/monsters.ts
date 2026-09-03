@@ -28,6 +28,50 @@ export async function getMonsterById(client: SupabaseClient, id: string): Promis
   return (data as unknown as Monster) ?? null;
 }
 
+/** For the Favorites page: a batch lookup by id list, in no particular
+ * order. Empty input short-circuits rather than sending Supabase an
+ * empty .in() filter. */
+export async function getMonstersByIds(client: SupabaseClient, ids: string[]): Promise<Monster[]> {
+  if (ids.length === 0) return [];
+  const { data, error } = await client.from('monsters').select(MONSTER_SELECT).in('id', ids);
+  if (error) throw new Error(`Failed to load monsters: ${error.message}`);
+  return (data ?? []) as unknown as Monster[];
+}
+
+export interface LeanMonster {
+  id: string;
+  name: string;
+  ratingLabel: string | null;
+  tier: MonsterTier;
+  hp: string | undefined;
+  description: string;
+}
+
+/** Every Nimble-system monster, with just the fields the Encounter
+ * Builder needs (level parsing, current HP, description for its
+ * Bloodied/Last Stand callouts) -- not paginated, since the builder does
+ * its own client-side search/filtering over the whole set rather than
+ * round-tripping per keystroke. */
+export async function listNimbleMonstersLean(client: SupabaseClient): Promise<LeanMonster[]> {
+  const { data, error } = await client
+    .from('monsters')
+    .select('id, name, rating_label, tier, stats, description, system:systems!inner(name)')
+    .eq('system.name', 'Nimble')
+    .order('name');
+  if (error) throw new Error(`Failed to list Nimble monsters: ${error.message}`);
+  return (data ?? []).map((row) => {
+    const r = row as unknown as {
+      id: string;
+      name: string;
+      rating_label: string | null;
+      tier: MonsterTier;
+      stats: Record<string, string>;
+      description: string;
+    };
+    return { id: r.id, name: r.name, ratingLabel: r.rating_label, tier: r.tier, hp: r.stats?.HP, description: r.description };
+  });
+}
+
 export interface MonsterInput {
   name: string;
   system_id: string;

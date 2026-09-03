@@ -3,6 +3,8 @@ import localFont from "next/font/local";
 import { Cinzel, EB_Garamond } from "next/font/google";
 import { cookies } from "next/headers";
 import { verifySessionToken, SESSION_COOKIE_NAME } from "@/lib/auth/session";
+import { getUserByUsername } from "@/lib/auth/current-user";
+import { createSupabaseClient } from "@/lib/supabase/client";
 import { AppHeader } from "./AppHeader";
 import "./globals.css";
 
@@ -41,13 +43,14 @@ export default async function RootLayout({
   const secret = process.env.SITE_PASSWORD ?? "";
   const token = cookies().get(SESSION_COOKIE_NAME)?.value;
   const session = token ? await verifySessionToken(token, secret) : null;
+  const currentUser = session ? await getUserByUsername(createSupabaseClient(), session.username) : null;
 
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${cinzel.variable} ${ebGaramond.variable} antialiased`}
       >
-        {session && <AppHeader />}
+        {session && <AppHeader isGm={currentUser?.isGm ?? false} />}
         {children}
       </body>
     </html>

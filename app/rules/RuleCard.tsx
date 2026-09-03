@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { Rule } from '@/lib/content/types';
 import { renderInlineMarkdown } from '@/lib/content/markdown';
+import { FavoriteStar } from '../content/FavoriteStar';
 import styles from './RuleCard.module.css';
 
 function systemAccentClass(systemName: string): string {
@@ -12,6 +13,7 @@ function systemAccentClass(systemName: string): string {
 export function RuleCard({ rule }: { rule: Rule }) {
   return (
     <article className={`${styles.card} ${systemAccentClass(rule.system.name)}`}>
+      <FavoriteStar category="rules" id={rule.id} />
       <Link href={`/rules/${rule.id}`} className={styles.cardLink}>
         <div className={styles.head}>
           <span className={styles.name}>{rule.name}</span>

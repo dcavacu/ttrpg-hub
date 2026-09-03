@@ -28,6 +28,16 @@ export async function getRuleById(client: SupabaseClient, id: string): Promise<R
   return (data as unknown as Rule) ?? null;
 }
 
+/** For the Favorites page: a batch lookup by id list, in no particular
+ * order. Empty input short-circuits rather than sending Supabase an
+ * empty .in() filter. */
+export async function getRulesByIds(client: SupabaseClient, ids: string[]): Promise<Rule[]> {
+  if (ids.length === 0) return [];
+  const { data, error } = await client.from('rules').select(RULE_SELECT).in('id', ids);
+  if (error) throw new Error(`Failed to load rules: ${error.message}`);
+  return (data ?? []) as unknown as Rule[];
+}
+
 export interface RuleInput {
   name: string;
   system_id: string;

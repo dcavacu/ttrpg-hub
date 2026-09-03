@@ -2,6 +2,7 @@ import Link from 'next/link';
 import type { Monster } from '@/lib/content/types';
 import { renderInlineMarkdown } from '@/lib/content/markdown';
 import { ShieldIcon, ChevronIcon, SwordIcon, RangedIcon } from '../content/icons';
+import { FavoriteStar } from '../content/FavoriteStar';
 import styles from './MonsterCard.module.css';
 
 function systemAccentClass(systemName: string): string {
@@ -13,6 +14,7 @@ function systemAccentClass(systemName: string): string {
 export function MonsterCard({ monster }: { monster: Monster }) {
   return (
     <article className={`${styles.card} ${systemAccentClass(monster.system.name)}`}>
+      <FavoriteStar category="monsters" id={monster.id} />
       <Link href={`/monsters/${monster.id}`} className={styles.cardLink}>
         <div className={styles.head}>
           <span className={styles.name}>{monster.name}</span>

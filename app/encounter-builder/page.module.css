@@ -1,0 +1,20 @@
+.page {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 48px 24px 80px;
+}
+
+.heading {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  margin: 0 0 10px;
+  color: var(--cat-monsters);
+}
+
+.lede {
+  color: var(--parchment-dim);
+  font-size: var(--text-base);
+  line-height: 1.6;
+  margin: 0 0 32px;
+  max-width: 68ch;
+}

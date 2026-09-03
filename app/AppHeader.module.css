@@ -29,6 +29,48 @@
   flex: none;
 }
 
+.right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.favoritesLink {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--text-sm);
+  color: var(--parchment-dim);
+  text-decoration: none;
+}
+
+.favoritesLink:hover {
+  color: var(--brass-dim);
+}
+
+.favoritesIcon {
+  width: 15px;
+  height: 15px;
+}
+
+.gmLink {
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--cat-monsters);
+  text-decoration: none;
+  border: 1px solid var(--cat-monsters);
+  border-radius: 3px;
+  padding: 6px 12px;
+}
+
+.gmLink:hover {
+  background: var(--cat-monsters-soft);
+  color: var(--cat-monsters);
+}
+
 .logoutButton {
   background: transparent;
   border: 1px solid var(--hairline-strong);

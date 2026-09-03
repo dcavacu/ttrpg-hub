@@ -4,6 +4,7 @@ import {
   normalizeArmorTier,
   extractLevelLabel,
   replaceLevelLabel,
+  levelLabelToNumber,
   previewRescale,
   applyRescaleToStats,
 } from './monsterScaling';
@@ -67,6 +68,25 @@ describe('replaceLevelLabel', () => {
   it('returns the original string unchanged when no level prefix is found', () => {
     expect(replaceLevelLabel('CR 10', '6')).toBe('CR 10');
     expect(replaceLevelLabel(null, '6')).toBe('');
+  });
+});
+
+describe('levelLabelToNumber', () => {
+  it('converts a whole-number label', () => {
+    expect(levelLabelToNumber('6')).toBe(6);
+    expect(levelLabelToNumber('20')).toBe(20);
+  });
+
+  it('converts a fractional label', () => {
+    expect(levelLabelToNumber('1/2')).toBe(0.5);
+    expect(levelLabelToNumber('1/4')).toBe(0.25);
+    expect(levelLabelToNumber('1/3')).toBeCloseTo(0.333, 3);
+  });
+
+  it('returns 0 for null, undefined, or an unparseable label', () => {
+    expect(levelLabelToNumber(null)).toBe(0);
+    expect(levelLabelToNumber(undefined)).toBe(0);
+    expect(levelLabelToNumber('not-a-level')).toBe(0);
   });
 });
 

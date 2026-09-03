@@ -100,6 +100,21 @@ export function extractLevelLabel(ratingLabel: string | null | undefined): strin
   return match ? match[1] : null;
 }
 
+/** Converts a level label ("6", "1/2") to a plain number, for arithmetic
+ * like summing an encounter's total monster level. Returns 0 for a label
+ * that isn't a real level (or a monster with no parseable level at all)
+ * rather than throwing -- callers summing across a whole roster shouldn't
+ * have one odd entry blow up the total. */
+export function levelLabelToNumber(levelLabel: string | null | undefined): number {
+  if (!levelLabel) return 0;
+  if (levelLabel.includes('/')) {
+    const [num, den] = levelLabel.split('/').map(Number);
+    return den ? num / den : 0;
+  }
+  const n = Number(levelLabel);
+  return Number.isFinite(n) ? n : 0;
+}
+
 /** Swaps just the level number in a rating_label, preserving everything
  * else in the string (e.g. a legendary monster's descriptive subtitle).
  * Returns the original string unchanged if no level prefix is found --

@@ -125,4 +125,36 @@ CLASS_CONFIGS = {
             ],
         },
     },
+    "artificer": {
+        "name": "ARTIFICER",
+        "accent": (0.25, 0.35, 0.45),
+        "resource": "MANA DICE",
+        "resource_mode": "dice",
+        "dice_slots": 4,
+        "mid_panel": ("INVENTORY", "Inventory"),
+        "background": "checker",
+        "reference_page": {
+            "banner": "INVENTIONS   &   GADGETS",
+            "columns": [
+                {"title": "INVENTIONS", "field": "Inventions List"},
+                {"title": "GADGETS", "field": "Gadgets List"},
+            ],
+        },
+    },
+    "hexbinder": {
+        "name": "HEXBINDER",
+        "accent": (0.35, 0.12, 0.28),
+        "resource": "HEX MAGIC",
+        "resource_mode": "mana",
+        "mid_panel": ("INVENTORY", "Inventory"),
+        "spell_page": True,
+        "background": "checker",
+        "reference_page": {
+            "banner": "AFFLICTIONS   &   MYSTIC MARKS",
+            "columns": [
+                {"title": "AFFLICTIONS", "field": "Afflictions List"},
+                {"title": "MYSTIC MARKS", "field": "Mystic Marks List"},
+            ],
+        },
+    },
 }

@@ -5,8 +5,10 @@ import { PersonIcon } from '../content/icons';
 import styles from './page.module.css';
 
 const CLASSES = [
+  { value: 'artificer', label: 'Artificer' },
   { value: 'berserker', label: 'Berserker' },
   { value: 'cheat', label: 'Cheat' },
+  { value: 'hexbinder', label: 'Hexbinder' },
   { value: 'homebrewer', label: 'Homebrewer' },
   { value: 'mage', label: 'Mage' },
   { value: 'oathsworn', label: 'Oathsworn' },
