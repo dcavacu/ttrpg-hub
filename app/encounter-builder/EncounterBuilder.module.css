@@ -26,8 +26,12 @@
 /* The Monsters section's search dropdown overflows below its own box --
    without this it's painted UNDER the Difficulty section that follows it
    (each .section is its own stacking context, and among same-z-index
-   siblings later-in-DOM wins), which cropped the dropdown's last row. */
-.section.searchSection {
+   siblings later-in-DOM wins), which cropped the dropdown's last row.
+   Only applied while the dropdown is actually open (see the TSX) --
+   raising it unconditionally made the Monsters panel's own drop-shadow
+   paint over the Difficulty panel's top edge at rest, which read as the
+   two boxes overlapping. */
+.section.searchSectionOpen {
   z-index: 2;
 }
 
@@ -340,7 +344,9 @@
   content: "";
   position: absolute;
   z-index: -1;
-  clip-path: polygon(0 6px, 6% 0, 94% 0, 100% 6px, 100% 100%, 0 100%);
+  /* Same cut as .section, so tokens read as the same "framed panel" as
+     the rest of the page instead of a plain rectangle. */
+  clip-path: polygon(0 8px, 4% 0, 96% 0, 100% 8px, 100% 100%, 0 100%);
 }
 
 .token::before {
@@ -349,7 +355,7 @@
 }
 
 .token::after {
-  inset: 4px;
+  inset: 5px;
   background: var(--parchment-panel);
 }
 

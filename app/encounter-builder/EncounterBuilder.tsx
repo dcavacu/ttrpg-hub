@@ -413,7 +413,7 @@ export function EncounterBuilder({ monsters }: { monsters: LeanMonster[] }) {
         </button>
       </section>
 
-      <section className={`${styles.section} ${styles.searchSection}`}>
+      <section className={`${styles.section} ${searchResults.length > 0 ? styles.searchSectionOpen : ''}`}>
         <h2 className={styles.sectionHeading}>Monsters</h2>
         <div className={styles.searchWrap}>
           <label htmlFor={searchId} className={styles.srOnly}>
