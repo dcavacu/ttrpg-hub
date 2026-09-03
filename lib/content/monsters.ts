@@ -43,20 +43,24 @@ export interface LeanMonster {
   name: string;
   ratingLabel: string | null;
   tier: MonsterTier;
+  combatRole: CombatRole | null;
+  race: string | null;
   hp: string | undefined;
   armor: string | undefined;
+  stats: Record<string, string>;
   description: string;
 }
 
 /** Every Nimble-system monster, with just the fields the Encounter
- * Builder needs (level parsing, current HP, description for its
- * Bloodied/Last Stand callouts) -- not paginated, since the builder does
- * its own client-side search/filtering over the whole set rather than
- * round-tripping per keystroke. */
+ * Builder needs -- including the full stats/description so it can show
+ * an in-context preview (abilities, dice, etc.) instead of sending the
+ * GM to the monster's own detail page mid-build -- not paginated, since
+ * the builder does its own client-side search/filtering over the whole
+ * set rather than round-tripping per keystroke. */
 export async function listNimbleMonstersLean(client: SupabaseClient): Promise<LeanMonster[]> {
   const { data, error } = await client
     .from('monsters')
-    .select('id, name, rating_label, tier, stats, description, system:systems!inner(name)')
+    .select('id, name, rating_label, tier, combat_role, race, stats, description, system:systems!inner(name)')
     .eq('system.name', 'Nimble')
     .order('name');
   if (error) throw new Error(`Failed to list Nimble monsters: ${error.message}`);
@@ -66,6 +70,8 @@ export async function listNimbleMonstersLean(client: SupabaseClient): Promise<Le
       name: string;
       rating_label: string | null;
       tier: MonsterTier;
+      combat_role: CombatRole | null;
+      race: string | null;
       stats: Record<string, string>;
       description: string;
     };
@@ -74,8 +80,11 @@ export async function listNimbleMonstersLean(client: SupabaseClient): Promise<Le
       name: r.name,
       ratingLabel: r.rating_label,
       tier: r.tier,
+      combatRole: r.combat_role,
+      race: r.race,
       hp: r.stats?.HP,
       armor: r.stats?.Armor,
+      stats: r.stats ?? {},
       description: r.description,
     };
   });

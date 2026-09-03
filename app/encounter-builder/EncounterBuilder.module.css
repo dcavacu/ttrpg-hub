@@ -106,8 +106,20 @@
 }
 
 .rosterName {
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 0;
   font-weight: 600;
   font-size: var(--text-sm);
+  color: var(--parchment);
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.rosterName:hover {
+  color: var(--brass-dim);
 }
 
 .removeButton {
@@ -181,11 +193,18 @@
   overflow-y: auto;
 }
 
-.searchResults button {
+.searchResultRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.searchResultInfo {
   display: flex;
   justify-content: space-between;
   gap: 10px;
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   text-align: left;
   background: none;
   border: none;
@@ -196,8 +215,28 @@
   color: var(--parchment);
 }
 
-.searchResults button:hover {
+.searchResultInfo:hover {
   background: var(--cat-monsters-soft);
+}
+
+.quickAddButton {
+  flex: none;
+  font-size: var(--text-2xs);
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  background: var(--panel-2);
+  border: 1px solid var(--brass-dim);
+  border-radius: 3px;
+  padding: 6px 10px;
+  color: var(--brass-dim);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.quickAddButton:hover {
+  background: var(--brass-dim);
+  color: var(--parchment);
 }
 
 .searchMeta {
@@ -486,4 +525,121 @@
   color: var(--seal-crimson);
   border-left-color: var(--seal-crimson);
   background: rgba(150, 63, 63, 0.08);
+}
+
+/* Monster preview modal */
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(20, 16, 10, 0.65);
+}
+
+.modal {
+  position: relative;
+  z-index: 0;
+  width: 100%;
+  max-width: 520px;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  padding: 20px 22px 24px;
+  box-shadow: 0 24px 48px -20px rgba(0, 0, 0, 0.6);
+}
+
+.modal::before,
+.modal::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  clip-path: polygon(0 8px, 4% 0, 96% 0, 100% 8px, 100% 100%, 0 100%);
+}
+
+.modal::before {
+  inset: 0;
+  background: var(--frame-ring);
+}
+
+.modal::after {
+  inset: 5px;
+  background:
+    radial-gradient(120% 160% at 20% -10%, rgba(255, 255, 255, 0.65), transparent 55%),
+    linear-gradient(160deg, var(--parchment-panel) 0%, var(--parchment-panel-edge) 100%);
+  box-shadow: inset 0 0 0 1px rgba(138, 109, 63, 0.35);
+}
+
+.modalHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.modalName {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  margin: 0 0 4px;
+  color: var(--cat-monsters);
+}
+
+.modalSubtitle {
+  margin: 0;
+  font-size: var(--text-2xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--parchment-dim);
+}
+
+.modalClose {
+  flex: none;
+  font-size: 1.3rem;
+  line-height: 1;
+  background: none;
+  border: none;
+  padding: 2px 6px;
+  color: var(--parchment-dim);
+  cursor: pointer;
+}
+
+.modalClose:hover {
+  color: var(--seal-crimson);
+}
+
+.modalStats {
+  border-top: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--hairline);
+  padding: 10px 0;
+  margin: 0 0 14px;
+}
+
+.modalStats div {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+  font-size: var(--text-sm);
+}
+
+.modalStats dt {
+  color: var(--parchment-dim);
+}
+
+.modalStats dd {
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+  margin: 0;
+  text-align: right;
+}
+
+.modalDescription {
+  font-size: var(--text-sm);
+  line-height: 1.6;
+  margin: 0 0 18px;
+}
+
+.modal .startButton {
+  width: 100%;
 }

@@ -3,6 +3,7 @@
 import { useEffect, useId, useMemo, useState } from 'react';
 import { levelLabelToNumber, extractLevelLabel, previewRescale } from '@/lib/content/monsterScaling';
 import { assessEncounterDifficulty, suggestMinionDieSize, extractDescriptionMarker } from '@/lib/content/encounterBalance';
+import { renderInlineMarkdown } from '@/lib/content/markdown';
 import type { LeanMonster } from '@/lib/content/monsters';
 import styles from './EncounterBuilder.module.css';
 
@@ -50,6 +51,7 @@ export function EncounterBuilder({ monsters }: { monsters: LeanMonster[] }) {
   const [round, setRound] = useState(1);
   const [activeIndex, setActiveIndex] = useState(0);
   const [restored, setRestored] = useState(false);
+  const [previewMonster, setPreviewMonster] = useState<LeanMonster | null>(null);
   const searchId = useId();
 
   const monsterById = useMemo(() => new Map(monsters.map((m) => [m.id, m])), [monsters]);
@@ -215,6 +217,47 @@ export function EncounterBuilder({ monsters }: { monsters: LeanMonster[] }) {
     setActiveIndex((i) => (i - 1 < 0 ? tokens.length - 1 : i - 1));
   }
 
+  const previewModal = previewMonster && (
+    <div className={styles.modalOverlay} onClick={() => setPreviewMonster(null)}>
+      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.modalHeader}>
+          <div>
+            <h3 className={styles.modalName}>{previewMonster.name}</h3>
+            <p className={styles.modalSubtitle}>
+              {[previewMonster.ratingLabel, previewMonster.tier !== 'Normal' ? previewMonster.tier : null, previewMonster.combatRole, previewMonster.race]
+                .filter(Boolean)
+                .join(' · ')}
+            </p>
+          </div>
+          <button type="button" className={styles.modalClose} onClick={() => setPreviewMonster(null)} aria-label="Close">
+            &times;
+          </button>
+        </div>
+        {Object.keys(previewMonster.stats).length > 0 && (
+          <dl className={styles.modalStats}>
+            {Object.entries(previewMonster.stats).map(([key, value]) => (
+              <div key={key}>
+                <dt>{key}</dt>
+                <dd>{value}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
+        {previewMonster.description && <p className={styles.modalDescription}>{renderInlineMarkdown(previewMonster.description)}</p>}
+        <button
+          type="button"
+          className={styles.startButton}
+          onClick={() => {
+            addMonster(previewMonster);
+            setPreviewMonster(null);
+          }}
+        >
+          Add to encounter
+        </button>
+      </div>
+    </div>
+  );
+
   if (tokens) {
     return (
       <div className={styles.tracker}>
@@ -317,6 +360,7 @@ export function EncounterBuilder({ monsters }: { monsters: LeanMonster[] }) {
             );
           })}
         </ul>
+        {previewModal}
       </div>
     );
   }
@@ -381,9 +425,12 @@ export function EncounterBuilder({ monsters }: { monsters: LeanMonster[] }) {
           {searchResults.length > 0 && (
             <ul className={styles.searchResults}>
               {searchResults.map((m) => (
-                <li key={m.id}>
-                  <button type="button" onClick={() => addMonster(m)}>
+                <li key={m.id} className={styles.searchResultRow}>
+                  <button type="button" className={styles.searchResultInfo} onClick={() => setPreviewMonster(m)} title="View abilities">
                     {m.name} <span className={styles.searchMeta}>{m.ratingLabel ?? '—'}</span>
+                  </button>
+                  <button type="button" className={styles.quickAddButton} onClick={() => addMonster(m)} title="Add to encounter">
+                    + Add
                   </button>
                 </li>
               ))}
@@ -404,7 +451,14 @@ export function EncounterBuilder({ monsters }: { monsters: LeanMonster[] }) {
               const ownLevel = extractLevelLabel(monster.ratingLabel) ?? '?';
               return (
                 <div key={entry.monsterId} className={styles.rosterRow}>
-                  <span className={styles.rosterName}>{monster.name}</span>
+                  <button
+                    type="button"
+                    className={styles.rosterName}
+                    onClick={() => setPreviewMonster(monster)}
+                    title="View abilities"
+                  >
+                    {monster.name}
+                  </button>
                   <input
                     type="text"
                     className={styles.levelInput}
@@ -455,6 +509,7 @@ export function EncounterBuilder({ monsters }: { monsters: LeanMonster[] }) {
           Start encounter
         </button>
       </section>
+      {previewModal}
     </div>
   );
 }
