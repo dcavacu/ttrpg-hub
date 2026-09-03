@@ -89,7 +89,7 @@ export default async function Page() {
             <div className={styles.tileIcon}>
               <PersonIcon />
             </div>
-            <span className={styles.tileCount}>11 classes</span>
+            <span className={styles.tileCount}>17 classes</span>
           </div>
           <h2>Character Sheets</h2>
           <p>Pick a class, drop in a portrait and a color, and download a ready-to-fill PDF sheet for your hero.</p>

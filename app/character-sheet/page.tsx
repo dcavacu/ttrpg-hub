@@ -8,14 +8,20 @@ const CLASSES = [
   { value: 'artificer', label: 'Artificer' },
   { value: 'berserker', label: 'Berserker' },
   { value: 'cheat', label: 'Cheat' },
+  { value: 'commander', label: 'Commander' },
+  { value: 'conduit', label: 'Conduit' },
   { value: 'hexbinder', label: 'Hexbinder' },
   { value: 'homebrewer', label: 'Homebrewer' },
+  { value: 'hunter', label: 'Hunter' },
   { value: 'mage', label: 'Mage' },
   { value: 'oathsworn', label: 'Oathsworn' },
+  { value: 'shadowmancer', label: 'Shadowmancer' },
   { value: 'shaman', label: 'Shaman' },
   { value: 'shepherd', label: 'Shepherd' },
+  { value: 'songweaver', label: 'Songweaver' },
   { value: 'stormshifter', label: 'Stormshifter' },
   { value: 'virtuoso', label: 'Virtuoso' },
+  { value: 'zephyr', label: 'Zephyr' },
 ];
 
 type Feedback = { type: 'success' | 'error'; message: string };
