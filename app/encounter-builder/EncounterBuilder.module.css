@@ -4,6 +4,18 @@
   gap: 24px;
 }
 
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .section {
   position: relative;
   z-index: 0;
@@ -39,27 +51,48 @@
   color: var(--cat-monsters);
 }
 
+/* Party + roster tables */
+
 .heroList,
 .rosterList {
-  list-style: none;
-  margin: 0 0 12px;
-  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+  margin: 0 0 12px;
 }
 
-.heroRow,
-.rosterRow {
-  display: flex;
+.heroHeadings,
+.rosterRow,
+.heroRow {
+  display: grid;
   align-items: center;
   gap: 10px;
-  font-size: var(--text-sm);
 }
 
-.heroRow input[type="number"],
-.rosterRow input[type="number"] {
-  width: 64px;
+.heroHeadings,
+.heroRow {
+  grid-template-columns: 1fr 70px 70px 72px;
+}
+
+.rosterHeadings,
+.rosterRow {
+  display: grid;
+  align-items: center;
+  gap: 10px;
+  grid-template-columns: 1fr 100px 70px 72px;
+}
+
+.heroHeadings,
+.rosterHeadings {
+  font-size: var(--text-2xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--parchment-dim);
+}
+
+.heroRow input,
+.rosterRow input {
+  width: 100%;
   background: var(--panel-2);
   border: 1px solid var(--hairline-strong);
   border-radius: 3px;
@@ -68,15 +101,13 @@
   font-size: 0.9rem;
 }
 
-.rosterName {
-  flex: 1;
-  font-weight: 600;
+.levelInput {
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
 }
 
-.rosterMeta {
-  color: var(--parchment-dim);
-  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
-  font-size: var(--text-2xs);
+.rosterName {
+  font-weight: 600;
+  font-size: var(--text-sm);
 }
 
 .removeButton {
@@ -110,6 +141,7 @@
   padding: 8px 16px;
   color: var(--brass-dim);
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .ghostButton:hover {
@@ -231,7 +263,7 @@
 .tracker {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
 .trackerHeader {
@@ -245,6 +277,37 @@
   font-size: var(--text-lg);
   margin: 0;
   color: var(--cat-monsters);
+}
+
+.turnBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--panel-2);
+  border: 1px solid var(--hairline-strong);
+  border-radius: 4px;
+}
+
+.roundLabel {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--text-sm);
+  color: var(--brass-dim);
+}
+
+.activeName {
+  font-weight: 600;
+  font-size: var(--text-sm);
+  flex: 1;
+}
+
+.turnHint {
+  margin: -8px 0 0;
+  font-size: var(--text-2xs);
+  color: var(--parchment-dim);
+  max-width: 70ch;
 }
 
 .tokenList {
@@ -281,21 +344,50 @@
   background: var(--parchment-panel);
 }
 
+.tokenHero::after {
+  background: var(--cat-sheets-soft);
+}
+
 .tokenDefeated {
   opacity: 0.55;
 }
 
+.tokenActive {
+  box-shadow: 0 0 0 2px var(--brass), 0 10px 20px -12px rgba(90, 60, 20, 0.4);
+}
+
 .tokenTop {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
+  gap: 8px;
   margin-bottom: 8px;
 }
 
 .tokenName {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
   font-family: var(--font-display);
   font-weight: 600;
   font-size: var(--text-sm);
+}
+
+.turnMarker {
+  color: var(--brass);
+  font-size: 0.7em;
+}
+
+.tokenKind,
+.tokenLevel {
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+  font-size: var(--text-2xs);
+  font-weight: 400;
+  color: var(--parchment-dim);
+  border: 1px solid var(--hairline-strong);
+  border-radius: 999px;
+  padding: 1px 7px;
 }
 
 .tokenDefeatedLabel {
@@ -303,6 +395,32 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--seal-crimson);
+  flex: none;
+}
+
+.fieldLabel {
+  display: block;
+  font-size: var(--text-2xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--parchment-dim);
+  margin-bottom: 3px;
+}
+
+.initInput {
+  width: 56px;
+  text-align: center;
+  background: var(--panel);
+  border: 1px solid var(--hairline-strong);
+  border-radius: 3px;
+  padding: 4px;
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+  font-weight: 600;
+  color: var(--parchment);
+}
+
+.hpBlock {
+  margin-top: 10px;
 }
 
 .tokenHpRow {
@@ -345,6 +463,13 @@
 .hpMax {
   font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
   font-size: var(--text-sm);
+  color: var(--parchment-dim);
+}
+
+.hpHint {
+  display: block;
+  margin-top: 3px;
+  font-size: 0.65rem;
   color: var(--parchment-dim);
 }
 

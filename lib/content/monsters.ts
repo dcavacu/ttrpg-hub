@@ -44,6 +44,7 @@ export interface LeanMonster {
   ratingLabel: string | null;
   tier: MonsterTier;
   hp: string | undefined;
+  armor: string | undefined;
   description: string;
 }
 
@@ -68,7 +69,15 @@ export async function listNimbleMonstersLean(client: SupabaseClient): Promise<Le
       stats: Record<string, string>;
       description: string;
     };
-    return { id: r.id, name: r.name, ratingLabel: r.rating_label, tier: r.tier, hp: r.stats?.HP, description: r.description };
+    return {
+      id: r.id,
+      name: r.name,
+      ratingLabel: r.rating_label,
+      tier: r.tier,
+      hp: r.stats?.HP,
+      armor: r.stats?.Armor,
+      description: r.description,
+    };
   });
 }
 

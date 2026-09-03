@@ -1,55 +1,79 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { levelLabelToNumber, extractLevelLabel } from '@/lib/content/monsterScaling';
-import {
-  assessEncounterDifficulty,
-  suggestMinionDieSize,
-  extractDescriptionMarker,
-  type EncounterDifficulty,
-} from '@/lib/content/encounterBalance';
+import { useEffect, useId, useMemo, useState } from 'react';
+import { levelLabelToNumber, extractLevelLabel, previewRescale } from '@/lib/content/monsterScaling';
+import { assessEncounterDifficulty, suggestMinionDieSize, extractDescriptionMarker } from '@/lib/content/encounterBalance';
 import type { LeanMonster } from '@/lib/content/monsters';
 import styles from './EncounterBuilder.module.css';
+
+interface HeroEntry {
+  id: string;
+  name: string;
+  level: number;
+  hp: number;
+}
 
 interface RosterEntry {
   monsterId: string;
   quantity: number;
+  /** A level label ("6", "1/2") to use instead of the monster's own
+   * current level -- for reusing one compendium entry at a different
+   * strength for this specific encounter, without editing its real
+   * stats. Empty string means "use the monster's own level." */
+  levelOverride: string;
 }
 
 interface CombatToken {
   key: string;
   name: string;
+  kind: 'hero' | 'monster';
+  levelLabel: string | null;
   maxHp: number;
   currentHp: number;
+  initiative: number;
   bloodied: string | null;
   lastStand: string | null;
 }
 
-const STORAGE_KEY = 'ttrpg-hub-encounter-builder-v1';
+const STORAGE_KEY = 'ttrpg-hub-encounter-builder-v2';
+
+let nextHeroId = 1;
+function makeHero(level = 1): HeroEntry {
+  return { id: `h${nextHeroId++}`, name: '', level, hp: 20 };
+}
 
 export function EncounterBuilder({ monsters }: { monsters: LeanMonster[] }) {
-  const [heroLevels, setHeroLevels] = useState<number[]>([1, 1, 1, 1]);
+  const [heroes, setHeroes] = useState<HeroEntry[]>(() => [makeHero(), makeHero(), makeHero(), makeHero()]);
   const [roster, setRoster] = useState<RosterEntry[]>([]);
   const [search, setSearch] = useState('');
   const [tokens, setTokens] = useState<CombatToken[] | null>(null);
+  const [round, setRound] = useState(1);
+  const [activeIndex, setActiveIndex] = useState(0);
   const [restored, setRestored] = useState(false);
+  const searchId = useId();
 
   const monsterById = useMemo(() => new Map(monsters.map((m) => [m.id, m])), [monsters]);
 
   // Restore whatever the GM had set up last time, so an accidental
   // refresh mid-session doesn't lose the encounter. Deliberately local to
-  // this browser only (see artifact-capabilities guidance elsewhere in
-  // this app for when shared state would need the DB instead -- this
-  // tool's state is genuinely per-GM-device scratch work, not something
-  // players or other sessions need to see).
+  // this browser only -- this tool's state is per-GM-device scratch
+  // work, not something players or other sessions need to see.
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
-        const saved = JSON.parse(raw) as { heroLevels?: number[]; roster?: RosterEntry[]; tokens?: CombatToken[] | null };
-        if (Array.isArray(saved.heroLevels)) setHeroLevels(saved.heroLevels);
+        const saved = JSON.parse(raw) as {
+          heroes?: HeroEntry[];
+          roster?: RosterEntry[];
+          tokens?: CombatToken[] | null;
+          round?: number;
+          activeIndex?: number;
+        };
+        if (Array.isArray(saved.heroes) && saved.heroes.length > 0) setHeroes(saved.heroes);
         if (Array.isArray(saved.roster)) setRoster(saved.roster);
         if (saved.tokens !== undefined) setTokens(saved.tokens);
+        if (typeof saved.round === 'number') setRound(saved.round);
+        if (typeof saved.activeIndex === 'number') setActiveIndex(saved.activeIndex);
       }
     } catch {
       // Storage unavailable or corrupt -- start fresh, silently.
@@ -60,20 +84,23 @@ export function EncounterBuilder({ monsters }: { monsters: LeanMonster[] }) {
   useEffect(() => {
     if (!restored) return; // don't clobber saved state with initial defaults before restore runs
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ heroLevels, roster, tokens }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ heroes, roster, tokens, round, activeIndex }));
     } catch {
       // Storage full or unavailable -- the tool still works, it just won't survive a refresh.
     }
-  }, [heroLevels, roster, tokens, restored]);
+  }, [heroes, roster, tokens, round, activeIndex, restored]);
 
-  const heroTotal = heroLevels.reduce((a, b) => a + b, 0);
-  const partyAvgLevel = heroLevels.length ? Math.round(heroTotal / heroLevels.length) : 1;
+  const heroTotal = heroes.reduce((a, h) => a + h.level, 0);
+  const partyAvgLevel = heroes.length ? Math.round(heroTotal / heroes.length) : 1;
   const monsterTotal = roster.reduce((sum, entry) => {
     const monster = monsterById.get(entry.monsterId);
     if (!monster) return sum;
-    return sum + levelLabelToNumber(extractLevelLabel(monster.ratingLabel)) * entry.quantity;
+    const levelLabel = entry.levelOverride || extractLevelLabel(monster.ratingLabel) || '';
+    return sum + levelLabelToNumber(levelLabel) * entry.quantity;
   }, 0);
-  const difficulty = assessEncounterDifficulty(monsterTotal, heroTotal);
+  // Only a real roster earns a difficulty rating -- an empty encounter
+  // isn't meaningfully "Easy," it's just not built yet.
+  const difficulty = roster.length > 0 ? assessEncounterDifficulty(monsterTotal, heroTotal) : null;
   const minionDie = suggestMinionDieSize(partyAvgLevel);
 
   const searchResults = useMemo(() => {
@@ -83,25 +110,28 @@ export function EncounterBuilder({ monsters }: { monsters: LeanMonster[] }) {
   }, [search, monsters]);
 
   function addHero() {
-    setHeroLevels((prev) => [...prev, prev[prev.length - 1] ?? 1]);
+    setHeroes((prev) => [...prev, makeHero(prev[prev.length - 1]?.level ?? 1)]);
   }
-  function removeHero(index: number) {
-    setHeroLevels((prev) => prev.filter((_, i) => i !== index));
+  function removeHero(id: string) {
+    setHeroes((prev) => prev.filter((h) => h.id !== id));
   }
-  function setHeroLevel(index: number, level: number) {
-    setHeroLevels((prev) => prev.map((l, i) => (i === index ? level : l)));
+  function updateHero(id: string, patch: Partial<HeroEntry>) {
+    setHeroes((prev) => prev.map((h) => (h.id === id ? { ...h, ...patch } : h)));
   }
 
   function addMonster(monster: LeanMonster) {
     setRoster((prev) => {
       const existing = prev.find((r) => r.monsterId === monster.id);
       if (existing) return prev.map((r) => (r.monsterId === monster.id ? { ...r, quantity: r.quantity + 1 } : r));
-      return [...prev, { monsterId: monster.id, quantity: 1 }];
+      return [...prev, { monsterId: monster.id, quantity: 1, levelOverride: '' }];
     });
     setSearch('');
   }
   function setQuantity(monsterId: string, quantity: number) {
     setRoster((prev) => prev.flatMap((r) => (r.monsterId === monsterId ? (quantity <= 0 ? [] : [{ ...r, quantity }]) : [r])));
+  }
+  function setLevelOverride(monsterId: string, levelOverride: string) {
+    setRoster((prev) => prev.map((r) => (r.monsterId === monsterId ? { ...r, levelOverride } : r)));
   }
   function removeMonster(monsterId: string) {
     setRoster((prev) => prev.filter((r) => r.monsterId !== monsterId));
@@ -109,24 +139,47 @@ export function EncounterBuilder({ monsters }: { monsters: LeanMonster[] }) {
 
   function startEncounter() {
     const newTokens: CombatToken[] = [];
+
+    for (const hero of heroes) {
+      newTokens.push({
+        key: `hero-${hero.id}`,
+        name: hero.name.trim() || `Hero (Lvl ${hero.level})`,
+        kind: 'hero',
+        levelLabel: String(hero.level),
+        maxHp: hero.hp,
+        currentHp: hero.hp,
+        initiative: 0,
+        bloodied: null,
+        lastStand: null,
+      });
+    }
+
     for (const entry of roster) {
       const monster = monsterById.get(entry.monsterId);
       if (!monster) continue;
-      const maxHp = Number(monster.hp) || 0;
+      const levelLabel = entry.levelOverride || extractLevelLabel(monster.ratingLabel);
+      const preview = levelLabel ? previewRescale(monster.tier, monster.armor, monster.ratingLabel, levelLabel, monster.hp) : null;
+      const maxHp = preview ? preview.hp : Number(monster.hp) || 0;
       const bloodied = extractDescriptionMarker(monster.description, 'BLOODIED');
       const lastStand = extractDescriptionMarker(monster.description, 'LAST STAND');
       for (let i = 1; i <= entry.quantity; i++) {
         newTokens.push({
           key: `${entry.monsterId}-${i}`,
           name: entry.quantity > 1 ? `${monster.name} #${i}` : monster.name,
+          kind: 'monster',
+          levelLabel: levelLabel ?? null,
           maxHp,
           currentHp: maxHp,
+          initiative: 0,
           bloodied,
           lastStand,
         });
       }
     }
+
     setTokens(newTokens);
+    setRound(1);
+    setActiveIndex(0);
   }
 
   function endEncounter() {
@@ -139,6 +192,28 @@ export function EncounterBuilder({ monsters }: { monsters: LeanMonster[] }) {
   function setHp(key: string, value: number) {
     setTokens((prev) => (prev ? prev.map((t) => (t.key === key ? { ...t, currentHp: Math.max(0, Math.min(t.maxHp, value)) } : t)) : prev));
   }
+  function setInitiative(key: string, value: number) {
+    setTokens((prev) => (prev ? prev.map((t) => (t.key === key ? { ...t, initiative: value } : t)) : prev));
+  }
+  function sortByInitiative() {
+    setTokens((prev) => (prev ? [...prev].sort((a, b) => b.initiative - a.initiative) : prev));
+    setActiveIndex(0);
+  }
+  function nextTurn() {
+    if (!tokens || tokens.length === 0) return;
+    setActiveIndex((i) => {
+      const next = i + 1;
+      if (next >= tokens.length) {
+        setRound((r) => r + 1);
+        return 0;
+      }
+      return next;
+    });
+  }
+  function prevTurn() {
+    if (!tokens || tokens.length === 0) return;
+    setActiveIndex((i) => (i - 1 < 0 ? tokens.length - 1 : i - 1));
+  }
 
   if (tokens) {
     return (
@@ -149,39 +224,85 @@ export function EncounterBuilder({ monsters }: { monsters: LeanMonster[] }) {
             Back to builder
           </button>
         </div>
+
+        <div className={styles.turnBar}>
+          <span className={styles.roundLabel}>Round {round}</span>
+          <button type="button" className={styles.ghostButton} onClick={prevTurn}>
+            &larr; Prev turn
+          </button>
+          <span className={styles.activeName}>
+            {tokens[activeIndex] ? `${tokens[activeIndex].name}'s turn` : ''}
+          </span>
+          <button type="button" className={styles.ghostButton} onClick={nextTurn}>
+            Next turn &rarr;
+          </button>
+          <button type="button" className={styles.ghostButton} onClick={sortByInitiative}>
+            Sort by initiative
+          </button>
+        </div>
+        <p className={styles.turnHint}>
+          Enter each combatant&apos;s initiative from your own roll, then &quot;Sort by initiative&quot; to order the
+          list -- Prev/Next turn just steps through whatever order the list is in.
+        </p>
+
         <ul className={styles.tokenList}>
-          {tokens.map((t) => {
+          {tokens.map((t, i) => {
             const defeated = t.maxHp > 0 && t.currentHp <= 0;
             const bloodiedNow = t.bloodied && t.maxHp > 0 && t.currentHp <= t.maxHp / 2;
             return (
-              <li key={t.key} className={`${styles.token} ${defeated ? styles.tokenDefeated : ''}`}>
+              <li
+                key={t.key}
+                className={`${styles.token} ${t.kind === 'hero' ? styles.tokenHero : ''} ${defeated ? styles.tokenDefeated : ''} ${i === activeIndex ? styles.tokenActive : ''}`}
+              >
                 <div className={styles.tokenTop}>
-                  <span className={styles.tokenName}>{t.name}</span>
+                  <span className={styles.tokenName}>
+                    {i === activeIndex && <span className={styles.turnMarker}>&#9654;</span>}
+                    {t.name}
+                    {t.kind === 'hero' && <span className={styles.tokenKind}>Hero</span>}
+                    {t.levelLabel && <span className={styles.tokenLevel}>Lvl {t.levelLabel}</span>}
+                  </span>
                   {defeated && <span className={styles.tokenDefeatedLabel}>Defeated</span>}
                 </div>
-                <div className={styles.tokenHpRow}>
-                  <button type="button" onClick={() => adjustHp(t.key, -5)} disabled={t.maxHp === 0}>
-                    -5
-                  </button>
-                  <button type="button" onClick={() => adjustHp(t.key, -1)} disabled={t.maxHp === 0}>
-                    -1
-                  </button>
+
+                <label className={styles.fieldLabel}>
+                  Initiative
                   <input
                     type="number"
-                    className={styles.hpInput}
-                    value={t.currentHp}
-                    min={0}
-                    max={t.maxHp || undefined}
-                    onChange={(e) => setHp(t.key, Number(e.target.value) || 0)}
+                    className={styles.initInput}
+                    value={t.initiative}
+                    onChange={(e) => setInitiative(t.key, Number(e.target.value) || 0)}
                   />
-                  <span className={styles.hpMax}>/ {t.maxHp || '—'}</span>
-                  <button type="button" onClick={() => adjustHp(t.key, 1)} disabled={t.maxHp === 0}>
-                    +1
-                  </button>
-                  <button type="button" onClick={() => adjustHp(t.key, 5)} disabled={t.maxHp === 0}>
-                    +5
-                  </button>
+                </label>
+
+                <div className={styles.hpBlock}>
+                  <span className={styles.fieldLabel}>HP</span>
+                  <div className={styles.tokenHpRow}>
+                    <button type="button" title="Deal 5 damage" onClick={() => adjustHp(t.key, -5)} disabled={t.maxHp === 0}>
+                      &minus;5
+                    </button>
+                    <button type="button" title="Deal 1 damage" onClick={() => adjustHp(t.key, -1)} disabled={t.maxHp === 0}>
+                      &minus;1
+                    </button>
+                    <input
+                      type="number"
+                      title="Current HP"
+                      className={styles.hpInput}
+                      value={t.currentHp}
+                      min={0}
+                      max={t.maxHp || undefined}
+                      onChange={(e) => setHp(t.key, Number(e.target.value) || 0)}
+                    />
+                    <span className={styles.hpMax}>/ {t.maxHp || '—'}</span>
+                    <button type="button" title="Heal 1" onClick={() => adjustHp(t.key, 1)} disabled={t.maxHp === 0}>
+                      +1
+                    </button>
+                    <button type="button" title="Heal 5" onClick={() => adjustHp(t.key, 5)} disabled={t.maxHp === 0}>
+                      +5
+                    </button>
+                  </div>
+                  <span className={styles.hpHint}>&minus; damage &middot; + heal</span>
                 </div>
+
                 {t.bloodied && (
                   <p className={`${styles.marker} ${bloodiedNow ? styles.markerActive : ''}`}>
                     <strong>Bloodied{bloodiedNow ? ' — now!' : ''}:</strong> {t.bloodied}
@@ -204,23 +325,40 @@ export function EncounterBuilder({ monsters }: { monsters: LeanMonster[] }) {
     <div className={styles.builder}>
       <section className={styles.section}>
         <h2 className={styles.sectionHeading}>Party</h2>
-        <ul className={styles.heroList}>
-          {heroLevels.map((level, i) => (
-            <li key={i} className={styles.heroRow}>
-              <span>Hero {i + 1}</span>
+        <div className={styles.heroList}>
+          <div className={styles.heroHeadings}>
+            <span>Name</span>
+            <span>Level</span>
+            <span>HP</span>
+            <span />
+          </div>
+          {heroes.map((hero, i) => (
+            <div key={hero.id} className={styles.heroRow}>
+              <input
+                type="text"
+                placeholder={`Hero ${i + 1}`}
+                value={hero.name}
+                onChange={(e) => updateHero(hero.id, { name: e.target.value })}
+              />
               <input
                 type="number"
                 min={1}
                 max={20}
-                value={level}
-                onChange={(e) => setHeroLevel(i, Math.max(1, Math.min(20, Number(e.target.value) || 1)))}
+                value={hero.level}
+                onChange={(e) => updateHero(hero.id, { level: Math.max(1, Math.min(20, Number(e.target.value) || 1)) })}
               />
-              <button type="button" className={styles.removeButton} onClick={() => removeHero(i)} disabled={heroLevels.length <= 1}>
+              <input
+                type="number"
+                min={0}
+                value={hero.hp}
+                onChange={(e) => updateHero(hero.id, { hp: Math.max(0, Number(e.target.value) || 0) })}
+              />
+              <button type="button" className={styles.removeButton} onClick={() => removeHero(hero.id)} disabled={heroes.length <= 1}>
                 Remove
               </button>
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
         <button type="button" className={styles.ghostButton} onClick={addHero}>
           + Add hero
         </button>
@@ -229,7 +367,11 @@ export function EncounterBuilder({ monsters }: { monsters: LeanMonster[] }) {
       <section className={styles.section}>
         <h2 className={styles.sectionHeading}>Monsters</h2>
         <div className={styles.searchWrap}>
+          <label htmlFor={searchId} className={styles.srOnly}>
+            Search Nimble monsters
+          </label>
           <input
+            id={searchId}
             type="text"
             className={styles.searchInput}
             placeholder="Search Nimble monsters by name…"
@@ -249,14 +391,28 @@ export function EncounterBuilder({ monsters }: { monsters: LeanMonster[] }) {
           )}
         </div>
         {roster.length > 0 && (
-          <ul className={styles.rosterList}>
+          <div className={styles.rosterList}>
+            <div className={styles.rosterHeadings}>
+              <span>Monster</span>
+              <span>Level</span>
+              <span>Qty</span>
+              <span />
+            </div>
             {roster.map((entry) => {
               const monster = monsterById.get(entry.monsterId);
               if (!monster) return null;
+              const ownLevel = extractLevelLabel(monster.ratingLabel) ?? '?';
               return (
-                <li key={entry.monsterId} className={styles.rosterRow}>
+                <div key={entry.monsterId} className={styles.rosterRow}>
                   <span className={styles.rosterName}>{monster.name}</span>
-                  <span className={styles.rosterMeta}>{monster.ratingLabel ?? '—'}</span>
+                  <input
+                    type="text"
+                    className={styles.levelInput}
+                    placeholder={ownLevel}
+                    title={`Compendium level: ${ownLevel}. Leave blank to use it, or set a custom level for just this encounter (HP scales the same way the monster's own Rescale tool does).`}
+                    value={entry.levelOverride}
+                    onChange={(e) => setLevelOverride(entry.monsterId, e.target.value)}
+                  />
                   <input
                     type="number"
                     min={1}
@@ -266,10 +422,10 @@ export function EncounterBuilder({ monsters }: { monsters: LeanMonster[] }) {
                   <button type="button" className={styles.removeButton} onClick={() => removeMonster(entry.monsterId)}>
                     Remove
                   </button>
-                </li>
+                </div>
               );
             })}
-          </ul>
+          </div>
         )}
       </section>
 
@@ -286,10 +442,7 @@ export function EncounterBuilder({ monsters }: { monsters: LeanMonster[] }) {
           </div>
           <div>
             <span className={styles.readoutLabel}>Rating</span>
-            <span
-              className={styles.readoutValue}
-              style={difficulty ? { color: difficultyColor(difficulty) } : undefined}
-            >
+            <span className={styles.readoutValue} style={difficulty ? { color: difficultyColor(difficulty) } : undefined}>
               {difficulty ?? '—'}
             </span>
           </div>
@@ -306,7 +459,7 @@ export function EncounterBuilder({ monsters }: { monsters: LeanMonster[] }) {
   );
 }
 
-function difficultyColor(difficulty: EncounterDifficulty): string {
+function difficultyColor(difficulty: ReturnType<typeof assessEncounterDifficulty>): string | undefined {
   switch (difficulty) {
     case 'Easy':
       return 'var(--seal-teal)';
@@ -318,5 +471,7 @@ function difficultyColor(difficulty: EncounterDifficulty): string {
       return 'var(--cat-monsters)';
     case 'Very Deadly':
       return 'var(--seal-crimson)';
+    default:
+      return undefined;
   }
 }
