@@ -23,6 +23,14 @@
   box-shadow: 0 14px 28px -16px rgba(90, 60, 20, 0.45), 0 3px 8px -2px rgba(34, 29, 21, 0.25);
 }
 
+/* The Monsters section's search dropdown overflows below its own box --
+   without this it's painted UNDER the Difficulty section that follows it
+   (each .section is its own stacking context, and among same-z-index
+   siblings later-in-DOM wins), which cropped the dropdown's last row. */
+.section.searchSection {
+  z-index: 2;
+}
+
 .section::before,
 .section::after {
   content: "";
@@ -106,20 +114,9 @@
 }
 
 .rosterName {
-  text-align: left;
-  background: none;
-  border: none;
-  padding: 0;
   font-weight: 600;
   font-size: var(--text-sm);
   color: var(--parchment);
-  text-decoration: underline dotted;
-  text-underline-offset: 3px;
-  cursor: pointer;
-}
-
-.rosterName:hover {
-  color: var(--brass-dim);
 }
 
 .removeButton {
@@ -193,18 +190,11 @@
   overflow-y: auto;
 }
 
-.searchResultRow {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.searchResultInfo {
+.searchResults button {
   display: flex;
   justify-content: space-between;
   gap: 10px;
-  flex: 1;
-  min-width: 0;
+  width: 100%;
   text-align: left;
   background: none;
   border: none;
@@ -215,28 +205,8 @@
   color: var(--parchment);
 }
 
-.searchResultInfo:hover {
+.searchResults button:hover {
   background: var(--cat-monsters-soft);
-}
-
-.quickAddButton {
-  flex: none;
-  font-size: var(--text-2xs);
-  font-family: var(--font-display);
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  background: var(--panel-2);
-  border: 1px solid var(--brass-dim);
-  border-radius: 3px;
-  padding: 6px 10px;
-  color: var(--brass-dim);
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.quickAddButton:hover {
-  background: var(--brass-dim);
-  color: var(--parchment);
 }
 
 .searchMeta {
@@ -416,6 +386,22 @@
 .turnMarker {
   color: var(--brass);
   font-size: 0.7em;
+}
+
+.tokenNameButton {
+  font: inherit;
+  font-weight: inherit;
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.tokenNameButton:hover {
+  color: var(--brass-dim);
 }
 
 .tokenKind,
@@ -637,9 +623,5 @@
 .modalDescription {
   font-size: var(--text-sm);
   line-height: 1.6;
-  margin: 0 0 18px;
-}
-
-.modal .startButton {
-  width: 100%;
+  margin: 0;
 }

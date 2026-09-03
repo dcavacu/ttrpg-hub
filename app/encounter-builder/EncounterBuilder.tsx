@@ -28,6 +28,9 @@ interface CombatToken {
   key: string;
   name: string;
   kind: 'hero' | 'monster';
+  /** Set for monster tokens only -- lets the tracker look the monster back
+   * up in `monsterById` to show its full stats/description on demand. */
+  monsterId?: string;
   levelLabel: string | null;
   maxHp: number;
   currentHp: number;
@@ -169,6 +172,7 @@ export function EncounterBuilder({ monsters }: { monsters: LeanMonster[] }) {
           key: `${entry.monsterId}-${i}`,
           name: entry.quantity > 1 ? `${monster.name} #${i}` : monster.name,
           kind: 'monster',
+          monsterId: entry.monsterId,
           levelLabel: levelLabel ?? null,
           maxHp,
           currentHp: maxHp,
@@ -244,16 +248,6 @@ export function EncounterBuilder({ monsters }: { monsters: LeanMonster[] }) {
           </dl>
         )}
         {previewMonster.description && <p className={styles.modalDescription}>{renderInlineMarkdown(previewMonster.description)}</p>}
-        <button
-          type="button"
-          className={styles.startButton}
-          onClick={() => {
-            addMonster(previewMonster);
-            setPreviewMonster(null);
-          }}
-        >
-          Add to encounter
-        </button>
       </div>
     </div>
   );
@@ -300,7 +294,18 @@ export function EncounterBuilder({ monsters }: { monsters: LeanMonster[] }) {
                 <div className={styles.tokenTop}>
                   <span className={styles.tokenName}>
                     {i === activeIndex && <span className={styles.turnMarker}>&#9654;</span>}
-                    {t.name}
+                    {t.kind === 'monster' && t.monsterId && monsterById.get(t.monsterId) ? (
+                      <button
+                        type="button"
+                        className={styles.tokenNameButton}
+                        onClick={() => setPreviewMonster(monsterById.get(t.monsterId!)!)}
+                        title="View abilities"
+                      >
+                        {t.name}
+                      </button>
+                    ) : (
+                      t.name
+                    )}
                     {t.kind === 'hero' && <span className={styles.tokenKind}>Hero</span>}
                     {t.levelLabel && <span className={styles.tokenLevel}>Lvl {t.levelLabel}</span>}
                   </span>
@@ -408,7 +413,7 @@ export function EncounterBuilder({ monsters }: { monsters: LeanMonster[] }) {
         </button>
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${styles.searchSection}`}>
         <h2 className={styles.sectionHeading}>Monsters</h2>
         <div className={styles.searchWrap}>
           <label htmlFor={searchId} className={styles.srOnly}>
@@ -425,12 +430,9 @@ export function EncounterBuilder({ monsters }: { monsters: LeanMonster[] }) {
           {searchResults.length > 0 && (
             <ul className={styles.searchResults}>
               {searchResults.map((m) => (
-                <li key={m.id} className={styles.searchResultRow}>
-                  <button type="button" className={styles.searchResultInfo} onClick={() => setPreviewMonster(m)} title="View abilities">
+                <li key={m.id}>
+                  <button type="button" onClick={() => addMonster(m)}>
                     {m.name} <span className={styles.searchMeta}>{m.ratingLabel ?? '—'}</span>
-                  </button>
-                  <button type="button" className={styles.quickAddButton} onClick={() => addMonster(m)} title="Add to encounter">
-                    + Add
                   </button>
                 </li>
               ))}
@@ -451,14 +453,7 @@ export function EncounterBuilder({ monsters }: { monsters: LeanMonster[] }) {
               const ownLevel = extractLevelLabel(monster.ratingLabel) ?? '?';
               return (
                 <div key={entry.monsterId} className={styles.rosterRow}>
-                  <button
-                    type="button"
-                    className={styles.rosterName}
-                    onClick={() => setPreviewMonster(monster)}
-                    title="View abilities"
-                  >
-                    {monster.name}
-                  </button>
+                  <span className={styles.rosterName}>{monster.name}</span>
                   <input
                     type="text"
                     className={styles.levelInput}
@@ -509,7 +504,6 @@ export function EncounterBuilder({ monsters }: { monsters: LeanMonster[] }) {
           Start encounter
         </button>
       </section>
-      {previewModal}
     </div>
   );
 }
