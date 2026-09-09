@@ -113,6 +113,17 @@
   font-size: 0.9rem;
 }
 
+/* The level-override input shows the monster's own level as a
+   *placeholder* (not a real value) when left blank. Without this,
+   browsers render placeholder text at reduced opacity by default, which
+   reads as a rendering glitch next to the Qty column's full-strength
+   digits right beside it. */
+.heroRow input::placeholder,
+.rosterRow input::placeholder {
+  color: var(--parchment-dim);
+  opacity: 1;
+}
+
 .levelInput {
   font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
 }
@@ -332,34 +343,22 @@
   gap: 14px;
 }
 
+/* A two-layer clip-path frame (like .section) kept producing a visible
+   seam at this card size -- the outer ring and inner fill are cut with
+   the same *shape* but at different absolute sizes (inset 0 vs inset
+   5px), so their diagonal corners don't line up pixel-for-pixel. Using
+   the same lighter-touch pattern as the dense card grids elsewhere
+   (MonsterCard, etc.) sidesteps that whole class of bug: one flat
+   layer, an inset box-shadow ring instead of a second clipped shape. */
 .token {
   position: relative;
-  z-index: 0;
-  padding: 14px 16px 16px;
-  box-shadow: 0 10px 20px -12px rgba(90, 60, 20, 0.4);
-}
-
-.token::before,
-.token::after {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  /* Same cut as .section, so tokens read as the same "framed panel" as
-     the rest of the page instead of a plain rectangle. */
-  clip-path: polygon(0 8px, 4% 0, 96% 0, 100% 8px, 100% 100%, 0 100%);
-}
-
-.token::before {
-  inset: 0;
-  background: var(--frame-ring);
-}
-
-.token::after {
-  inset: 5px;
   background: var(--parchment-panel);
+  border-radius: 4px;
+  padding: 14px 16px 16px;
+  box-shadow: inset 0 0 0 1px var(--brass-dim), 0 10px 20px -12px rgba(90, 60, 20, 0.4);
 }
 
-.tokenHero::after {
+.tokenHero {
   background: var(--cat-sheets-soft);
 }
 
@@ -368,7 +367,7 @@
 }
 
 .tokenActive {
-  box-shadow: 0 0 0 2px var(--brass), 0 10px 20px -12px rgba(90, 60, 20, 0.4);
+  box-shadow: inset 0 0 0 1px var(--brass-dim), 0 0 0 2px var(--brass), 0 10px 20px -12px rgba(90, 60, 20, 0.4);
 }
 
 .tokenTop {
