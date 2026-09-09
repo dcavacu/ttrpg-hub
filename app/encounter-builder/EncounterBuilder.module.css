@@ -124,9 +124,11 @@
   opacity: 1;
 }
 
-.levelInput {
-  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
-}
+/* No font-family override here on purpose -- it used to switch to a
+   monospace stack, but that font's thinner strokes have less ink
+   coverage than the row's default serif font at the same size and
+   color, which reads as a lighter/warmer tone next to the Qty field
+   even though the underlying color value is identical. */
 
 .rosterName {
   font-weight: 600;

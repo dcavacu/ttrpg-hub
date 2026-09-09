@@ -461,7 +461,6 @@ export function EncounterBuilder({ monsters }: { monsters: LeanMonster[] }) {
                   <span className={styles.rosterName}>{monster.name}</span>
                   <input
                     type="text"
-                    className={styles.levelInput}
                     placeholder={ownLevel}
                     title={`Compendium level: ${ownLevel}. Leave blank to use it, or set a custom level for just this encounter (HP scales the same way the monster's own Rescale tool does).`}
                     value={entry.levelOverride}
