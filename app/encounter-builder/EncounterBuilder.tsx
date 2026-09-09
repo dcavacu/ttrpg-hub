@@ -128,7 +128,12 @@ export function EncounterBuilder({ monsters }: { monsters: LeanMonster[] }) {
     setRoster((prev) => {
       const existing = prev.find((r) => r.monsterId === monster.id);
       if (existing) return prev.map((r) => (r.monsterId === monster.id ? { ...r, quantity: r.quantity + 1 } : r));
-      return [...prev, { monsterId: monster.id, quantity: 1, levelOverride: '' }];
+      // Pre-fill with the monster's own level as a real value (not just a
+      // placeholder hint) -- browsers render placeholder text at reduced
+      // opacity, which looked like broken styling right next to the Qty
+      // column's full-strength digits. A real value also means it's
+      // immediately obvious and editable, not just implied.
+      return [...prev, { monsterId: monster.id, quantity: 1, levelOverride: extractLevelLabel(monster.ratingLabel) ?? '' }];
     });
     setSearch('');
   }
