@@ -124,27 +124,28 @@ export default function CharacterSheetPage() {
             Accent color
             <input id="color" name="color" type="color" defaultValue="#8a2e2e" disabled={printable} />
           </label>
-          <label htmlFor="printable" className={styles.checkboxLabel}>
-            <input
-              id="printable"
-              name="printable"
-              type="checkbox"
-              checked={printable}
-              onChange={(e) => setPrintable(e.target.checked)}
-            />
-            Printable (black &amp; white, no background pattern or portrait — easier on ink)
-          </label>
-          <label htmlFor="newbie_help" className={styles.checkboxLabel}>
-            <input
-              id="newbie_help"
-              name="newbie_help"
-              type="checkbox"
-              checked={newbieHelp}
-              onChange={(e) => setNewbieHelp(e.target.checked)}
-            />
-            Add a &quot;What can I do on my turn?&quot; reference column (actions, spells, and reactions —
-            good for new players)
-          </label>
+          <div className={styles.checkboxRow}>
+            <label htmlFor="printable" className={styles.checkboxLabel}>
+              <input
+                id="printable"
+                name="printable"
+                type="checkbox"
+                checked={printable}
+                onChange={(e) => setPrintable(e.target.checked)}
+              />
+              Printable friendly (black &amp; white, no background pattern or portrait — easier on ink)
+            </label>
+            <label htmlFor="newbie_help" className={styles.checkboxLabel}>
+              <input
+                id="newbie_help"
+                name="newbie_help"
+                type="checkbox"
+                checked={newbieHelp}
+                onChange={(e) => setNewbieHelp(e.target.checked)}
+              />
+              Newbie friendly (adds a &quot;what can I do on my turn?&quot; reference column)
+            </label>
+          </div>
           <div className={styles.actions}>
             <button type="submit" disabled={isSubmitting}>
               {isSubmitting ? 'Generating…' : 'Generate PDF'}

@@ -118,6 +118,16 @@
   opacity: 0.5;
 }
 
+.checkboxRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+}
+
+.checkboxRow .checkboxLabel {
+  flex: 1 1 200px;
+}
+
 .form .checkboxLabel {
   flex-direction: row;
   align-items: center;
