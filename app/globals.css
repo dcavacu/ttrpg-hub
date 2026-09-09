@@ -70,6 +70,19 @@
   --cat-sheets-soft: #e3e9f0;
 }
 
+/* Without this, every `width: 100%` element that also has padding
+   and/or a border (nearly all of this app's inputs) renders wider than
+   its box by 2x that padding+border, overflowing into whatever sits
+   next to it -- e.g. a 100px grid column holding an input with 8px
+   horizontal padding actually renders ~18px wider, bleeding into the
+   next column. Was previously patched per-page (login/page.module.css)
+   instead of fixed at the root. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 html {
   background: var(--ink);
 }
