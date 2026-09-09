@@ -30,6 +30,7 @@ export default function CharacterSheetPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [printable, setPrintable] = useState(false);
+  const [newbieHelp, setNewbieHelp] = useState(false);
   const clearTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -132,6 +133,17 @@ export default function CharacterSheetPage() {
               onChange={(e) => setPrintable(e.target.checked)}
             />
             Printable (black &amp; white, no background pattern or portrait — easier on ink)
+          </label>
+          <label htmlFor="newbie_help" className={styles.checkboxLabel}>
+            <input
+              id="newbie_help"
+              name="newbie_help"
+              type="checkbox"
+              checked={newbieHelp}
+              onChange={(e) => setNewbieHelp(e.target.checked)}
+            />
+            Add a &quot;What can I do on my turn?&quot; reference column (actions, spells, and reactions —
+            good for new players)
           </label>
           <div className={styles.actions}>
             <button type="submit" disabled={isSubmitting}>

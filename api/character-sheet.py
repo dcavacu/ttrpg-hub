@@ -59,6 +59,7 @@ def generate():
     # (None) means unchecked, so any presence of the field counts as "on".
     printable = request.form.get("printable") is not None
     config["printable"] = printable
+    config["newbie_help"] = request.form.get("newbie_help") is not None
 
     portrait_bytes = None
     if not printable:
