@@ -547,10 +547,18 @@ def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None):
         c.rect(0, 0, page_w, PAGE_H, stroke=0, fill=1)
 
     # title (auto-shrink so long class names never run into the banner),
-    # centered in the space it has between the page edge and the mid column
+    # centered in the space it has between the page edge and the mid column.
+    # The gap to the banner is bigger than it looks it needs to be on
+    # purpose: stringWidth() measures a string's advance width, not its
+    # inked pixels, and Helvetica-BoldOblique's rightward slant means the
+    # last letter's actual ink can extend past that advance width -- with
+    # only an 8pt gap, a long name (e.g. "STORMSHIFTER") auto-shrunk right
+    # up to the fitting limit had its slanted last letter visibly crowd
+    # the banner's rounded corner even though the two boxes never
+    # mathematically overlapped.
     c.setFillColor(col(accent))
     title_size = 34
-    title_x0, title_x1 = 14, mid_start - 8
+    title_x0, title_x1 = 14, mid_start - 16
     max_title_w = title_x1 - title_x0
     while title_size > 12 and stringWidth(name, "Helvetica-BoldOblique", title_size) * hscale > max_title_w:
         title_size -= 1
