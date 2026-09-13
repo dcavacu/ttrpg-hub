@@ -47,6 +47,27 @@ BASE_PAGE_W = 992
 # Real target paper size every finished page gets rescaled into.
 A4_LANDSCAPE_W, A4_LANDSCAPE_H = landscape(A4)
 
+
+def text_width_ratio(page_w):
+    """How much WIDER text actually ends up rendering, after the A4
+    rescale, than a plain stringWidth() measurement in these native page
+    coordinates would suggest.
+
+    _rescale_to_a4 stretches width and height independently to fill A4
+    exactly, then layers a `Tz` (horizontal text scaling) correction on
+    top so glyphs render at a uniform scale (matching the page's own
+    vertical scale) instead of visibly squashed/stretched like the boxes
+    around them. That correction means text's rendered width no longer
+    tracks the page's horizontal scale the way every OTHER measurement
+    on the page does -- so any stringWidth() result used to position or
+    fit something (a label positioned after another label, a box sized
+    to wrap its own text, an auto-shrink loop) has to be multiplied by
+    this ratio first, or it ends up measuring against the wrong scale
+    and the layout it computes silently stops fitting once rescaled."""
+    scale_x = A4_LANDSCAPE_W / page_w
+    scale_y = A4_LANDSCAPE_H / PAGE_H
+    return scale_y / scale_x
+
 left_start, left_end = 10, 180            # stats / skills column
 mid_start, mid_end = 192, 428             # portrait / inventory / wounds / subclass & abilities
 note0_start, note1_end = 440, 980         # joined notes box (divider sits at the midpoint)
@@ -136,12 +157,12 @@ def clean_field_name(title):
     return title.rstrip(".!?").strip()
 
 
-def wrap_text(text, font, size, max_width):
+def wrap_text(text, font, size, max_width, hscale_ratio=1.0):
     words = text.split()
     lines, cur = [], ""
     for w in words:
         trial = (cur + " " + w).strip()
-        if not cur or stringWidth(trial, font, size) <= max_width:
+        if not cur or stringWidth(trial, font, size) * hscale_ratio <= max_width:
             cur = trial
         else:
             lines.append(cur)
@@ -385,7 +406,7 @@ def joined_two_field_card(c, x0, x1, y_bottom, y_top, header_h, title, field1, f
     return body_top
 
 
-def draw_newbie_column(c, x0, x1, accent, sections, title="QUICK REFERENCE"):
+def draw_newbie_column(c, x0, x1, accent, sections, title="QUICK REFERENCE", hscale_ratio=1.0):
     """Fixed, permanently-printed reference text (Core Rules p.13-14,
     'Heroic Actions' / 'Heroic Reactions') -- not a fillable field, unlike
     everything else on the sheet. `sections` is a list of
@@ -421,7 +442,7 @@ def draw_newbie_column(c, x0, x1, accent, sections, title="QUICK REFERENCE"):
         if intro:
             c.setFont("Helvetica-Oblique", 7.5)
             c.setFillColor(colors.Color(0.4, 0.4, 0.4))
-            for line in wrap_text(intro, "Helvetica-Oblique", 7.5, w - 16):
+            for line in wrap_text(intro, "Helvetica-Oblique", 7.5, w - 16, hscale_ratio):
                 c.drawString(x0 + 8, ty, line)
                 ty -= 9.5
             ty -= 8
@@ -432,7 +453,7 @@ def draw_newbie_column(c, x0, x1, accent, sections, title="QUICK REFERENCE"):
             c.drawString(x0 + 8, ty, entry_title)
             ty -= 11
             c.setFont("Helvetica", 8.5)
-            for line in wrap_text(body, "Helvetica", 8.5, w - 16):
+            for line in wrap_text(body, "Helvetica", 8.5, w - 16, hscale_ratio):
                 c.drawString(x0 + 8, ty, line)
                 ty -= 10.5
             ty -= 8
@@ -442,7 +463,7 @@ def draw_newbie_column(c, x0, x1, accent, sections, title="QUICK REFERENCE"):
 # --------------------------------------------------------------------------
 # page 1
 # --------------------------------------------------------------------------
-def draw_resource_banner(config, accent):
+def draw_resource_banner(config, accent, hscale=1.0):
     """Return a function(c) drawing the page-1 resource banner, or None."""
     mode = config.get("resource_mode", "dice")
     charges_label = config.get("charges_label")
@@ -478,9 +499,27 @@ def draw_resource_banner(config, accent):
             title_y = BANNER_Y0 + (banner_h - 10.8) / 2
             c.drawString(mid_start + 10, title_y, config.get("resource", ""))
             if charges_label:
-                c.setFont("Helvetica-Bold", 8)
-                label_x = mid_start + 138
-                c.drawString(label_x, BANNER_Y0 + (banner_h - 5.8) / 2, charges_label)
+                # Start right after wherever the resource name text actually
+                # ends, not a flat worst-case constant (the old "138" was
+                # tuned assuming a long resource name, so it wasted space
+                # for short ones like "THE THRILL" while still barely
+                # working for long ones -- and once text started rendering
+                # hscale x wider post-rescale, not even that was enough
+                # room left for some labels, see below).
+                name_w = stringWidth(config.get("resource", ""), "Helvetica-BoldOblique", 15) * hscale
+                label_x = mid_start + 10 + name_w + 10
+                # This label's own rendered width also grows by hscale, and
+                # it has to fit before the charge circles start (their own
+                # x-positions are plain geometry, not text, so they don't
+                # move) -- auto-shrink instead of letting a long label like
+                # "SHIFTS" or "CHARGES" run into the first circle.
+                circles_left = mid_end - 56  # leftmost circle's left edge, see the loop below
+                available_w = circles_left - label_x - 4
+                label_size = 8
+                while label_size > 5 and stringWidth(charges_label, "Helvetica-Bold", label_size) * hscale > available_w:
+                    label_size -= 1
+                c.setFont("Helvetica-Bold", label_size)
+                c.drawString(label_x, BANNER_Y0 + (banner_h - label_size * 0.725) / 2, charges_label)
             right = mid_end - 8
             charge_size = 8
             charge_y0 = BANNER_Y0 + (banner_h - charge_size) / 2
@@ -496,6 +535,10 @@ def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None):
     printable = config.get("printable", False)
     accent = PRINTABLE_GREY if printable else config["accent"]
     name = config["name"]
+    # How much wider text renders than stringWidth() suggests, once the A4
+    # rescale's Tz correction is applied -- see text_width_ratio's own
+    # docstring. Needed anywhere a measured width feeds a fit/gap decision.
+    hscale = text_width_ratio(page_w)
 
     if not printable and config.get("background") == "checker":
         draw_checker_background(c, accent, page_w=page_w)
@@ -509,7 +552,7 @@ def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None):
     title_size = 34
     title_x0, title_x1 = 14, mid_start - 8
     max_title_w = title_x1 - title_x0
-    while title_size > 12 and stringWidth(name, "Helvetica-BoldOblique", title_size) > max_title_w:
+    while title_size > 12 and stringWidth(name, "Helvetica-BoldOblique", title_size) * hscale > max_title_w:
         title_size -= 1
     title_cx = (title_x0 + title_x1) / 2
     c.setFont("Helvetica-BoldOblique", title_size)
@@ -518,7 +561,7 @@ def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None):
     c.setStrokeColor(col(accent))
     c.line(title_x0, 574, title_x1, 574)
 
-    banner = draw_resource_banner(config, accent)
+    banner = draw_resource_banner(config, accent, hscale=hscale)
     if banner:
         banner(c)
         mid_top = BANNER_Y0 - 13
@@ -537,7 +580,7 @@ def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None):
     # guess was wrong for "Background", the widest one, and ran the box
     # right into the text). --
     id_labels = ("Name", "Ancestry", "Background", "Subclass", "Language")
-    id_box_x0 = max(stringWidth(l, "Helvetica-Bold", 8) for l in id_labels) + left_start + 8
+    id_box_x0 = max(stringWidth(l, "Helvetica-Bold", 8) for l in id_labels) * hscale + left_start + 8
     for lbl, field in zip(id_labels, id_labels):
         row_h = 17
         c.setFont("Helvetica-Bold", 8)
@@ -553,7 +596,7 @@ def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None):
     c.setFont("Helvetica-Bold", 8)
     c.setFillColor(colors.black)
     c.drawString(left_start, cursor - row_h / 2 - 3, "Coin")
-    coin_label_w = stringWidth("Coin", "Helvetica-Bold", 8)
+    coin_label_w = stringWidth("Coin", "Helvetica-Bold", 8) * hscale
     text_field(c, "Currency", left_start + coin_label_w + 6, cursor - row_h,
                left_start + half_w, cursor, size=8, align="center")
 
@@ -561,7 +604,7 @@ def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None):
     c.setFont("Helvetica-Bold", 8)
     c.setFillColor(colors.black)
     c.drawString(hd_x0, cursor - row_h / 2 - 3, "Hit Die")
-    hd_label_w = stringWidth("Hit Die", "Helvetica-Bold", 8)
+    hd_label_w = stringWidth("Hit Die", "Helvetica-Bold", 8) * hscale
     text_field(c, "Hit Die", hd_x0 + hd_label_w + 6, cursor - row_h, left_end, cursor, size=8,
                align="center")
     cursor -= row_h + 6
@@ -611,7 +654,7 @@ def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None):
         c.setFont("Helvetica-Bold", 10)
         c.setFillColor(colors.black)
         c.drawString(left_start, box_top - skill_box_h / 2 - 3.5, skill)
-        w = stringWidth(skill, "Helvetica-Bold", 10)
+        w = stringWidth(skill, "Helvetica-Bold", 10) * hscale
         c.setFont("Helvetica", 7.5)
         c.setFillColor(colors.Color(0.4, 0.4, 0.4))
         c.drawString(left_start + w + 5, box_top - skill_box_h / 2 - 3.5, stat)
@@ -805,7 +848,8 @@ def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None):
     # =========================================================================
     if config.get("newbie_help"):
         draw_newbie_column(c, newbie_start, newbie_end, accent,
-                            config.get("newbie_help_sections", NEWBIE_HELP_SECTIONS))
+                            config.get("newbie_help_sections", NEWBIE_HELP_SECTIONS),
+                            hscale_ratio=text_width_ratio(page_w))
 
 
 # --------------------------------------------------------------------------
@@ -848,7 +892,8 @@ def draw_page2_banner(c, accent, title, has_mana=False):
     c.setFillColor(colors.white)
     title_right = PAGE2_MANA_X0 if has_mana else BASE_PAGE_W - 20
     title_size = 15
-    while title_size > 9 and stringWidth(title, "Helvetica-BoldOblique", title_size) > title_right - 20:
+    hscale = text_width_ratio(BASE_PAGE_W)  # this banner is only ever drawn on a BASE_PAGE_W page
+    while title_size > 9 and stringWidth(title, "Helvetica-BoldOblique", title_size) * hscale > title_right - 20:
         title_size -= 1
     c.setFont("Helvetica-BoldOblique", title_size)
     baseline = PAGE2_BANNER_Y0 + h / 2 - 5.5
@@ -929,8 +974,9 @@ def draw_reference_page(c, config):
     n = len(columns)
     footer = ref.get("footer", "")
     footer_h = 0
+    footer_hscale = text_width_ratio(BASE_PAGE_W)
     if footer:
-        footer_lines = wrap_text(footer, "Helvetica-Oblique", 8, BASE_PAGE_W - 22)
+        footer_lines = wrap_text(footer, "Helvetica-Oblique", 8, BASE_PAGE_W - 22, footer_hscale)
         footer_h = len(footer_lines) * 10 + 6
 
     top_y = PAGE2_GRID_TOP
@@ -950,7 +996,7 @@ def draw_reference_page(c, config):
         c.setFont("Helvetica-Oblique", 8)
         c.setFillColor(colors.Color(0.35, 0.35, 0.35))
         fy = bottom_y - 12
-        for line in wrap_text(footer, "Helvetica-Oblique", 8, BASE_PAGE_W - 22):
+        for line in wrap_text(footer, "Helvetica-Oblique", 8, BASE_PAGE_W - 22, footer_hscale):
             c.drawString(11, fy, line)
             fy -= 10
 
@@ -997,10 +1043,24 @@ def _rescale_to_a4(pdf):
     first: a uniform scale has to pick the smaller of the two ratios,
     which leaves the other dimension short and centers the page inside a
     blank letterbox margin instead of actually using that space. The
-    independent scale means everything gets stretched a little -- circles
-    end up very slightly oval -- but every box on the sheet, not just the
-    background, ends up with genuinely more room, which is the actual
-    point of fitting real paper instead of a made-up canvas size.
+    independent scale means every drawn shape gets stretched a little --
+    circles end up very slightly oval, boxes very slightly taller-per-
+    width -- but every box on the sheet, not just the background, ends
+    up with genuinely more room, which is the actual point of fitting
+    real paper instead of a made-up canvas size. Boxes reading as
+    stretched a little is fine; TEXT reading as stretched is not (glyphs
+    visibly fat/thin looks like a rendering bug, not a design choice), so
+    a `Tz` (horizontal text scaling) correction is layered in right after
+    the `cm` -- Tz only affects how wide text-showing operators draw
+    glyphs, not their position, not any non-text painting -- set to
+    100 * scale_y/scale_x so the *net* horizontal scale text ends up
+    rendered at (the page's scale_x times this Tz factor) equals scale_y,
+    matching the vertical axis. Every glyph therefore renders at a
+    uniform (undistorted) scale of scale_y, while the boxes/lines/fields
+    around it still get the intended non-uniform stretch. Verified with a
+    throwaway test PDF: a native 100x100 square renders visibly taller-
+    than-wide after this, exactly as intended, while adjacent text next
+    to it comes out with a completely normal, undistorted aspect ratio.
 
     This can't be done by scaling the reportlab canvas while drawing:
     verified empirically that reportlab's acroForm field widgets ignore
@@ -1008,20 +1068,26 @@ def _rescale_to_a4(pdf):
     translate/scale moves the drawn ink but leaves every fillable field's
     /Rect exactly where it was, which would strand every field on the
     sheet under the wrong (rescaled) label. Instead, once a page is fully
-    built: wrap its content stream in `q <cm> ... Q` to visually rescale
-    everything already drawn on it, resize its MediaBox to actual A4
+    built: wrap its content stream in `q <cm> <Tz> ... Q` to visually
+    rescale everything already drawn on it (with that Tz correction so
+    only the text stays undistorted), resize its MediaBox to actual A4
     landscape, and apply that identical per-axis scale by hand to every
     annotation's /Rect so fields land exactly back under their (also
-    rescaled) drawn borders."""
+    rescaled) drawn borders. Note this Tz correction is irrelevant to
+    field text itself -- what a player types into a field is rendered by
+    the PDF viewer from the field's own /Rect and default appearance, not
+    from this page's content stream, so it was never distorted either
+    way."""
     for page in pdf.pages:
         box = page.mediabox
         native_w = float(box[2]) - float(box[0])
         native_h = float(box[3]) - float(box[1])
         scale_x = A4_LANDSCAPE_W / native_w
         scale_y = A4_LANDSCAPE_H / native_h
+        text_hscale = 100.0 * scale_y / scale_x
 
         page.contents_add(
-            ("q %.6f 0 0 %.6f 0 0 cm\n" % (scale_x, scale_y)).encode("latin1"),
+            ("q %.6f 0 0 %.6f 0 0 cm\n%.4f Tz\n" % (scale_x, scale_y, text_hscale)).encode("latin1"),
             prepend=True,
         )
         page.contents_add(b"\nQ", prepend=False)
