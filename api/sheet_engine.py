@@ -165,17 +165,6 @@ def draw_checker_background(c, accent, page_w=BASE_PAGE_W, cell=24):
             c.rect(gx * cell, gy * cell, cell, cell, stroke=0, fill=1)
 
 
-def _record_page_bg(c, checker_accent):
-    """Remember whether the page just started drawing uses the checker
-    background and, if so, its accent color -- read back afterwards, once
-    the PDF is finished, by _rescale_to_a4. That step centers each page
-    inside real A4 with a letterbox margin (see its own docstring), which
-    would otherwise leave a bare white gap around a checkered page instead
-    of the pattern actually reaching the paper's edge."""
-    if not hasattr(c, "_page_bg"):
-        c._page_bg = []
-    c._page_bg.append(checker_accent)
-
 
 # --------------------------------------------------------------------------
 # generic widgets
@@ -510,11 +499,9 @@ def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None):
 
     if not printable and config.get("background") == "checker":
         draw_checker_background(c, accent, page_w=page_w)
-        _record_page_bg(c, accent)
     else:
         c.setFillColor(colors.white)
         c.rect(0, 0, page_w, PAGE_H, stroke=0, fill=1)
-        _record_page_bg(c, None)
 
     # title (auto-shrink so long class names never run into the banner),
     # centered in the space it has between the page edge and the mid column
@@ -887,11 +874,9 @@ def draw_spell_page(c, config):
     accent = PRINTABLE_GREY if printable else config["accent"]
     if not printable and config.get("background") == "checker":
         draw_checker_background(c, accent)
-        _record_page_bg(c, accent)
     else:
         c.setFillColor(colors.white)
         c.rect(0, 0, BASE_PAGE_W, PAGE_H, stroke=0, fill=1)
-        _record_page_bg(c, None)
 
     draw_page2_banner(c, accent, "%s  SPELLBOOK" % config["name"], has_mana=True)
 
@@ -926,11 +911,9 @@ def draw_reference_page(c, config):
     ref = config["reference_page"]
     if not printable and config.get("background") == "checker":
         draw_checker_background(c, accent)
-        _record_page_bg(c, accent)
     else:
         c.setFillColor(colors.white)
         c.rect(0, 0, BASE_PAGE_W, PAGE_H, stroke=0, fill=1)
-        _record_page_bg(c, None)
 
     has_mana = config.get("resource_mode") == "mana" and not config.get("spell_page")
     draw_page2_banner(c, accent, ref.get("banner", ""), has_mana=has_mana)
@@ -1001,32 +984,23 @@ def build(config, out_path, portrait_bytes=None):
         c.showPage()
 
     c.save()
-    _post_process(out_path, getattr(c, "_center_fields", ()), getattr(c, "_page_bg", []))
+    _post_process(out_path, getattr(c, "_center_fields", ()))
     return out_path
 
 
-def _checker_fill_stream(accent, w, h, cell=24):
-    """Raw PDF content-stream bytes painting the same checker pattern as
-    draw_checker_background, but at whatever (unscaled) size is asked for
-    -- used to cover the A4 letterbox margin at its own true scale, not
-    shrunk along with the rescaled page content."""
-    light = tint(accent, 0.08)
-    lighter = tint(accent, 0.16)
-    cols = int(w // cell) + 1
-    rows = int(h // cell) + 1
-    ops = []
-    for gy in range(rows):
-        for gx in range(cols):
-            r, g, b = light if (gx + gy) % 2 == 0 else lighter
-            ops.append("%.4f %.4f %.4f rg\n%.2f %.2f %.2f %.2f re f\n" %
-                       (r, g, b, gx * cell, gy * cell, cell, cell))
-    return "".join(ops).encode("latin1")
-
-
-def _rescale_to_a4(pdf, page_bg):
-    """Rescale every page to fit real A4 landscape, centered, regardless of
-    whatever custom width it was actually drawn at (see the geometry
-    comment near BASE_PAGE_W).
+def _rescale_to_a4(pdf):
+    """Stretch every page to fill real A4 landscape exactly -- corner to
+    corner, no leftover margin -- regardless of whatever custom aspect
+    ratio it was actually drawn at (see the geometry comment near
+    BASE_PAGE_W). Scales width and height independently (whatever each
+    needs to exactly match A4) rather than uniformly, which was tried
+    first: a uniform scale has to pick the smaller of the two ratios,
+    which leaves the other dimension short and centers the page inside a
+    blank letterbox margin instead of actually using that space. The
+    independent scale means everything gets stretched a little -- circles
+    end up very slightly oval -- but every box on the sheet, not just the
+    background, ends up with genuinely more room, which is the actual
+    point of fitting real paper instead of a made-up canvas size.
 
     This can't be done by scaling the reportlab canvas while drawing:
     verified empirically that reportlab's acroForm field widgets ignore
@@ -1036,47 +1010,32 @@ def _rescale_to_a4(pdf, page_bg):
     sheet under the wrong (rescaled) label. Instead, once a page is fully
     built: wrap its content stream in `q <cm> ... Q` to visually rescale
     everything already drawn on it, resize its MediaBox to actual A4
-    landscape, and apply that identical scale+translate by hand to every
+    landscape, and apply that identical per-axis scale by hand to every
     annotation's /Rect so fields land exactly back under their (also
-    rescaled) drawn borders.
-
-    Centering a narrower-aspect-ratio page inside A4 leaves a letterbox
-    margin (here, top and bottom, since these pages are wider-per-height
-    than A4 landscape) -- for a checkered page that margin would
-    otherwise stay bare white instead of the pattern reaching the paper's
-    edge, so `page_bg` (one entry per page, an accent color or None,
-    from _record_page_bg) paints the same checker there too, at its own
-    true scale rather than shrunk along with the rescaled content."""
-    for i, page in enumerate(pdf.pages):
+    rescaled) drawn borders."""
+    for page in pdf.pages:
         box = page.mediabox
         native_w = float(box[2]) - float(box[0])
         native_h = float(box[3]) - float(box[1])
-        scale = min(A4_LANDSCAPE_W / native_w, A4_LANDSCAPE_H / native_h)
-        tx = (A4_LANDSCAPE_W - native_w * scale) / 2
-        ty = (A4_LANDSCAPE_H - native_h * scale) / 2
+        scale_x = A4_LANDSCAPE_W / native_w
+        scale_y = A4_LANDSCAPE_H / native_h
 
         page.contents_add(
-            ("q %.6f 0 0 %.6f %.6f %.6f cm\n" % (scale, scale, tx, ty)).encode("latin1"),
+            ("q %.6f 0 0 %.6f 0 0 cm\n" % (scale_x, scale_y)).encode("latin1"),
             prepend=True,
         )
-        accent = page_bg[i] if i < len(page_bg) else None
-        if accent:
-            page.contents_add(
-                _checker_fill_stream(accent, A4_LANDSCAPE_W, A4_LANDSCAPE_H),
-                prepend=True,
-            )
         page.contents_add(b"\nQ", prepend=False)
         page.mediabox = [0, 0, A4_LANDSCAPE_W, A4_LANDSCAPE_H]
 
         for annot in page.get("/Annots") or ():
             rect = [float(v) for v in annot["/Rect"]]
             annot["/Rect"] = [
-                tx + rect[0] * scale, ty + rect[1] * scale,
-                tx + rect[2] * scale, ty + rect[3] * scale,
+                rect[0] * scale_x, rect[1] * scale_y,
+                rect[2] * scale_x, rect[3] * scale_y,
             ]
 
 
-def _post_process(path, center_fields, page_bg=()):
+def _post_process(path, center_fields):
     """Give the Adv/Dis checkboxes a real 'checked' appearance: a solid
     triangle filling the widget, matching the triangle already hand-drawn
     under it -- instead of reportlab's default checkmark-glyph ink, which
@@ -1084,7 +1043,7 @@ def _post_process(path, center_fields, page_bg=()):
     center-aligns the small single-value boxes (reportlab's textfield() has
     no alignment param, so the /Q entry is set here instead)."""
     pdf = pikepdf.open(path, allow_overwriting_input=True)
-    _rescale_to_a4(pdf, page_bg)
+    _rescale_to_a4(pdf)
     for page in pdf.pages:
         annots = page.get("/Annots")
         if not annots:
