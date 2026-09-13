@@ -196,10 +196,38 @@ def label(c, x, y, text, size=7, font="Helvetica", color=colors.Color(0.35, 0.35
     c.drawString(x, y, text)
 
 
-def label_centered(c, cx, y, text, size=7, font="Helvetica", color=colors.Color(0.35, 0.35, 0.35)):
+def draw_centered(c, cx, y, text, font, size, hscale=1.0):
+    """drawCentredString centers a string's NATIVE (unstretched) width --
+    correct only when nothing downstream changes that width. The A4
+    rescale's Tz correction (see text_width_ratio) stretches text
+    horizontally from its drawn start position, not symmetrically about
+    its center, so text centered this way with drawCentredString ends up
+    rendering with its true center shifted right of the intended point by
+    half the stretch. Centering by hand -- start = cx - (native_width *
+    hscale) / 2 -- accounts for that stretch before it happens, so the
+    *rendered* text ends up centered on cx instead of the pre-stretch
+    string. hscale=1.0 (the default) makes this identical to
+    drawCentredString, for callers on a page where that correction
+    doesn't apply."""
+    w = stringWidth(text, font, size) * hscale
+    c.drawString(cx - w / 2, y, text)
+
+
+def draw_right(c, x, y, text, font, size, hscale=1.0):
+    """Same Tz problem as draw_centered, mirrored: drawRightString anchors
+    a string's NATIVE-width start position so that (unstretched) it would
+    end exactly at x, but Tz then stretches it wider from that start, so
+    the *rendered* right edge overshoots x by the stretch amount. Anchor
+    from x - (native_width * hscale) instead, so the rendered text's
+    right edge lands exactly on x."""
+    w = stringWidth(text, font, size) * hscale
+    c.drawString(x - w, y, text)
+
+
+def label_centered(c, cx, y, text, size=7, font="Helvetica", color=colors.Color(0.35, 0.35, 0.35), hscale=1.0):
     c.setFont(font, size)
     c.setFillColor(color)
-    c.drawCentredString(cx, y, text)
+    draw_centered(c, cx, y, text, font, size, hscale)
 
 
 RADIUS = 3
@@ -568,7 +596,7 @@ def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None):
         title_size -= 1
     title_cx = (title_x0 + title_x1) / 2
     c.setFont("Helvetica-BoldOblique", title_size)
-    c.drawCentredString(title_cx, 578, name)
+    draw_centered(c, title_cx, 578, name, "Helvetica-BoldOblique", title_size, hscale)
     c.setLineWidth(3)
     c.setStrokeColor(col(accent))
     c.line(title_x0, 574, title_x1, 574)
@@ -696,7 +724,7 @@ def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None):
     armor_x0, armor_x1 = hp_temp_x1 + 13, mid_end
     for lbl, x0, x1 in (("NOW", hp_now_x, hp_now_x + 34), ("MAX", hp_max_x, hp_max_x + 34),
                         ("TEMP", hp_temp_x0, hp_temp_x1), ("ARMOR", armor_x0, armor_x1)):
-        label_centered(c, (x0 + x1) / 2, top, lbl)
+        label_centered(c, (x0 + x1) / 2, top, lbl, hscale=hscale)
     top -= 5
     c.setFont("Helvetica-Bold", 15)
     c.setFillColor(colors.black)
@@ -715,7 +743,7 @@ def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None):
                                        ("INITIATIVE", "Initiative"))):
         x0 = mid_start + i * (third + 3)
         x1 = x0 + third
-        label_centered(c, (x0 + x1) / 2, top, lbl)
+        label_centered(c, (x0 + x1) / 2, top, lbl, hscale=hscale)
         text_field(c, field, x0, top - 24, x1, top - 4, align="center")
     top -= 24 + 16
 
@@ -747,7 +775,7 @@ def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None):
 
         c.setFillColor(colors.white)
         c.setFont("Helvetica-Bold", 11)
-        c.drawCentredString((x0 + x1) / 2, card_bottom + stat_label_h / 2 - 3.6, s)
+        draw_centered(c, (x0 + x1) / 2, card_bottom + stat_label_h / 2 - 3.6, s, "Helvetica-Bold", 11, hscale)
 
         _mark_center(c, s)
         c.acroForm.textfield(
@@ -916,13 +944,14 @@ def draw_mana_tracker(c, now_rect, max_rect, pool_label):
     """Just the NOW/MAX pool readout. The max is often adjusted by subclass/feat choices as a character levels."""
     nx0, ny0, nx1, ny1 = now_rect
     mx0, my0, mx1, my1 = max_rect
+    hscale = text_width_ratio(BASE_PAGE_W)  # always drawn on a BASE_PAGE_W page (page 2/3)
     c.setFont("Helvetica-Bold", 12)
     c.setFillColor(colors.white)
-    c.drawRightString(nx0 - 8, ny0 + (ny1 - ny0) / 2 - 4, pool_label)
+    draw_right(c, nx0 - 8, ny0 + (ny1 - ny0) / 2 - 4, pool_label, "Helvetica-Bold", 12, hscale)
     text_field(c, "Mana Now", nx0, ny0, nx1, ny1, size=10, align="center")
     c.setFont("Helvetica-Bold", 12)
     c.setFillColor(colors.white)
-    c.drawCentredString((nx1 + mx0) / 2, ny0 + (ny1 - ny0) / 2 - 4, "/")
+    draw_centered(c, (nx1 + mx0) / 2, ny0 + (ny1 - ny0) / 2 - 4, "/", "Helvetica-Bold", 12, hscale)
     text_field(c, "Mana Max", mx0, my0, mx1, my1, size=10, align="center")
 
 
