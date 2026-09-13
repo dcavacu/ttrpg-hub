@@ -165,6 +165,18 @@ def draw_checker_background(c, accent, page_w=BASE_PAGE_W, cell=24):
             c.rect(gx * cell, gy * cell, cell, cell, stroke=0, fill=1)
 
 
+def _record_page_bg(c, checker_accent):
+    """Remember whether the page just started drawing uses the checker
+    background and, if so, its accent color -- read back afterwards, once
+    the PDF is finished, by _rescale_to_a4. That step centers each page
+    inside real A4 with a letterbox margin (see its own docstring), which
+    would otherwise leave a bare white gap around a checkered page instead
+    of the pattern actually reaching the paper's edge."""
+    if not hasattr(c, "_page_bg"):
+        c._page_bg = []
+    c._page_bg.append(checker_accent)
+
+
 # --------------------------------------------------------------------------
 # generic widgets
 # --------------------------------------------------------------------------
@@ -294,11 +306,11 @@ def tag(c, x, y, text, accent, size=7):
 
 
 def bare_field(c, name, x, y0, x1, y1, size=9, multiline=True, value="", ruled=False,
-                first_gap=9):
+                first_gap=9, step=13.5):
     """An AcroForm field with no box of its own -- for layering onto a card
     whose border/fill was already drawn (e.g. by header_card)."""
     if ruled:
-        ruled_lines(c, x, y0, y1, x1, first_gap=first_gap)
+        ruled_lines(c, x, y0, y1, x1, first_gap=first_gap, step=step)
     c.acroForm.textfield(
         name=name, x=x, y=y0, width=x1 - x, height=y1 - y0,
         fontName="Helvetica", fontSize=size, value=value,
@@ -313,7 +325,8 @@ def bare_field(c, name, x, y0, x1, y1, size=9, multiline=True, value="", ruled=F
 
 def header_card(c, x0, x1, y_bottom, y_top, header_h, text, field_name,
                  size=11, header_fill=colors.black, subtitle=None,
-                 subtitle_size=8, radius=None, ruled=True, value=""):
+                 subtitle_size=8, radius=None, ruled=True, value="",
+                 field_size=9, field_step=13.5):
     """The engine's one visual building block: a rounded card with a solid
     label header on top and a bordered body below. field_name=None just
     draws the frame, letting the caller lay its own content/field on top."""
@@ -341,7 +354,8 @@ def header_card(c, x0, x1, y_bottom, y_top, header_h, text, field_name,
 
     body_top = y_top - header_h
     if field_name:
-        bare_field(c, field_name, x0, y_bottom, x1, body_top, value=value, ruled=ruled)
+        bare_field(c, field_name, x0, y_bottom, x1, body_top, value=value, ruled=ruled,
+                   size=field_size, step=field_step)
     return body_top
 
 
@@ -496,9 +510,11 @@ def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None):
 
     if not printable and config.get("background") == "checker":
         draw_checker_background(c, accent, page_w=page_w)
+        _record_page_bg(c, accent)
     else:
         c.setFillColor(colors.white)
         c.rect(0, 0, page_w, PAGE_H, stroke=0, fill=1)
+        _record_page_bg(c, None)
 
     # title (auto-shrink so long class names never run into the banner),
     # centered in the space it has between the page edge and the mid column
@@ -565,7 +581,7 @@ def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None):
 
     # -- portrait (swapped in from the mid column; HP/level/stat cards moved
     # to the mid column below in their place) --
-    PORTRAIT_LEFT_H = 190
+    PORTRAIT_LEFT_H = 215
     portrait_bottom = cursor - PORTRAIT_LEFT_H
     bx, by, bw, bh = left_start, portrait_bottom, left_end - left_start, PORTRAIT_LEFT_H
     pr = min(RADIUS + 2, bw / 2, bh / 2)
@@ -624,7 +640,9 @@ def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None):
     WOUNDS_SECTION_H = 66   # room reserved at the bottom for the wounds track + its label (the
                             # "WOUNDS" text ascends above its y=51 baseline, so this needs real
                             # clearance above it or the Inventory box's bottom border cuts through it)
-    ABIL_H = 145
+    INV_H = 125  # trimmed from 145 to give Subclass & Abilities (below it,
+                 # sized from whatever's left) more room -- it was getting
+                 # squeezed by comparison
     MID_GAP = 8  # breathing room between the stacked mid-column panels
 
     top = mid_top
@@ -702,7 +720,7 @@ def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None):
 
     # -- inventory (fixed-height slot, swapped up to where abilities used to be) --
     mid_label, mid_field = config.get("mid_panel", ("INVENTORY", "Inventory"))
-    inv_bottom = top - ABIL_H
+    inv_bottom = top - INV_H
     # Same header-bar style as NOTES / SUBCLASS & ABILITIES, instead of the
     # small corner tag used elsewhere in the engine.
     header_card(c, mid_start, mid_end, inv_bottom, top, 15, mid_label, mid_field, size=9.5)
@@ -820,8 +838,11 @@ def draw_five_col_grid(c, accent, titles, fields, top_y, bottom_y, x0=11):
     col_w = ((BASE_PAGE_W - 11) - x0 - (n - 1) * 12) / n
     x = x0
     for i in range(n):
+        # field_size/field_step bumped up from the 9pt/13.5pt engine default
+        # -- a bit more breathing room for whoever's actually writing spell
+        # names in these.
         header_card(c, x, x + col_w, bottom_y, top_y, 20, titles[i], fields[i],
-                    size=10, header_fill=col(accent))
+                    size=10, header_fill=col(accent), field_size=10, field_step=15)
         x += col_w + 12
 
 
@@ -866,9 +887,11 @@ def draw_spell_page(c, config):
     accent = PRINTABLE_GREY if printable else config["accent"]
     if not printable and config.get("background") == "checker":
         draw_checker_background(c, accent)
+        _record_page_bg(c, accent)
     else:
         c.setFillColor(colors.white)
         c.rect(0, 0, BASE_PAGE_W, PAGE_H, stroke=0, fill=1)
+        _record_page_bg(c, None)
 
     draw_page2_banner(c, accent, "%s  SPELLBOOK" % config["name"], has_mana=True)
 
@@ -887,7 +910,7 @@ def draw_spell_page(c, config):
     # full-height treatment before, but rarely needed nearly this much).
     util_x0, util_x1 = 11, 11 + SPELL_SIDEBAR_W
     header_card(c, util_x0, util_x1, 11, PAGE2_GRID_TOP, 20, "CANTRIPS",
-                "Book Cantrips", size=10, header_fill=col(accent))
+                "Book Cantrips", size=10, header_fill=col(accent), field_size=10, field_step=15)
 
     grid_x0 = util_x1 + 12
     draw_five_col_grid(c, accent, SPELL_COLS_TOP, SPELL_FIELDS_TOP, PAGE2_GRID_TOP, 288, x0=grid_x0)
@@ -903,9 +926,11 @@ def draw_reference_page(c, config):
     ref = config["reference_page"]
     if not printable and config.get("background") == "checker":
         draw_checker_background(c, accent)
+        _record_page_bg(c, accent)
     else:
         c.setFillColor(colors.white)
         c.rect(0, 0, BASE_PAGE_W, PAGE_H, stroke=0, fill=1)
+        _record_page_bg(c, None)
 
     has_mana = config.get("resource_mode") == "mana" and not config.get("spell_page")
     draw_page2_banner(c, accent, ref.get("banner", ""), has_mana=has_mana)
@@ -976,11 +1001,29 @@ def build(config, out_path, portrait_bytes=None):
         c.showPage()
 
     c.save()
-    _post_process(out_path, getattr(c, "_center_fields", ()))
+    _post_process(out_path, getattr(c, "_center_fields", ()), getattr(c, "_page_bg", []))
     return out_path
 
 
-def _rescale_to_a4(pdf):
+def _checker_fill_stream(accent, w, h, cell=24):
+    """Raw PDF content-stream bytes painting the same checker pattern as
+    draw_checker_background, but at whatever (unscaled) size is asked for
+    -- used to cover the A4 letterbox margin at its own true scale, not
+    shrunk along with the rescaled page content."""
+    light = tint(accent, 0.08)
+    lighter = tint(accent, 0.16)
+    cols = int(w // cell) + 1
+    rows = int(h // cell) + 1
+    ops = []
+    for gy in range(rows):
+        for gx in range(cols):
+            r, g, b = light if (gx + gy) % 2 == 0 else lighter
+            ops.append("%.4f %.4f %.4f rg\n%.2f %.2f %.2f %.2f re f\n" %
+                       (r, g, b, gx * cell, gy * cell, cell, cell))
+    return "".join(ops).encode("latin1")
+
+
+def _rescale_to_a4(pdf, page_bg):
     """Rescale every page to fit real A4 landscape, centered, regardless of
     whatever custom width it was actually drawn at (see the geometry
     comment near BASE_PAGE_W).
@@ -995,8 +1038,16 @@ def _rescale_to_a4(pdf):
     everything already drawn on it, resize its MediaBox to actual A4
     landscape, and apply that identical scale+translate by hand to every
     annotation's /Rect so fields land exactly back under their (also
-    rescaled) drawn borders."""
-    for page in pdf.pages:
+    rescaled) drawn borders.
+
+    Centering a narrower-aspect-ratio page inside A4 leaves a letterbox
+    margin (here, top and bottom, since these pages are wider-per-height
+    than A4 landscape) -- for a checkered page that margin would
+    otherwise stay bare white instead of the pattern reaching the paper's
+    edge, so `page_bg` (one entry per page, an accent color or None,
+    from _record_page_bg) paints the same checker there too, at its own
+    true scale rather than shrunk along with the rescaled content."""
+    for i, page in enumerate(pdf.pages):
         box = page.mediabox
         native_w = float(box[2]) - float(box[0])
         native_h = float(box[3]) - float(box[1])
@@ -1008,6 +1059,12 @@ def _rescale_to_a4(pdf):
             ("q %.6f 0 0 %.6f %.6f %.6f cm\n" % (scale, scale, tx, ty)).encode("latin1"),
             prepend=True,
         )
+        accent = page_bg[i] if i < len(page_bg) else None
+        if accent:
+            page.contents_add(
+                _checker_fill_stream(accent, A4_LANDSCAPE_W, A4_LANDSCAPE_H),
+                prepend=True,
+            )
         page.contents_add(b"\nQ", prepend=False)
         page.mediabox = [0, 0, A4_LANDSCAPE_W, A4_LANDSCAPE_H]
 
@@ -1019,7 +1076,7 @@ def _rescale_to_a4(pdf):
             ]
 
 
-def _post_process(path, center_fields):
+def _post_process(path, center_fields, page_bg=()):
     """Give the Adv/Dis checkboxes a real 'checked' appearance: a solid
     triangle filling the widget, matching the triangle already hand-drawn
     under it -- instead of reportlab's default checkmark-glyph ink, which
@@ -1027,7 +1084,7 @@ def _post_process(path, center_fields):
     center-aligns the small single-value boxes (reportlab's textfield() has
     no alignment param, so the /Q entry is set here instead)."""
     pdf = pikepdf.open(path, allow_overwriting_input=True)
-    _rescale_to_a4(pdf)
+    _rescale_to_a4(pdf, page_bg)
     for page in pdf.pages:
         annots = page.get("/Annots")
         if not annots:
