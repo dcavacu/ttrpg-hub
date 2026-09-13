@@ -531,10 +531,11 @@ def draw_resource_banner(config, accent, hscale=1.0):
     return None  # pure mana, no charges -> banner omitted, tracker lives on page 2
 
 
-def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None):
+def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None, values=None):
     printable = config.get("printable", False)
     accent = PRINTABLE_GREY if printable else config["accent"]
     name = config["name"]
+    values = values or {}  # optional pre-filled field values, keyed by AcroForm field name
     # How much wider text renders than stringWidth() suggests, once the A4
     # rescale's Tz correction is applied -- see text_width_ratio's own
     # docstring. Needed anywhere a measured width feeds a fit/gap decision.
@@ -586,7 +587,7 @@ def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None):
         c.setFont("Helvetica-Bold", 8)
         c.setFillColor(colors.black)
         c.drawString(left_start, cursor - row_h + 5.5, lbl)
-        text_field(c, field, id_box_x0, cursor - row_h, left_end, cursor, size=8)
+        text_field(c, field, id_box_x0, cursor - row_h, left_end, cursor, size=8, value=values.get(field, ""))
         cursor -= row_h + 6
 
     # -- coin / hit die (side by side, label width measured so it can never
@@ -690,7 +691,7 @@ def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None):
     c.setFillColor(colors.black)
     c.drawString(mid_start, top - 17, "HP")
     text_field(c, "HP - Current", hp_now_x, top - 24, hp_now_x + 34, top, size=11, align="center")
-    text_field(c, "HP - Max", hp_max_x, top - 24, hp_max_x + 34, top, size=11, align="center")
+    text_field(c, "HP - Max", hp_max_x, top - 24, hp_max_x + 34, top, size=11, align="center", value=values.get("HP - Max", ""))
     c.setFont("Helvetica-Bold", 13)
     c.drawString(hp_max_x + 39, top - 17, "+")
     text_field(c, "Temp HP", hp_temp_x0, top - 24, hp_temp_x1, top, size=11, align="center")
@@ -704,7 +705,7 @@ def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None):
         x0 = mid_start + i * (third + 3)
         x1 = x0 + third
         label_centered(c, (x0 + x1) / 2, top, lbl)
-        text_field(c, field, x0, top - 24, x1, top - 4, align="center")
+        text_field(c, field, x0, top - 24, x1, top - 4, align="center", value=values.get(field, ""))
     top -= 24 + 16
 
     # -- ability score cards: rounded card, white score field over a black
@@ -741,7 +742,7 @@ def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None):
         c.acroForm.textfield(
             name=s, x=x0, y=card_bottom + stat_label_h, width=w,
             height=card_top - card_bottom - stat_label_h,
-            fontName="Helvetica-Bold", fontSize=18, value="",
+            fontName="Helvetica-Bold", fontSize=18, value=values.get(s, ""),
             borderStyle="solid", borderWidth=0, borderColor=None,
             fillColor=None, textColor=colors.black, forceBorder=False,
         )
@@ -1004,7 +1005,7 @@ def draw_reference_page(c, config):
 # --------------------------------------------------------------------------
 # entry points
 # --------------------------------------------------------------------------
-def build(config, out_path, portrait_bytes=None):
+def build(config, out_path, portrait_bytes=None, values=None):
     title = "Nimble %s Character Sheet" % config["name"].title()
     page_w = WIDE_PAGE_W if config.get("newbie_help") else BASE_PAGE_W
 
@@ -1014,7 +1015,7 @@ def build(config, out_path, portrait_bytes=None):
     c.setCreator("anonymous")
     c.setSubject("unspecified")
 
-    draw_page1(c, config, page_w=page_w, portrait_bytes=portrait_bytes)
+    draw_page1(c, config, page_w=page_w, portrait_bytes=portrait_bytes, values=values)
     c.showPage()
 
     # page 2+ are always base-width -- the newbie column is a page-1-only sidebar

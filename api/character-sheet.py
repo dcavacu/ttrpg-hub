@@ -61,6 +61,23 @@ def generate():
     config["printable"] = printable
     config["newbie_help"] = request.form.get("newbie_help") is not None
 
+    # Optional pre-filled character details -- anything left blank on the
+    # form stays blank on the generated sheet, exactly as before this was
+    # added. Keyed by the sheet's own AcroForm field names.
+    values = {
+        "Name": request.form.get("name", "").strip(),
+        "Ancestry": request.form.get("ancestry", "").strip(),
+        "Background": request.form.get("background", "").strip(),
+        "Subclass": request.form.get("subclass", "").strip(),
+        "Language": request.form.get("language", "").strip(),
+        "Level": request.form.get("level", "").strip(),
+        "HP - Max": request.form.get("hp_max", "").strip(),
+        "STR": request.form.get("str_score", "").strip(),
+        "DEX": request.form.get("dex_score", "").strip(),
+        "INT": request.form.get("int_score", "").strip(),
+        "WIL": request.form.get("wil_score", "").strip(),
+    }
+
     portrait_bytes = None
     if not printable:
         portrait_file = request.files.get("portrait")
@@ -71,7 +88,7 @@ def generate():
     out_path = tmp.name
     tmp.close()
     try:
-        build(config, out_path, portrait_bytes=portrait_bytes)
+        build(config, out_path, portrait_bytes=portrait_bytes, values=values)
         with open(out_path, "rb") as f:
             pdf_bytes = f.read()
     finally:

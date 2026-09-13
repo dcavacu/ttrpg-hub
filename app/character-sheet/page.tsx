@@ -96,8 +96,9 @@ export default function CharacterSheetPage() {
         </div>
         <h1>Character Sheets</h1>
         <p className={styles.lede}>
-          Pick a class, drop in a portrait, and choose an accent color. You&apos;ll get a real fillable PDF back —
-          every stat, skill, and note field stays open for you to fill in afterward in your PDF reader.
+          Pick a class, drop in a portrait, and choose an accent color — optionally fill in a few character
+          details below to have them already typed in. You&apos;ll get a real fillable PDF back — every stat,
+          skill, and note field stays open to edit afterward in your PDF reader.
         </p>
         <form className={styles.form} onSubmit={handleSubmit}>
           <label htmlFor="class">
@@ -110,6 +111,57 @@ export default function CharacterSheetPage() {
               ))}
             </select>
           </label>
+          <fieldset className={styles.detailsFieldset}>
+            <legend className={styles.detailsLegend}>Character details (optional — leave blank to fill in later)</legend>
+            <div className={styles.detailsGrid}>
+              <label htmlFor="name">
+                Name
+                <input id="name" name="name" type="text" />
+              </label>
+              <label htmlFor="ancestry">
+                Ancestry
+                <input id="ancestry" name="ancestry" type="text" />
+              </label>
+              <label htmlFor="background">
+                Background
+                <input id="background" name="background" type="text" />
+              </label>
+              <label htmlFor="subclass">
+                Subclass
+                <input id="subclass" name="subclass" type="text" />
+              </label>
+              <label htmlFor="language">
+                Language
+                <input id="language" name="language" type="text" />
+              </label>
+              <label htmlFor="level">
+                Level
+                <input id="level" name="level" type="number" min={1} max={20} />
+              </label>
+              <label htmlFor="hp_max">
+                Max HP
+                <input id="hp_max" name="hp_max" type="number" min={0} />
+              </label>
+            </div>
+            <div className={styles.statsRow}>
+              <label htmlFor="str_score">
+                STR
+                <input id="str_score" name="str_score" type="text" inputMode="numeric" />
+              </label>
+              <label htmlFor="dex_score">
+                DEX
+                <input id="dex_score" name="dex_score" type="text" inputMode="numeric" />
+              </label>
+              <label htmlFor="int_score">
+                INT
+                <input id="int_score" name="int_score" type="text" inputMode="numeric" />
+              </label>
+              <label htmlFor="wil_score">
+                WIL
+                <input id="wil_score" name="wil_score" type="text" inputMode="numeric" />
+              </label>
+            </div>
+          </fieldset>
           <label htmlFor="portrait" className={printable ? styles.fieldDisabled : undefined}>
             Portrait (PNG, JPG, or WebP)
             <input
