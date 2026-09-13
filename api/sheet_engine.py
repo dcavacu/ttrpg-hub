@@ -370,7 +370,7 @@ def header_card(c, x0, x1, y_bottom, y_top, header_h, text, field_name,
 
 
 def joined_two_field_card(c, x0, x1, y_bottom, y_top, header_h, title, field1, field2,
-                           header_fill=colors.black, size=11, value1="", value2=""):
+                           header_fill=colors.black, size=11):
     """One unified rounded card (single outer border, single title) split by
     a divider into two independently-named, independently fillable halves --
     for 'these should look like one box but stay two separate fields'."""
@@ -401,8 +401,8 @@ def joined_two_field_card(c, x0, x1, y_bottom, y_top, header_h, title, field1, f
     body_top = y_top - header_h
     # first ruled line sits a half-letter lower than the default gap, so the
     # first line typed lands on it instead of floating above it
-    bare_field(c, field1, x0, y_bottom, mid_x - 3, body_top, ruled=True, first_gap=13.5, value=value1)
-    bare_field(c, field2, mid_x + 3, y_bottom, x1, body_top, ruled=True, first_gap=13.5, value=value2)
+    bare_field(c, field1, x0, y_bottom, mid_x - 3, body_top, ruled=True, first_gap=13.5)
+    bare_field(c, field2, mid_x + 3, y_bottom, x1, body_top, ruled=True, first_gap=13.5)
     return body_top
 
 
@@ -531,11 +531,10 @@ def draw_resource_banner(config, accent, hscale=1.0):
     return None  # pure mana, no charges -> banner omitted, tracker lives on page 2
 
 
-def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None, values=None):
+def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None):
     printable = config.get("printable", False)
     accent = PRINTABLE_GREY if printable else config["accent"]
     name = config["name"]
-    values = values or {}  # optional pre-filled field values, keyed by AcroForm field name
     # How much wider text renders than stringWidth() suggests, once the A4
     # rescale's Tz correction is applied -- see text_width_ratio's own
     # docstring. Needed anywhere a measured width feeds a fit/gap decision.
@@ -587,7 +586,7 @@ def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None, values=None):
         c.setFont("Helvetica-Bold", 8)
         c.setFillColor(colors.black)
         c.drawString(left_start, cursor - row_h + 5.5, lbl)
-        text_field(c, field, id_box_x0, cursor - row_h, left_end, cursor, size=8, value=values.get(field, ""))
+        text_field(c, field, id_box_x0, cursor - row_h, left_end, cursor, size=8)
         cursor -= row_h + 6
 
     # -- coin / hit die (side by side, label width measured so it can never
@@ -691,7 +690,7 @@ def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None, values=None):
     c.setFillColor(colors.black)
     c.drawString(mid_start, top - 17, "HP")
     text_field(c, "HP - Current", hp_now_x, top - 24, hp_now_x + 34, top, size=11, align="center")
-    text_field(c, "HP - Max", hp_max_x, top - 24, hp_max_x + 34, top, size=11, align="center", value=values.get("HP - Max", ""))
+    text_field(c, "HP - Max", hp_max_x, top - 24, hp_max_x + 34, top, size=11, align="center")
     c.setFont("Helvetica-Bold", 13)
     c.drawString(hp_max_x + 39, top - 17, "+")
     text_field(c, "Temp HP", hp_temp_x0, top - 24, hp_temp_x1, top, size=11, align="center")
@@ -705,7 +704,7 @@ def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None, values=None):
         x0 = mid_start + i * (third + 3)
         x1 = x0 + third
         label_centered(c, (x0 + x1) / 2, top, lbl)
-        text_field(c, field, x0, top - 24, x1, top - 4, align="center", value=values.get(field, ""))
+        text_field(c, field, x0, top - 24, x1, top - 4, align="center")
     top -= 24 + 16
 
     # -- ability score cards: rounded card, white score field over a black
@@ -742,7 +741,7 @@ def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None, values=None):
         c.acroForm.textfield(
             name=s, x=x0, y=card_bottom + stat_label_h, width=w,
             height=card_top - card_bottom - stat_label_h,
-            fontName="Helvetica-Bold", fontSize=18, value=values.get(s, ""),
+            fontName="Helvetica-Bold", fontSize=18, value="",
             borderStyle="solid", borderWidth=0, borderColor=None,
             fillColor=None, textColor=colors.black, forceBorder=False,
         )
@@ -754,15 +753,14 @@ def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None, values=None):
     inv_bottom = top - INV_H
     # Same header-bar style as NOTES / SUBCLASS & ABILITIES, instead of the
     # small corner tag used elsewhere in the engine.
-    header_card(c, mid_start, mid_end, inv_bottom, top, 15, mid_label, mid_field, size=9.5,
-                value=values.get(mid_field, ""))
+    header_card(c, mid_start, mid_end, inv_bottom, top, 15, mid_label, mid_field, size=9.5)
     top = inv_bottom - MID_GAP
 
     # -- subclass & abilities: fills whatever is left above the wounds section --
     wounds_section_top = WOUNDS_SECTION_H
     abil_top = top - 3
     header_card(c, mid_start, mid_end, wounds_section_top, abil_top, 15,
-                "SUBCLASS & ABILITIES", "Abilities", size=9.5, value=values.get("Abilities", ""))
+                "SUBCLASS & ABILITIES", "Abilities", size=9.5)
 
     # -- wounds: a pill-shaped track, circles beaded on a connecting line --
     # Shifted up by WY so its lowest element (the dashed row) lines up with
@@ -839,8 +837,7 @@ def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None, values=None):
     # NOTE0 / NOTE1: two plain full-height notes boxes
     # =========================================================================
     joined_two_field_card(c, note0_start, note1_end, 11, 601, 20,
-                          "NOTES", "Notes 0", "Notes 1",
-                          value1=values.get("Notes 0", ""), value2=values.get("Notes 1", ""))
+                          "NOTES", "Notes 0", "Notes 1")
 
     # =========================================================================
     # NEWBIE: optional new-player help column, only drawn (and only takes
@@ -867,8 +864,7 @@ SPELL_FIELDS_BOTTOM = ["Book T5", "Book T6", "Book T7", "Book T8", "Book T9"]
 SPELL_SIDEBAR_W = ((BASE_PAGE_W - 22) - 5 * 12) / 6
 
 
-def draw_five_col_grid(c, accent, titles, fields, top_y, bottom_y, x0=11, values=None):
-    values = values or {}
+def draw_five_col_grid(c, accent, titles, fields, top_y, bottom_y, x0=11):
     n = len(titles)
     col_w = ((BASE_PAGE_W - 11) - x0 - (n - 1) * 12) / n
     x = x0
@@ -877,8 +873,7 @@ def draw_five_col_grid(c, accent, titles, fields, top_y, bottom_y, x0=11, values
         # -- a bit more breathing room for whoever's actually writing spell
         # names in these.
         header_card(c, x, x + col_w, bottom_y, top_y, 20, titles[i], fields[i],
-                    size=10, header_fill=col(accent), field_size=10, field_step=15,
-                    value=values.get(fields[i], ""))
+                    size=10, header_fill=col(accent), field_size=10, field_step=15)
         x += col_w + 12
 
 
@@ -919,8 +914,7 @@ def draw_mana_tracker(c, now_rect, max_rect, pool_label):
     text_field(c, "Mana Max", mx0, my0, mx1, my1, size=10, align="center")
 
 
-def draw_spell_page(c, config, values=None):
-    values = values or {}
+def draw_spell_page(c, config):
     printable = config.get("printable", False)
     accent = PRINTABLE_GREY if printable else config["accent"]
     if not printable and config.get("background") == "checker":
@@ -946,12 +940,11 @@ def draw_spell_page(c, config, values=None):
     # full-height treatment before, but rarely needed nearly this much).
     util_x0, util_x1 = 11, 11 + SPELL_SIDEBAR_W
     header_card(c, util_x0, util_x1, 11, PAGE2_GRID_TOP, 20, "CANTRIPS",
-                "Book Cantrips", size=10, header_fill=col(accent), field_size=10, field_step=15,
-                value=values.get("Book Cantrips", ""))
+                "Book Cantrips", size=10, header_fill=col(accent), field_size=10, field_step=15)
 
     grid_x0 = util_x1 + 12
-    draw_five_col_grid(c, accent, SPELL_COLS_TOP, SPELL_FIELDS_TOP, PAGE2_GRID_TOP, 288, x0=grid_x0, values=values)
-    draw_five_col_grid(c, accent, SPELL_COLS_BOTTOM, SPELL_FIELDS_BOTTOM, 270, 11, x0=grid_x0, values=values)
+    draw_five_col_grid(c, accent, SPELL_COLS_TOP, SPELL_FIELDS_TOP, PAGE2_GRID_TOP, 288, x0=grid_x0)
+    draw_five_col_grid(c, accent, SPELL_COLS_BOTTOM, SPELL_FIELDS_BOTTOM, 270, 11, x0=grid_x0)
 
 
 # --------------------------------------------------------------------------
@@ -1011,7 +1004,7 @@ def draw_reference_page(c, config):
 # --------------------------------------------------------------------------
 # entry points
 # --------------------------------------------------------------------------
-def build(config, out_path, portrait_bytes=None, values=None):
+def build(config, out_path, portrait_bytes=None):
     title = "Nimble %s Character Sheet" % config["name"].title()
     page_w = WIDE_PAGE_W if config.get("newbie_help") else BASE_PAGE_W
 
@@ -1021,7 +1014,7 @@ def build(config, out_path, portrait_bytes=None, values=None):
     c.setCreator("anonymous")
     c.setSubject("unspecified")
 
-    draw_page1(c, config, page_w=page_w, portrait_bytes=portrait_bytes, values=values)
+    draw_page1(c, config, page_w=page_w, portrait_bytes=portrait_bytes)
     c.showPage()
 
     # page 2+ are always base-width -- the newbie column is a page-1-only sidebar
@@ -1029,7 +1022,7 @@ def build(config, out_path, portrait_bytes=None, values=None):
         c.setPageSize((BASE_PAGE_W, PAGE_H))
 
     if config.get("spell_page"):
-        draw_spell_page(c, config, values=values)
+        draw_spell_page(c, config)
         c.showPage()
 
     if config.get("reference_page"):

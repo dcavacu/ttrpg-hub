@@ -83,10 +83,7 @@
 }
 
 .form select,
-.form input[type="file"],
-.form input[type="text"],
-.form input[type="number"],
-.form textarea {
+.form input[type="file"] {
   background: var(--panel-2);
   border: 1px solid var(--hairline-strong);
   border-radius: 3px;
@@ -94,58 +91,6 @@
   color: var(--parchment);
   font-family: inherit;
   font-size: 0.95rem;
-}
-
-.form textarea {
-  resize: vertical;
-  line-height: 1.5;
-}
-
-.textareaGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 14px;
-}
-
-.tierGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
-  gap: 10px;
-}
-
-.tierGrid textarea {
-  font-size: 0.85rem;
-}
-
-.detailsFieldset {
-  border: 1px solid var(--hairline-strong);
-  border-radius: 4px;
-  margin: 0;
-  padding: 16px 16px 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.detailsLegend {
-  padding: 0 6px;
-  font-size: var(--text-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--parchment-dim);
-}
-
-.detailsGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 14px;
-}
-
-.statsRow {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
-  max-width: 320px;
 }
 
 .form input[type="file"]::file-selector-button {

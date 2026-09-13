@@ -61,39 +61,6 @@ def generate():
     config["printable"] = printable
     config["newbie_help"] = request.form.get("newbie_help") is not None
 
-    # Optional pre-filled character details -- anything left blank on the
-    # form stays blank on the generated sheet, exactly as before this was
-    # added. Keyed by the sheet's own AcroForm field names.
-    values = {
-        "Name": request.form.get("name", "").strip(),
-        "Ancestry": request.form.get("ancestry", "").strip(),
-        "Background": request.form.get("background", "").strip(),
-        "Subclass": request.form.get("subclass", "").strip(),
-        "Language": request.form.get("language", "").strip(),
-        "Level": request.form.get("level", "").strip(),
-        "HP - Max": request.form.get("hp_max", "").strip(),
-        "STR": request.form.get("str_score", "").strip(),
-        "DEX": request.form.get("dex_score", "").strip(),
-        "INT": request.form.get("int_score", "").strip(),
-        "WIL": request.form.get("wil_score", "").strip(),
-        "Inventory": request.form.get("inventory", "").strip(),
-        "Abilities": request.form.get("abilities", "").strip(),
-        "Notes 0": request.form.get("notes", "").strip(),
-        # Spellbook fields -- harmless no-ops for a class with no spell_page
-        # (build() just never draws anything that would read them).
-        "Book Cantrips": request.form.get("cantrips", "").strip(),
-        "Book Utility": request.form.get("utility_spells", "").strip(),
-        "Book T1": request.form.get("tier1", "").strip(),
-        "Book T2": request.form.get("tier2", "").strip(),
-        "Book T3": request.form.get("tier3", "").strip(),
-        "Book T4": request.form.get("tier4", "").strip(),
-        "Book T5": request.form.get("tier5", "").strip(),
-        "Book T6": request.form.get("tier6", "").strip(),
-        "Book T7": request.form.get("tier7", "").strip(),
-        "Book T8": request.form.get("tier8", "").strip(),
-        "Book T9": request.form.get("tier9", "").strip(),
-    }
-
     portrait_bytes = None
     if not printable:
         portrait_file = request.files.get("portrait")
@@ -104,7 +71,7 @@ def generate():
     out_path = tmp.name
     tmp.close()
     try:
-        build(config, out_path, portrait_bytes=portrait_bytes, values=values)
+        build(config, out_path, portrait_bytes=portrait_bytes)
         with open(out_path, "rb") as f:
             pdf_bytes = f.read()
     finally:
