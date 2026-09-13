@@ -76,6 +76,22 @@ def generate():
         "DEX": request.form.get("dex_score", "").strip(),
         "INT": request.form.get("int_score", "").strip(),
         "WIL": request.form.get("wil_score", "").strip(),
+        "Inventory": request.form.get("inventory", "").strip(),
+        "Abilities": request.form.get("abilities", "").strip(),
+        "Notes 0": request.form.get("notes", "").strip(),
+        # Spellbook fields -- harmless no-ops for a class with no spell_page
+        # (build() just never draws anything that would read them).
+        "Book Cantrips": request.form.get("cantrips", "").strip(),
+        "Book Utility": request.form.get("utility_spells", "").strip(),
+        "Book T1": request.form.get("tier1", "").strip(),
+        "Book T2": request.form.get("tier2", "").strip(),
+        "Book T3": request.form.get("tier3", "").strip(),
+        "Book T4": request.form.get("tier4", "").strip(),
+        "Book T5": request.form.get("tier5", "").strip(),
+        "Book T6": request.form.get("tier6", "").strip(),
+        "Book T7": request.form.get("tier7", "").strip(),
+        "Book T8": request.form.get("tier8", "").strip(),
+        "Book T9": request.form.get("tier9", "").strip(),
     }
 
     portrait_bytes = None

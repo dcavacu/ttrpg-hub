@@ -370,7 +370,7 @@ def header_card(c, x0, x1, y_bottom, y_top, header_h, text, field_name,
 
 
 def joined_two_field_card(c, x0, x1, y_bottom, y_top, header_h, title, field1, field2,
-                           header_fill=colors.black, size=11):
+                           header_fill=colors.black, size=11, value1="", value2=""):
     """One unified rounded card (single outer border, single title) split by
     a divider into two independently-named, independently fillable halves --
     for 'these should look like one box but stay two separate fields'."""
@@ -401,8 +401,8 @@ def joined_two_field_card(c, x0, x1, y_bottom, y_top, header_h, title, field1, f
     body_top = y_top - header_h
     # first ruled line sits a half-letter lower than the default gap, so the
     # first line typed lands on it instead of floating above it
-    bare_field(c, field1, x0, y_bottom, mid_x - 3, body_top, ruled=True, first_gap=13.5)
-    bare_field(c, field2, mid_x + 3, y_bottom, x1, body_top, ruled=True, first_gap=13.5)
+    bare_field(c, field1, x0, y_bottom, mid_x - 3, body_top, ruled=True, first_gap=13.5, value=value1)
+    bare_field(c, field2, mid_x + 3, y_bottom, x1, body_top, ruled=True, first_gap=13.5, value=value2)
     return body_top
 
 
@@ -754,14 +754,15 @@ def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None, values=None):
     inv_bottom = top - INV_H
     # Same header-bar style as NOTES / SUBCLASS & ABILITIES, instead of the
     # small corner tag used elsewhere in the engine.
-    header_card(c, mid_start, mid_end, inv_bottom, top, 15, mid_label, mid_field, size=9.5)
+    header_card(c, mid_start, mid_end, inv_bottom, top, 15, mid_label, mid_field, size=9.5,
+                value=values.get(mid_field, ""))
     top = inv_bottom - MID_GAP
 
     # -- subclass & abilities: fills whatever is left above the wounds section --
     wounds_section_top = WOUNDS_SECTION_H
     abil_top = top - 3
     header_card(c, mid_start, mid_end, wounds_section_top, abil_top, 15,
-                "SUBCLASS & ABILITIES", "Abilities", size=9.5)
+                "SUBCLASS & ABILITIES", "Abilities", size=9.5, value=values.get("Abilities", ""))
 
     # -- wounds: a pill-shaped track, circles beaded on a connecting line --
     # Shifted up by WY so its lowest element (the dashed row) lines up with
@@ -838,7 +839,8 @@ def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None, values=None):
     # NOTE0 / NOTE1: two plain full-height notes boxes
     # =========================================================================
     joined_two_field_card(c, note0_start, note1_end, 11, 601, 20,
-                          "NOTES", "Notes 0", "Notes 1")
+                          "NOTES", "Notes 0", "Notes 1",
+                          value1=values.get("Notes 0", ""), value2=values.get("Notes 1", ""))
 
     # =========================================================================
     # NEWBIE: optional new-player help column, only drawn (and only takes
@@ -865,7 +867,8 @@ SPELL_FIELDS_BOTTOM = ["Book T5", "Book T6", "Book T7", "Book T8", "Book T9"]
 SPELL_SIDEBAR_W = ((BASE_PAGE_W - 22) - 5 * 12) / 6
 
 
-def draw_five_col_grid(c, accent, titles, fields, top_y, bottom_y, x0=11):
+def draw_five_col_grid(c, accent, titles, fields, top_y, bottom_y, x0=11, values=None):
+    values = values or {}
     n = len(titles)
     col_w = ((BASE_PAGE_W - 11) - x0 - (n - 1) * 12) / n
     x = x0
@@ -874,7 +877,8 @@ def draw_five_col_grid(c, accent, titles, fields, top_y, bottom_y, x0=11):
         # -- a bit more breathing room for whoever's actually writing spell
         # names in these.
         header_card(c, x, x + col_w, bottom_y, top_y, 20, titles[i], fields[i],
-                    size=10, header_fill=col(accent), field_size=10, field_step=15)
+                    size=10, header_fill=col(accent), field_size=10, field_step=15,
+                    value=values.get(fields[i], ""))
         x += col_w + 12
 
 
@@ -915,7 +919,8 @@ def draw_mana_tracker(c, now_rect, max_rect, pool_label):
     text_field(c, "Mana Max", mx0, my0, mx1, my1, size=10, align="center")
 
 
-def draw_spell_page(c, config):
+def draw_spell_page(c, config, values=None):
+    values = values or {}
     printable = config.get("printable", False)
     accent = PRINTABLE_GREY if printable else config["accent"]
     if not printable and config.get("background") == "checker":
@@ -941,11 +946,12 @@ def draw_spell_page(c, config):
     # full-height treatment before, but rarely needed nearly this much).
     util_x0, util_x1 = 11, 11 + SPELL_SIDEBAR_W
     header_card(c, util_x0, util_x1, 11, PAGE2_GRID_TOP, 20, "CANTRIPS",
-                "Book Cantrips", size=10, header_fill=col(accent), field_size=10, field_step=15)
+                "Book Cantrips", size=10, header_fill=col(accent), field_size=10, field_step=15,
+                value=values.get("Book Cantrips", ""))
 
     grid_x0 = util_x1 + 12
-    draw_five_col_grid(c, accent, SPELL_COLS_TOP, SPELL_FIELDS_TOP, PAGE2_GRID_TOP, 288, x0=grid_x0)
-    draw_five_col_grid(c, accent, SPELL_COLS_BOTTOM, SPELL_FIELDS_BOTTOM, 270, 11, x0=grid_x0)
+    draw_five_col_grid(c, accent, SPELL_COLS_TOP, SPELL_FIELDS_TOP, PAGE2_GRID_TOP, 288, x0=grid_x0, values=values)
+    draw_five_col_grid(c, accent, SPELL_COLS_BOTTOM, SPELL_FIELDS_BOTTOM, 270, 11, x0=grid_x0, values=values)
 
 
 # --------------------------------------------------------------------------
@@ -1023,7 +1029,7 @@ def build(config, out_path, portrait_bytes=None, values=None):
         c.setPageSize((BASE_PAGE_W, PAGE_H))
 
     if config.get("spell_page"):
-        draw_spell_page(c, config)
+        draw_spell_page(c, config, values=values)
         c.showPage()
 
     if config.get("reference_page"):
