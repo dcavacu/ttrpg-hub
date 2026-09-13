@@ -28,15 +28,24 @@ import re
 
 import pikepdf
 from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.utils import ImageReader
 from reportlab.pdfbase.pdfmetrics import stringWidth
 from reportlab.pdfgen import canvas
 
 # --------------------------------------------------------------------------
-# geometry (landscape US Letter, points -- wider when the newbie column is on)
+# geometry (a custom width the column layout needs, NOT a real paper size --
+# despite the old "landscape US Letter" description here, 992pt is wider
+# than even Letter landscape's 792pt, and wider still (1172pt) when the
+# newbie column is on. Every page gets rescaled to fit real A4 landscape
+# as a post-process pass -- see _rescale_to_a4 -- so what actually prints
+# is correct regardless of these working dimensions.)
 # --------------------------------------------------------------------------
 PAGE_H = 612
 BASE_PAGE_W = 992
+
+# Real target paper size every finished page gets rescaled into.
+A4_LANDSCAPE_W, A4_LANDSCAPE_H = landscape(A4)
 
 left_start, left_end = 10, 180            # stats / skills column
 mid_start, mid_end = 192, 428             # portrait / inventory / wounds / subclass & abilities
@@ -797,12 +806,12 @@ def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None):
 # --------------------------------------------------------------------------
 # page 2: spellbook
 # --------------------------------------------------------------------------
-SPELL_COLS_TOP = ["CANTRIPS", "TIER 1", "TIER 2", "TIER 3", "TIER 4"]
+SPELL_COLS_TOP = ["UTILITY SPELLS", "TIER 1", "TIER 2", "TIER 3", "TIER 4"]
 SPELL_COLS_BOTTOM = ["TIER 5", "TIER 6", "TIER 7", "TIER 8", "TIER 9"]
-SPELL_FIELDS_TOP = ["Book Cantrips", "Book T1", "Book T2", "Book T3", "Book T4"]
+SPELL_FIELDS_TOP = ["Book Utility", "Book T1", "Book T2", "Book T3", "Book T4"]
 SPELL_FIELDS_BOTTOM = ["Book T5", "Book T6", "Book T7", "Book T8", "Book T9"]
-# sized so the Utility Spells sidebar lines up as an equal-width 6th column
-# alongside the 5-wide Cantrips/Tier grid
+# sized so the Cantrips sidebar lines up as an equal-width 6th column
+# alongside the 5-wide Utility/Tier grid
 SPELL_SIDEBAR_W = ((BASE_PAGE_W - 22) - 5 * 12) / 6
 
 
@@ -869,14 +878,16 @@ def draw_spell_page(c, config):
         config.get("pool_label", "MANA"),
     )
 
-    # a 6th column on the left, stacked to match the two grid rows: the top
-    # cell is titled for Utility Spells, the bottom cell is left untitled --
-    # blank space for whatever else the player wants to track here.
+    # A 6th column on the left, spanning the FULL grid height as one
+    # continuous field -- a character accumulates far more known cantrips
+    # than any single spell tier over a career (they're the one list that
+    # keeps growing every level), and a normal tier-height column ran out
+    # of room for them in practice. Utility Spells moves into the main
+    # grid's first slot in its place (it was the one getting this
+    # full-height treatment before, but rarely needed nearly this much).
     util_x0, util_x1 = 11, 11 + SPELL_SIDEBAR_W
-    header_card(c, util_x0, util_x1, 288, PAGE2_GRID_TOP, 20, "UTILITY SPELLS",
-                "Utility Spells", size=10, header_fill=col(accent))
-    header_card(c, util_x0, util_x1, 11, 270, 0, "", "Spell Notes",
-                header_fill=col(accent))
+    header_card(c, util_x0, util_x1, 11, PAGE2_GRID_TOP, 20, "CANTRIPS",
+                "Book Cantrips", size=10, header_fill=col(accent))
 
     grid_x0 = util_x1 + 12
     draw_five_col_grid(c, accent, SPELL_COLS_TOP, SPELL_FIELDS_TOP, PAGE2_GRID_TOP, 288, x0=grid_x0)
@@ -969,6 +980,45 @@ def build(config, out_path, portrait_bytes=None):
     return out_path
 
 
+def _rescale_to_a4(pdf):
+    """Rescale every page to fit real A4 landscape, centered, regardless of
+    whatever custom width it was actually drawn at (see the geometry
+    comment near BASE_PAGE_W).
+
+    This can't be done by scaling the reportlab canvas while drawing:
+    verified empirically that reportlab's acroForm field widgets ignore
+    the canvas's current transform entirely -- a canvas-level
+    translate/scale moves the drawn ink but leaves every fillable field's
+    /Rect exactly where it was, which would strand every field on the
+    sheet under the wrong (rescaled) label. Instead, once a page is fully
+    built: wrap its content stream in `q <cm> ... Q` to visually rescale
+    everything already drawn on it, resize its MediaBox to actual A4
+    landscape, and apply that identical scale+translate by hand to every
+    annotation's /Rect so fields land exactly back under their (also
+    rescaled) drawn borders."""
+    for page in pdf.pages:
+        box = page.mediabox
+        native_w = float(box[2]) - float(box[0])
+        native_h = float(box[3]) - float(box[1])
+        scale = min(A4_LANDSCAPE_W / native_w, A4_LANDSCAPE_H / native_h)
+        tx = (A4_LANDSCAPE_W - native_w * scale) / 2
+        ty = (A4_LANDSCAPE_H - native_h * scale) / 2
+
+        page.contents_add(
+            ("q %.6f 0 0 %.6f %.6f %.6f cm\n" % (scale, scale, tx, ty)).encode("latin1"),
+            prepend=True,
+        )
+        page.contents_add(b"\nQ", prepend=False)
+        page.mediabox = [0, 0, A4_LANDSCAPE_W, A4_LANDSCAPE_H]
+
+        for annot in page.get("/Annots") or ():
+            rect = [float(v) for v in annot["/Rect"]]
+            annot["/Rect"] = [
+                tx + rect[0] * scale, ty + rect[1] * scale,
+                tx + rect[2] * scale, ty + rect[3] * scale,
+            ]
+
+
 def _post_process(path, center_fields):
     """Give the Adv/Dis checkboxes a real 'checked' appearance: a solid
     triangle filling the widget, matching the triangle already hand-drawn
@@ -977,6 +1027,7 @@ def _post_process(path, center_fields):
     center-aligns the small single-value boxes (reportlab's textfield() has
     no alignment param, so the /Q entry is set here instead)."""
     pdf = pikepdf.open(path, allow_overwriting_input=True)
+    _rescale_to_a4(pdf)
     for page in pdf.pages:
         annots = page.get("/Annots")
         if not annots:

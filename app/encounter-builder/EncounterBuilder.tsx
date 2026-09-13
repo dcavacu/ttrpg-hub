@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useId, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { levelLabelToNumber, extractLevelLabel, previewRescale } from '@/lib/content/monsterScaling';
 import { assessEncounterDifficulty, suggestMinionDieSize, extractDescriptionMarker } from '@/lib/content/encounterBalance';
 import { renderInlineMarkdown } from '@/lib/content/markdown';
@@ -41,9 +41,14 @@ interface CombatToken {
 
 const STORAGE_KEY = 'ttrpg-hub-encounter-builder-v2';
 
-let nextHeroId = 1;
 function makeHero(level = 1): HeroEntry {
-  return { id: `h${nextHeroId++}`, name: '', level, hp: 20 };
+  // crypto.randomUUID() rather than an in-memory counter: a counter
+  // resets to 1 on every page load, so a hero added after a reload could
+  // collide with a hero restored from localStorage (both ending up with
+  // id "h1") -- updateHero/removeHero match by id, so that collision
+  // made every edit or removal apply to BOTH heroes at once, which
+  // looked like one hero being "a copy" of the other.
+  return { id: crypto.randomUUID(), name: '', level, hp: 20 };
 }
 
 export function EncounterBuilder({ monsters }: { monsters: LeanMonster[] }) {
@@ -55,7 +60,20 @@ export function EncounterBuilder({ monsters }: { monsters: LeanMonster[] }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [restored, setRestored] = useState(false);
   const [previewMonster, setPreviewMonster] = useState<LeanMonster | null>(null);
+  // Confirms an add right where the GM is looking (the search box) --
+  // without this, clicking a search result just silently closes the
+  // dropdown, which reads as "nothing happened" and invites clicking it
+  // again (and again) before noticing the roster list below already has
+  // it three times over.
+  const [addedFeedback, setAddedFeedback] = useState<string | null>(null);
+  const addedFeedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const searchId = useId();
+
+  useEffect(() => {
+    return () => {
+      if (addedFeedbackTimer.current) clearTimeout(addedFeedbackTimer.current);
+    };
+  }, []);
 
   const monsterById = useMemo(() => new Map(monsters.map((m) => [m.id, m])), [monsters]);
 
@@ -136,6 +154,9 @@ export function EncounterBuilder({ monsters }: { monsters: LeanMonster[] }) {
       return [...prev, { monsterId: monster.id, quantity: 1, levelOverride: extractLevelLabel(monster.ratingLabel) ?? '' }];
     });
     setSearch('');
+    if (addedFeedbackTimer.current) clearTimeout(addedFeedbackTimer.current);
+    setAddedFeedback(monster.name);
+    addedFeedbackTimer.current = setTimeout(() => setAddedFeedback(null), 2000);
   }
   function setQuantity(monsterId: string, quantity: number) {
     setRoster((prev) => prev.flatMap((r) => (r.monsterId === monsterId ? (quantity <= 0 ? [] : [{ ...r, quantity }]) : [r])));
@@ -444,6 +465,9 @@ export function EncounterBuilder({ monsters }: { monsters: LeanMonster[] }) {
             </ul>
           )}
         </div>
+        <p className={styles.addedFeedback} aria-live="polite">
+          {addedFeedback ? `✓ Added ${addedFeedback}` : ' '}
+        </p>
         {roster.length > 0 && (
           <div className={styles.rosterList}>
             <div className={styles.rosterHeadings}>
