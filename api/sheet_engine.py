@@ -548,19 +548,23 @@ def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None):
 
     # title (auto-shrink so long class names never run into the banner),
     # centered in the space it has between the page edge and the mid column.
-    # The gap to the banner is bigger than it looks it needs to be on
-    # purpose: stringWidth() measures a string's advance width, not its
-    # inked pixels, and Helvetica-BoldOblique's rightward slant means the
-    # last letter's actual ink can extend past that advance width -- with
-    # only an 8pt gap, a long name (e.g. "STORMSHIFTER") auto-shrunk right
-    # up to the fitting limit had its slanted last letter visibly crowd
-    # the banner's rounded corner even though the two boxes never
-    # mathematically overlapped.
+    # ITALIC_OVERHANG is a fit-only safety margin, not a change to where the
+    # title/underline sit: stringWidth() measures a string's advance width,
+    # not its inked pixels, and Helvetica-BoldOblique's rightward slant
+    # means the last letter's actual ink can extend past that advance width
+    # -- without this, a long name (e.g. "STORMSHIFTER") auto-shrunk right
+    # up to the fitting limit had its slanted last letter visibly crowd the
+    # banner's rounded corner even though the two boxes never mathematically
+    # overlapped. (Tried shrinking title_x1 itself first -- that fixed the
+    # crowding but shifted the whole title+underline block, which always
+    # spans the full title_x0..title_x1 regardless of the actual text's
+    # width, off-center relative to the true available strip.)
     c.setFillColor(col(accent))
     title_size = 34
-    title_x0, title_x1 = 14, mid_start - 16
+    title_x0, title_x1 = 14, mid_start - 8
     max_title_w = title_x1 - title_x0
-    while title_size > 12 and stringWidth(name, "Helvetica-BoldOblique", title_size) * hscale > max_title_w:
+    ITALIC_OVERHANG = 8
+    while title_size > 12 and stringWidth(name, "Helvetica-BoldOblique", title_size) * hscale > max_title_w - ITALIC_OVERHANG:
         title_size -= 1
     title_cx = (title_x0 + title_x1) / 2
     c.setFont("Helvetica-BoldOblique", title_size)
