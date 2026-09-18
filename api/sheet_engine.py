@@ -904,26 +904,36 @@ def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None):
 # --------------------------------------------------------------------------
 # page 2: spellbook
 # --------------------------------------------------------------------------
-SPELL_COLS_TOP = ["UTILITY SPELLS", "TIER 1", "TIER 2", "TIER 3", "TIER 4"]
-SPELL_COLS_BOTTOM = ["TIER 5", "TIER 6", "TIER 7", "TIER 8", "TIER 9"]
-SPELL_FIELDS_TOP = ["Book Utility", "Book T1", "Book T2", "Book T3", "Book T4"]
-SPELL_FIELDS_BOTTOM = ["Book T5", "Book T6", "Book T7", "Book T8", "Book T9"]
-# sized so the Cantrips sidebar lines up as an equal-width 6th column
-# alongside the 5-wide Utility/Tier grid
-SPELL_SIDEBAR_W = ((BASE_PAGE_W - 22) - 5 * 12) / 6
+# Each spellbook page is a list of rows; each row is a list of
+# (title, field name) boxes that share that row's width equally. Wide, short
+# boxes (few per row) rather than narrow full-height columns.
+SPELL_PAGE_1_ROWS = [
+    [("CANTRIPS", "Book Cantrips"), ("UTILITY SPELLS", "Book Utility"), ("TIER 1", "Book T1")],
+    [("TIER 2", "Book T2"), ("TIER 3", "Book T3"), ("TIER 4", "Book T4")],
+]
+SPELL_PAGE_2_ROWS = [
+    [("TIER 5", "Book T5"), ("TIER 6", "Book T6"), ("TIER 7", "Book T7")],
+    [("TIER 8", "Book T8"), ("TIER 9", "Book T9")],
+]
 
 
-def draw_five_col_grid(c, accent, titles, fields, top_y, bottom_y, x0=11):
-    n = len(titles)
-    col_w = ((BASE_PAGE_W - 11) - x0 - (n - 1) * 12) / n
-    x = x0
-    for i in range(n):
-        # field_size/field_step bumped up from the 9pt/13.5pt engine default
-        # -- a bit more breathing room for whoever's actually writing spell
-        # names in these.
-        header_card(c, x, x + col_w, bottom_y, top_y, 20, titles[i], fields[i],
-                    size=10, header_fill=col(accent), field_size=10, field_step=15)
-        x += col_w + 12
+def draw_spell_grid(c, accent, rows, top_y, bottom_y, x0=11, x1=BASE_PAGE_W - 11, gap=12):
+    """Lay out rows of boxes: rows split the height evenly, boxes within a
+    row split the width evenly (so a row with fewer boxes gets wider ones)."""
+    n_rows = len(rows)
+    row_h = (top_y - bottom_y - (n_rows - 1) * gap) / n_rows
+    y_top = top_y
+    for row in rows:
+        n = len(row)
+        col_w = (x1 - x0 - (n - 1) * gap) / n
+        x = x0
+        for title, field in row:
+            # field_size/field_step bumped up from the 9pt/13.5pt engine
+            # default -- a bit more breathing room for writing spell names.
+            header_card(c, x, x + col_w, y_top - row_h, y_top, 20, title, field,
+                        size=10, header_fill=col(accent), field_size=10, field_step=15)
+            x += col_w + gap
+        y_top -= row_h + gap
 
 
 PAGE2_BANNER_Y0, PAGE2_BANNER_Y1 = 582, 607
@@ -965,11 +975,8 @@ def draw_mana_tracker(c, now_rect, max_rect, pool_label):
 
 
 def draw_spell_page(c, config, page_num=1):
-    """Two full-height pages instead of one page split into two half-height
-    rows -- page 1 is Cantrips (still its own full-height sidebar) +
-    Utility + Tier 1-4, page 2 is Tier 5-9, each column now getting the
-    entire page height (and, on page 2, the entire page width too, since
-    nothing else shares it) instead of half."""
+    """Two pages of wide, short boxes (see SPELL_PAGE_*_ROWS): page 1 is
+    Cantrips + Utility + Tier 1-4, page 2 is Tier 5-9."""
     printable = config.get("printable", False)
     accent = PRINTABLE_GREY if printable else config["accent"]
     if not printable and config.get("background") == "checker":
@@ -987,21 +994,8 @@ def draw_spell_page(c, config, page_num=1):
         config.get("pool_label", "MANA"),
     )
 
-    if page_num == 1:
-        # A 6th column on the left, spanning the FULL grid height as one
-        # continuous field -- a character accumulates far more known
-        # cantrips than any single spell tier over a career (they're the
-        # one list that keeps growing every level), and a normal
-        # tier-height column ran out of room for them in practice.
-        util_x0, util_x1 = 11, 11 + SPELL_SIDEBAR_W
-        header_card(c, util_x0, util_x1, 11, PAGE2_GRID_TOP, 20, "CANTRIPS",
-                    "Book Cantrips", size=10, header_fill=col(accent), field_size=10, field_step=15)
-        grid_x0 = util_x1 + 12
-        draw_five_col_grid(c, accent, SPELL_COLS_TOP, SPELL_FIELDS_TOP, PAGE2_GRID_TOP, 11, x0=grid_x0)
-    else:
-        # No sidebar competing for width here, so these 5 columns spread
-        # out over the entire page width, not just its own height.
-        draw_five_col_grid(c, accent, SPELL_COLS_BOTTOM, SPELL_FIELDS_BOTTOM, PAGE2_GRID_TOP, 11, x0=11)
+    rows = SPELL_PAGE_1_ROWS if page_num == 1 else SPELL_PAGE_2_ROWS
+    draw_spell_grid(c, accent, rows, PAGE2_GRID_TOP, 11)
 
 
 # --------------------------------------------------------------------------
