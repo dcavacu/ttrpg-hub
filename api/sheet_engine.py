@@ -662,6 +662,15 @@ def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None):
             iw, ih = img.getSize()
             scale = max(bw / iw, bh / ih)  # cover-fit: fill the box, cropping overflow
             dw, dh = iw * scale, ih * scale
+            # Same fix as draw_centered/draw_right, for an image instead of
+            # text: the A4 rescale stretches width and height by different
+            # amounts (see text_width_ratio), so a cover-fit image drawn at
+            # its true aspect ratio here would come out visibly stretched
+            # once rescaled. Pre-widen by hscale so the *rendered* photo
+            # ends up at its real aspect ratio -- this only crops a bit
+            # more off the sides (cover-fit already crops any overflow),
+            # it doesn't shrink coverage of the box.
+            dw *= hscale
             dx = bx + (bw - dw) / 2
             dy = by + (bh - dh) / 2
             c.saveState()
@@ -955,7 +964,12 @@ def draw_mana_tracker(c, now_rect, max_rect, pool_label):
     text_field(c, "Mana Max", mx0, my0, mx1, my1, size=10, align="center")
 
 
-def draw_spell_page(c, config):
+def draw_spell_page(c, config, page_num=1):
+    """Two full-height pages instead of one page split into two half-height
+    rows -- page 1 is Cantrips (still its own full-height sidebar) +
+    Utility + Tier 1-4, page 2 is Tier 5-9, each column now getting the
+    entire page height (and, on page 2, the entire page width too, since
+    nothing else shares it) instead of half."""
     printable = config.get("printable", False)
     accent = PRINTABLE_GREY if printable else config["accent"]
     if not printable and config.get("background") == "checker":
@@ -964,7 +978,8 @@ def draw_spell_page(c, config):
         c.setFillColor(colors.white)
         c.rect(0, 0, BASE_PAGE_W, PAGE_H, stroke=0, fill=1)
 
-    draw_page2_banner(c, accent, "%s  SPELLBOOK" % config["name"], has_mana=True)
+    suffix = "  I" if page_num == 1 else "  II"
+    draw_page2_banner(c, accent, "%s  SPELLBOOK%s" % (config["name"], suffix), has_mana=True)
 
     draw_mana_tracker(
         c, (PAGE2_MANA_X0, PAGE2_BANNER_Y0 + 5, PAGE2_MANA_X0 + 40, PAGE2_BANNER_Y0 + 20),
@@ -972,20 +987,21 @@ def draw_spell_page(c, config):
         config.get("pool_label", "MANA"),
     )
 
-    # A 6th column on the left, spanning the FULL grid height as one
-    # continuous field -- a character accumulates far more known cantrips
-    # than any single spell tier over a career (they're the one list that
-    # keeps growing every level), and a normal tier-height column ran out
-    # of room for them in practice. Utility Spells moves into the main
-    # grid's first slot in its place (it was the one getting this
-    # full-height treatment before, but rarely needed nearly this much).
-    util_x0, util_x1 = 11, 11 + SPELL_SIDEBAR_W
-    header_card(c, util_x0, util_x1, 11, PAGE2_GRID_TOP, 20, "CANTRIPS",
-                "Book Cantrips", size=10, header_fill=col(accent), field_size=10, field_step=15)
-
-    grid_x0 = util_x1 + 12
-    draw_five_col_grid(c, accent, SPELL_COLS_TOP, SPELL_FIELDS_TOP, PAGE2_GRID_TOP, 288, x0=grid_x0)
-    draw_five_col_grid(c, accent, SPELL_COLS_BOTTOM, SPELL_FIELDS_BOTTOM, 270, 11, x0=grid_x0)
+    if page_num == 1:
+        # A 6th column on the left, spanning the FULL grid height as one
+        # continuous field -- a character accumulates far more known
+        # cantrips than any single spell tier over a career (they're the
+        # one list that keeps growing every level), and a normal
+        # tier-height column ran out of room for them in practice.
+        util_x0, util_x1 = 11, 11 + SPELL_SIDEBAR_W
+        header_card(c, util_x0, util_x1, 11, PAGE2_GRID_TOP, 20, "CANTRIPS",
+                    "Book Cantrips", size=10, header_fill=col(accent), field_size=10, field_step=15)
+        grid_x0 = util_x1 + 12
+        draw_five_col_grid(c, accent, SPELL_COLS_TOP, SPELL_FIELDS_TOP, PAGE2_GRID_TOP, 11, x0=grid_x0)
+    else:
+        # No sidebar competing for width here, so these 5 columns spread
+        # out over the entire page width, not just its own height.
+        draw_five_col_grid(c, accent, SPELL_COLS_BOTTOM, SPELL_FIELDS_BOTTOM, PAGE2_GRID_TOP, 11, x0=11)
 
 
 # --------------------------------------------------------------------------
@@ -1063,7 +1079,9 @@ def build(config, out_path, portrait_bytes=None):
         c.setPageSize((BASE_PAGE_W, PAGE_H))
 
     if config.get("spell_page"):
-        draw_spell_page(c, config)
+        draw_spell_page(c, config, page_num=1)
+        c.showPage()
+        draw_spell_page(c, config, page_num=2)
         c.showPage()
 
     if config.get("reference_page"):

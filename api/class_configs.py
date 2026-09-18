@@ -248,12 +248,5 @@ CLASS_CONFIGS = {
         "mid_panel": ("INVENTORY", "Inventory"),
         "spell_page": True,
         "background": "checker",
-        "reference_page": {
-            "banner": "LAWS   ·   TRUTHS",
-            "columns": [
-                {"title": "LAWS", "field": "Laws List"},
-                {"title": "TRUTHS", "field": "Truths List"},
-            ],
-        },
     },
 }
