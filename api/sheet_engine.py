@@ -724,7 +724,7 @@ def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None):
     def row_x0(i):
         return mid_start + i * (row_w + row_gap)
 
-    hp_boxes = (("HP", "HP - Current"), ("MAX", "HP - Max"), ("TEMP", "Temp HP"),
+    hp_boxes = (("HP", "HP - Current"), ("MAX HP", "HP - Max"), ("TEMP", "Temp HP"),
                 ("HIT DIE", "Hit Die"))
     for i, (lbl, _field) in enumerate(hp_boxes):
         label_centered(c, row_x0(i) + row_w / 2, top, lbl, hscale=hscale)
