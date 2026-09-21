@@ -631,22 +631,12 @@ def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None):
 
     # -- coin / hit die (side by side, label width measured so it can never
     # collide with its own box) --
-    half_w = (left_end - left_start - 6) / 2
     row_h = 16
     c.setFont("Helvetica-Bold", 8)
     c.setFillColor(colors.black)
     c.drawString(left_start, cursor - row_h / 2 - 3, "Coin")
-    coin_label_w = stringWidth("Coin", "Helvetica-Bold", 8) * hscale
-    text_field(c, "Currency", left_start + coin_label_w + 6, cursor - row_h,
-               left_start + half_w, cursor, size=8, align="center")
-
-    hd_x0 = left_start + half_w + 6
-    c.setFont("Helvetica-Bold", 8)
-    c.setFillColor(colors.black)
-    c.drawString(hd_x0, cursor - row_h / 2 - 3, "Hit Die")
-    hd_label_w = stringWidth("Hit Die", "Helvetica-Bold", 8) * hscale
-    text_field(c, "Hit Die", hd_x0 + hd_label_w + 6, cursor - row_h, left_end, cursor, size=8,
-               align="center")
+    text_field(c, "Currency", id_box_x0, cursor - row_h,
+               left_end, cursor, size=8)
     cursor -= row_h + 6
 
     # -- portrait (swapped in from the mid column; HP/level/stat cards moved
@@ -728,22 +718,18 @@ def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None):
 
     # -- HP row (wider boxes now that this has the full mid-column width) --
     # Armor rides along on the same line, in the leftover space past Temp HP.
-    hp_now_x, hp_max_x = mid_start + 34, mid_start + 74
-    hp_temp_x0, hp_temp_x1 = mid_start + 128, mid_start + 173
-    armor_x0, armor_x1 = hp_temp_x1 + 13, mid_end
-    for lbl, x0, x1 in (("NOW", hp_now_x, hp_now_x + 34), ("MAX", hp_max_x, hp_max_x + 34),
-                        ("TEMP", hp_temp_x0, hp_temp_x1), ("ARMOR", armor_x0, armor_x1)):
-        label_centered(c, (x0 + x1) / 2, top, lbl, hscale=hscale)
+    hp_boxes = (("HP", "HP - Current"), ("MAX", "HP - Max"), ("TEMP", "Temp HP"),
+                ("ARMOR", "Armor"), ("HIT DIE", "Hit Die"))
+    hp_gap = 5
+    hp_x0 = mid_start
+    hp_w = (mid_end - hp_x0 - (len(hp_boxes) - 1) * hp_gap) / len(hp_boxes)
+    for i, (lbl, _field) in enumerate(hp_boxes):
+        bx0 = hp_x0 + i * (hp_w + hp_gap)
+        label_centered(c, bx0 + hp_w / 2, top, lbl, hscale=hscale)
     top -= 5
-    c.setFont("Helvetica-Bold", 15)
-    c.setFillColor(colors.black)
-    c.drawString(mid_start, top - 17, "HP")
-    text_field(c, "HP - Current", hp_now_x, top - 24, hp_now_x + 34, top, size=11, align="center")
-    text_field(c, "HP - Max", hp_max_x, top - 24, hp_max_x + 34, top, size=11, align="center")
-    c.setFont("Helvetica-Bold", 13)
-    c.drawString(hp_max_x + 39, top - 17, "+")
-    text_field(c, "Temp HP", hp_temp_x0, top - 24, hp_temp_x1, top, size=11, align="center")
-    text_field(c, "Armor", armor_x0, top - 24, armor_x1, top, size=11, align="center")
+    for i, (_lbl, field) in enumerate(hp_boxes):
+        bx0 = hp_x0 + i * (hp_w + hp_gap)
+        text_field(c, field, bx0, top - 24, bx0 + hp_w, top, size=11, align="center")
     top -= 24 + 12
 
     # -- level / speed / init row --
