@@ -716,30 +716,28 @@ def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None):
 
     top = mid_top
 
-    # -- HP row (wider boxes now that this has the full mid-column width) --
-    # Armor rides along on the same line, in the leftover space past Temp HP.
+    # -- HP row and level row: four equal boxes each, on one shared grid so
+    # the two rows line up column for column --
+    row_gap = 5
+    row_w = (mid_end - mid_start - 3 * row_gap) / 4
+
+    def row_x0(i):
+        return mid_start + i * (row_w + row_gap)
+
     hp_boxes = (("HP", "HP - Current"), ("MAX", "HP - Max"), ("TEMP", "Temp HP"),
-                ("ARMOR", "Armor"), ("HIT DIE", "Hit Die"))
-    hp_gap = 5
-    hp_x0 = mid_start
-    hp_w = (mid_end - hp_x0 - (len(hp_boxes) - 1) * hp_gap) / len(hp_boxes)
+                ("HIT DIE", "Hit Die"))
     for i, (lbl, _field) in enumerate(hp_boxes):
-        bx0 = hp_x0 + i * (hp_w + hp_gap)
-        label_centered(c, bx0 + hp_w / 2, top, lbl, hscale=hscale)
+        label_centered(c, row_x0(i) + row_w / 2, top, lbl, hscale=hscale)
     top -= 5
     for i, (_lbl, field) in enumerate(hp_boxes):
-        bx0 = hp_x0 + i * (hp_w + hp_gap)
-        text_field(c, field, bx0, top - 24, bx0 + hp_w, top, size=11, align="center")
+        text_field(c, field, row_x0(i), top - 24, row_x0(i) + row_w, top, size=11, align="center")
     top -= 24 + 12
 
-    # -- level / speed / init row --
-    third = (mid_end - mid_start - 6) / 3
-    for i, (lbl, field) in enumerate((("LEVEL", "Level"), ("SPEED", "Speed"),
-                                       ("INITIATIVE", "Initiative"))):
-        x0 = mid_start + i * (third + 3)
-        x1 = x0 + third
-        label_centered(c, (x0 + x1) / 2, top, lbl, hscale=hscale)
-        text_field(c, field, x0, top - 24, x1, top - 4, align="center")
+    level_boxes = (("ARMOR", "Armor"), ("LEVEL", "Level"), ("SPEED", "Speed"),
+                   ("INITIATIVE", "Initiative"))
+    for i, (lbl, field) in enumerate(level_boxes):
+        label_centered(c, row_x0(i) + row_w / 2, top, lbl, hscale=hscale)
+        text_field(c, field, row_x0(i), top - 24, row_x0(i) + row_w, top - 4, align="center")
     top -= 24 + 16
 
     # -- ability score cards: rounded card, white score field over a black
