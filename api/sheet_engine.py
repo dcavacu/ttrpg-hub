@@ -520,7 +520,9 @@ def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None):
     # width, off-center relative to the true available strip.)
     c.setFillColor(col(accent))
     title_size = 34
-    title_x0, title_x1 = 14, mid_start - 8
+    # Same left/right edges as the identity boxes below, so the underline lines
+    # up with them instead of drifting a few points to the right of the column.
+    title_x0, title_x1 = left_start, left_end
     max_title_w = title_x1 - title_x0
     ITALIC_OVERHANG = 8
     while title_size > 12 and stringWidth(name, "Helvetica-BoldOblique", title_size) * hscale > max_title_w - ITALIC_OVERHANG:
@@ -657,9 +659,10 @@ def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None):
                 ("HIT DIE", "Hit Die"))
     for i, (lbl, _field) in enumerate(hp_boxes):
         label_centered(c, row_x0(i) + row_w / 2, top, lbl, hscale=hscale)
-    top -= 5
+    # Same box height and label gap as the row below (24 down to 4 under the
+    # label), so the two rows of boxes match.
     for i, (_lbl, field) in enumerate(hp_boxes):
-        text_field(c, field, row_x0(i), top - 24, row_x0(i) + row_w, top, size=11, align="center")
+        text_field(c, field, row_x0(i), top - 24, row_x0(i) + row_w, top - 4, size=11, align="center")
     top -= 24 + 12
 
     level_boxes = (("ARMOR", "Armor"), ("LEVEL", "Level"), ("SPEED", "Speed"),
