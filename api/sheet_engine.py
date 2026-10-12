@@ -5,7 +5,7 @@ around a five-column layout:
 
     left    (10-180)      the whole "stat block": identity fields, HP, the
                            level/armor/speed/init row, ability scores, skills
-    mid     (192-428)     resource banner, portrait, subclass & abilities,
+    mid     (192-428)     HP/level/stat cards, subclass & abilities,
                            inventory, wounds
     notes   (440-980)     one joined box (a divider splits it into two
                            independently-fillable free-write halves)
@@ -75,8 +75,7 @@ newbie_start, newbie_end = 992, 1160      # newbie help column, optional
 WIDE_PAGE_W = newbie_end + 12
 
 GAP = 5
-LEVEL_TOP_NO_BANNER = 600
-BANNER_Y0, BANNER_Y1 = 575, 604
+MID_TOP = 600
 
 # The one substitute color used everywhere config["accent"] would otherwise
 # appear, when config["printable"] is truthy -- dark enough that white text
@@ -491,74 +490,6 @@ def draw_newbie_column(c, x0, x1, accent, sections, title="QUICK REFERENCE", hsc
 # --------------------------------------------------------------------------
 # page 1
 # --------------------------------------------------------------------------
-def draw_resource_banner(config, accent, hscale=1.0):
-    """Return a function(c) drawing the page-1 resource banner, or None."""
-    mode = config.get("resource_mode", "dice")
-    charges_label = config.get("charges_label")
-
-    if mode == "dice":
-        n = config.get("dice_slots", 5)
-
-        def draw(c):
-            banner_h = BANNER_Y1 - BANNER_Y0
-            rounded_box(c, mid_start, BANNER_Y0, mid_end - mid_start, banner_h,
-                        radius=RADIUS + 2, fill=col(accent), stroke=None)
-            c.setFillColor(colors.white)
-            c.setFont("Helvetica-BoldOblique", 15)
-            c.drawString(mid_start + 10, BANNER_Y0 + (banner_h - 10.8) / 2, config.get("resource", ""))
-            right = mid_end - 5
-            slot_h = 12
-            slot_y0 = BANNER_Y0 + (banner_h - slot_h) / 2
-            for i in range(n, 0, -1):
-                x1 = right - (n - i) * 24
-                x0 = x1 - 18
-                fill = colors.white if i % 2 else col(tint(accent, 0.15))
-                text_field(c, "Slot %d" % i, x0, slot_y0, x1, slot_y0 + slot_h,
-                           size=9, radius=2, fill=fill)
-        return draw
-
-    if "charges_label" in config:
-        def draw(c):
-            banner_h = BANNER_Y1 - BANNER_Y0
-            rounded_box(c, mid_start, BANNER_Y0, mid_end - mid_start, banner_h,
-                        radius=RADIUS + 2, fill=col(accent), stroke=None)
-            c.setFillColor(colors.white)
-            c.setFont("Helvetica-BoldOblique", 15)
-            title_y = BANNER_Y0 + (banner_h - 10.8) / 2
-            c.drawString(mid_start + 10, title_y, config.get("resource", ""))
-            if charges_label:
-                # Start right after wherever the resource name text actually
-                # ends, not a flat worst-case constant (the old "138" was
-                # tuned assuming a long resource name, so it wasted space
-                # for short ones like "THE THRILL" while still barely
-                # working for long ones -- and once text started rendering
-                # hscale x wider post-rescale, not even that was enough
-                # room left for some labels, see below).
-                name_w = stringWidth(config.get("resource", ""), "Helvetica-BoldOblique", 15) * hscale
-                label_x = mid_start + 10 + name_w + 10
-                # This label's own rendered width also grows by hscale, and
-                # it has to fit before the charge circles start (their own
-                # x-positions are plain geometry, not text, so they don't
-                # move) -- auto-shrink instead of letting a long label like
-                # "SHIFTS" or "CHARGES" run into the first circle.
-                circles_left = mid_end - 56  # leftmost circle's left edge, see the loop below
-                available_w = circles_left - label_x - 4
-                label_size = 8
-                while label_size > 5 and stringWidth(charges_label, "Helvetica-Bold", label_size) * hscale > available_w:
-                    label_size -= 1
-                c.setFont("Helvetica-Bold", label_size)
-                c.drawString(label_x, BANNER_Y0 + (banner_h - label_size * 0.725) / 2, charges_label)
-            right = mid_end - 8
-            charge_size = 8
-            charge_y0 = BANNER_Y0 + (banner_h - charge_size) / 2
-            for i in range(5, 0, -1):
-                x0 = right - (5 - i) * 10 - 8
-                circle_checkbox(c, "Charge %d" % i, x0, charge_y0, charge_size)
-        return draw
-
-    return None  # pure mana, no charges -> banner omitted, tracker lives on page 2
-
-
 def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None):
     printable = config.get("printable", False)
     accent = PRINTABLE_GREY if printable else config["accent"]
@@ -601,12 +532,10 @@ def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None):
     c.setStrokeColor(col(accent))
     c.line(title_x0, 574, title_x1, 574)
 
-    banner = draw_resource_banner(config, accent, hscale=hscale)
-    if banner:
-        banner(c)
-        mid_top = BANNER_Y0 - 13
-    else:
-        mid_top = LEVEL_TOP_NO_BANNER
+    # No resource banner above the HP row any more (dice slots / charge dots
+    # are gone) -- the mid column starts at the top and the freed height all
+    # goes to Subclass & Abilities, which is sized from whatever is left.
+    mid_top = MID_TOP
 
     # =========================================================================
     # LEFT column: the whole stat block -- identity fields, HP, level row,
@@ -702,7 +631,7 @@ def draw_page1(c, config, page_w=BASE_PAGE_W, portrait_bytes=None):
         box_top -= skill_pitch
 
     # =========================================================================
-    # MID column: resource banner (drawn above), HP/level/stat cards (swapped
+    # MID column: HP/level/stat cards (swapped
     # in from the left column), subclass & abilities, inventory, then wounds
     # pinned at the bottom.
     # =========================================================================
