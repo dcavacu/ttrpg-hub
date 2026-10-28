@@ -70,6 +70,7 @@ export default async function MonsterDetailPage({
           armor={monster.stats.Armor}
           hp={monster.stats.HP}
           ratingLabel={monster.rating_label}
+          description={monster.description}
         />
       )}
       <div className={styles.description}>

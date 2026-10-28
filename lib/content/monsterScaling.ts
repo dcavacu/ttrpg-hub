@@ -125,9 +125,77 @@ export function replaceLevelLabel(ratingLabel: string | null | undefined, newLev
   return label.replace(/\b(Lvl\.?|Level)\s*\d+(?:\/\d+)?/i, (_m, prefix: string) => `${prefix} ${newLevelLabel}`);
 }
 
+const STANDARD_DICE = [4, 6, 8, 10, 12, 20];
+
+/** Rescales one damage expression (count d die +/- flat) by `ratio` and
+ * returns the closest dice expression -- same idea as HP: the monster keeps
+ * its own strength relative to the table, it doesn't snap to the table's
+ * value. The flat bonus scales directly; the dice are then re-chosen so
+ * their average lands closest to what's left, preferring (in order) the
+ * same dice, the same count with another standard die (1d10 -> 1d20),
+ * then the same die with another count (1d10 -> 2d10). */
+export function scaleDiceExpression(count: number, die: number, flat: number, ratio: number): string {
+  const avg = (n: number, d: number) => (n * (d + 1)) / 2;
+  const newFlat = Math.round(flat * ratio);
+  const needed = (avg(count, die) + flat) * ratio - newFlat;
+
+  const candidates: Array<[number, number]> = [[count, die]];
+  for (const d of STANDARD_DICE) if (d !== die) candidates.push([count, d]);
+  for (let n = 1; n <= 20; n++) if (n !== count) candidates.push([n, die]);
+
+  let best = candidates[0];
+  let bestErr = Math.abs(avg(best[0], best[1]) - needed);
+  for (const cand of candidates) {
+    const err = Math.abs(avg(cand[0], cand[1]) - needed);
+    if (err < bestErr - 1e-9) {
+      best = cand;
+      bestErr = err;
+    }
+  }
+  const bonus = newFlat > 0 ? `+${newFlat}` : newFlat < 0 ? `${newFlat}` : '';
+  return `${best[0]}d${best[1]}${bonus}`;
+}
+
+// A dice expression that is damage: either followed (within a few plain
+// words, not crossing punctuation) by the word "damage", or right after
+// "attack(s) for" / "deal(s)" / "hit(s)". Anything else -- "roll 3d20",
+// "moves a target 1d10 spaces" -- is left alone.
+const DICE_RE = /(\d+)d(\d+)(?:\s*([+-])\s*(\d+))?/g;
+const DAMAGE_AFTER_RE = /^(?:\s+[A-Za-z0-9+]+){0,4}\s+damage\b/;
+const DAMAGE_BEFORE_RE = /\b(?:attacks?|deals?|hits?)\s+(?:for\s+)?$/i;
+
+export interface DamageChange {
+  from: string;
+  to: string;
+}
+
+/** Rescales every damage dice expression in a monster's description by
+ * `ratio`. Returns the new text and the list of expressions that actually
+ * changed. */
+export function scaleDamageInDescription(
+  description: string,
+  ratio: number,
+): { text: string; changes: DamageChange[] } {
+  const changes: DamageChange[] = [];
+  const text = description.replace(DICE_RE, (match, n: string, d: string, sign: string | undefined, f: string | undefined, offset: number) => {
+    const before = description.slice(Math.max(0, offset - 16), offset);
+    const after = description.slice(offset + match.length);
+    if (!DAMAGE_AFTER_RE.test(after) && !DAMAGE_BEFORE_RE.test(before)) return match;
+    const flat = f ? (sign === '-' ? -Number(f) : Number(f)) : 0;
+    const next = scaleDiceExpression(Number(n), Number(d), flat, ratio);
+    if (next !== match.replace(/\s+/g, '')) changes.push({ from: match, to: next });
+    return next;
+  });
+  return { text, changes };
+}
+
 export interface RescalePreview {
   levelLabel: string;
   ratingLabel: string;
+  /** The description with its damage dice rescaled by the same table ratio
+   * as HP -- only set when there was a current level to scale from. */
+  description?: string;
+  damageChanges?: DamageChange[];
   hp: number;
   /** false when hp is the table's raw value for the target level (no
    * current level/HP to scale from); true when it was scaled relative to
@@ -171,6 +239,7 @@ export function previewRescale(
   currentRatingLabel: string | null | undefined,
   targetLevelLabel: string,
   currentHp?: string | null,
+  currentDescription?: string | null,
 ): RescalePreview | null {
   if (tier === 'Minion') return null;
   const armor = normalizeArmorTier(currentArmor);
@@ -188,9 +257,15 @@ export function previewRescale(
     const targetHp = row.hpByArmor[effectiveArmor];
     const currentRow = canScale ? LEGENDARY_MONSTER_TABLE.find((r) => r.levelLabel === currentLevelLabel) : undefined;
     const hp = currentRow ? Math.round(currentHpNum * (targetHp / currentRow.hpByArmor[effectiveArmor])) : targetHp;
+    const damage =
+      currentRow && currentDescription
+        ? scaleDamageInDescription(currentDescription, row.attackDmgSmall / currentRow.attackDmgSmall)
+        : null;
     return {
       levelLabel: targetLevelLabel,
       ratingLabel: replaceLevelLabel(currentRatingLabel, targetLevelLabel),
+      description: damage?.text,
+      damageChanges: damage?.changes,
       hp,
       hpScaled: !!currentRow,
       armor: effectiveArmor,
@@ -206,9 +281,15 @@ export function previewRescale(
   const targetHp = row.hpByArmor[armor];
   const currentRow = canScale ? NORMAL_MONSTER_TABLE.find((r) => r.levelLabel === currentLevelLabel) : undefined;
   const hp = currentRow ? Math.round(currentHpNum * (targetHp / currentRow.hpByArmor[armor])) : targetHp;
+  const damage =
+    currentRow && currentDescription
+      ? scaleDamageInDescription(currentDescription, row.damagePerRound / currentRow.damagePerRound)
+      : null;
   return {
     levelLabel: targetLevelLabel,
     ratingLabel: replaceLevelLabel(currentRatingLabel, targetLevelLabel),
+    description: damage?.text,
+    damageChanges: damage?.changes,
     hp,
     hpScaled: !!currentRow,
     armor,

@@ -17,12 +17,14 @@ export function RescaleTool({
   armor,
   hp,
   ratingLabel,
+  description,
 }: {
   id: string;
   tier: MonsterTier;
   armor: string | null | undefined;
   hp: string | null | undefined;
   ratingLabel: string | null;
+  description: string;
 }) {
   const levelOptions = useMemo(
     () => (tier === 'Legendary' ? LEGENDARY_MONSTER_TABLE : NORMAL_MONSTER_TABLE).map((r) => r.levelLabel),
@@ -33,8 +35,8 @@ export function RescaleTool({
   const boundAction = rescaleMonsterAction.bind(null, id);
 
   const preview = useMemo(
-    () => previewRescale(tier, armor, ratingLabel, targetLevel, hp),
-    [tier, armor, ratingLabel, targetLevel, hp],
+    () => previewRescale(tier, armor, ratingLabel, targetLevel, hp, description),
+    [tier, armor, ratingLabel, targetLevel, hp, description],
   );
 
   if (tier === 'Minion') return null;
@@ -47,12 +49,10 @@ export function RescaleTool({
       <summary className={styles.toggle}>Rescale to a different level</summary>
       <div className={styles.body}>
         <p className={styles.lede}>
-          Scales HP{isLegendary ? ' and Armor' : ''} to the target level, keeping this monster&apos;s current HP
-          proportional to the Game Master Guide&apos;s{' '}
-          {isLegendary ? 'Legendary Monster' : 'Monster'} Builder table rather than resetting it to the table&apos;s
-          flat value — a monster built tougher or squishier than the book&apos;s baseline stays that way. Ability
-          damage written into the description isn&apos;t rewritten automatically — the reference numbers below are
-          for you to apply by hand in the description if you want them updated too.
+          Scales HP and the damage dice in the description{isLegendary ? ' (and Armor)' : ''} to the target level, in
+          proportion to the Game Master Guide&apos;s {isLegendary ? 'Legendary Monster' : 'Monster'} Builder table
+          rather than resetting them to the table&apos;s flat values — if this monster has half the table&apos;s HP
+          or damage now, it keeps half at the new level.
         </p>
         <label className={styles.levelLabel} htmlFor="rescale-target-level">
           Target level{currentLevel ? ` (currently ${currentLevel})` : ''}
@@ -101,36 +101,23 @@ export function RescaleTool({
                 <td colSpan={2}>{preview.saveDC}</td>
               </tr>
               {isLegendary ? (
-                <>
-                  <tr>
-                    <th scope="row">Small attack dmg</th>
-                    <td colSpan={2}>{preview.attackDmgSmall}</td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Big attack dmg</th>
-                    <td colSpan={2}>{preview.attackDmgBig}</td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Last Stand HP</th>
-                    <td colSpan={2}>{preview.hpLastStand}</td>
-                  </tr>
-                </>
+                <tr>
+                  <th scope="row">Last Stand HP</th>
+                  <td colSpan={2}>{preview.hpLastStand}</td>
+                </tr>
               ) : (
-                <>
-                  <tr>
-                    <th scope="row">Damage/round</th>
-                    <td colSpan={2}>{preview.damagePerRound}</td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Attack dice</th>
-                    <td colSpan={2}>{preview.attackDice}</td>
-                  </tr>
-                  <tr>
-                    <th scope="row">CR equivalent</th>
-                    <td colSpan={2}>{preview.crEquiv}</td>
-                  </tr>
-                </>
+                <tr>
+                  <th scope="row">CR equivalent</th>
+                  <td colSpan={2}>{preview.crEquiv}</td>
+                </tr>
               )}
+              {(preview.damageChanges ?? []).map((change, i) => (
+                <tr key={i}>
+                  <th scope="row">{i === 0 ? 'Damage' : ''}</th>
+                  <td>{change.from}</td>
+                  <td className={styles.changed}>{change.to}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
         )}
@@ -138,7 +125,7 @@ export function RescaleTool({
         <form action={boundAction}>
           <input type="hidden" name="targetLevel" value={targetLevel} />
           <button type="submit" disabled={!preview}>
-            Apply: set HP{isLegendary ? '/Armor' : ''} for level {targetLevel}
+            Apply: set HP and damage{isLegendary ? '/Armor' : ''} for level {targetLevel}
           </button>
         </form>
       </div>

@@ -7,6 +7,8 @@ import {
   levelLabelToNumber,
   previewRescale,
   applyRescaleToStats,
+  scaleDiceExpression,
+  scaleDamageInDescription,
 } from './monsterScaling';
 
 describe('normalizeArmorTier', () => {
@@ -249,5 +251,83 @@ describe('applyRescaleToStats', () => {
     const preview = previewRescale('Normal', undefined, 'Lvl 3', '6')!;
     const next = applyRescaleToStats({ HP: '41' }, preview);
     expect(next.Armor).toBeUndefined();
+  });
+});
+
+describe('scaleDiceExpression', () => {
+  it('turns 1d10 into 1d20 when the table roughly doubles', () => {
+    // table 2d10 -> 2d20 is avg 11 -> 21, a ratio of ~1.91
+    expect(scaleDiceExpression(1, 10, 0, 21 / 11)).toBe('1d20');
+  });
+
+  it('halves the dice when the table halves', () => {
+    expect(scaleDiceExpression(2, 10, 0, 0.5)).toBe('1d10');
+  });
+
+  it('scales the flat bonus and re-picks dice for the rest', () => {
+    expect(scaleDiceExpression(1, 10, 5, 28 / 30)).toBe('1d8+5');
+    expect(scaleDiceExpression(1, 10, 10, 28 / 30)).toBe('1d10+9');
+  });
+
+  it('is a no-op at ratio 1', () => {
+    expect(scaleDiceExpression(2, 8, 4, 1)).toBe('2d8+4');
+  });
+
+  it('never goes below one die', () => {
+    expect(scaleDiceExpression(1, 4, 0, 0.1)).toBe('1d4');
+  });
+});
+
+describe('scaleDamageInDescription', () => {
+  const bogey =
+    'Smash (1d10+5 damage, on hit Grappled escape DC 14) or Headbutt (if Grappling target, 1d10+10 damage and Dazed). Bloodied: uses a d20 for its attacks.';
+
+  it('scales damage dice but not DCs or bare dice', () => {
+    const { text, changes } = scaleDamageInDescription(bogey, 28 / 30);
+    expect(text).toContain('1d8+5 damage');
+    expect(text).toContain('1d10+9 damage');
+    expect(text).toContain('DC 14');
+    expect(text).toContain('a d20 for its attacks');
+    expect(changes).toEqual([
+      { from: '1d10+5', to: '1d8+5' },
+      { from: '1d10+10', to: '1d10+9' },
+    ]);
+  });
+
+  it('catches "attacks for XdY" and multi-word damage, skips non-damage dice', () => {
+    const { text } = scaleDamageInDescription(
+      'Three attacks for 1d8+2. Deals 2d6 acid damage. Moves a target 1d10 spaces. Each hero rolls 3d20.',
+      2,
+    );
+    expect(text).toContain('attacks for 2d8+4');
+    expect(text).toContain('4d6 acid damage');
+    expect(text).toContain('1d10 spaces');
+    expect(text).toContain('rolls 3d20');
+  });
+
+  it('leaves the text identical at ratio 1', () => {
+    expect(scaleDamageInDescription(bogey, 1).text).toBe(bogey);
+    expect(scaleDamageInDescription(bogey, 1).changes).toEqual([]);
+  });
+});
+
+describe('previewRescale damage', () => {
+  it('rescales description damage by the table ratio between the two levels', () => {
+    const desc = 'Smash (1d10+5 damage) then Headbutt (1d10+10 damage).';
+    const result = previewRescale('Normal', 'None', 'Lvl 10', '9', '120', desc)!;
+    expect(result.description).toBe('Smash (1d8+5 damage) then Headbutt (1d10+9 damage).');
+    expect(result.damageChanges).toHaveLength(2);
+  });
+
+  it('leaves description untouched when no current level can be read', () => {
+    const result = previewRescale('Normal', 'None', null, '9', '120', 'Hits for 1d10 damage.')!;
+    expect(result.description).toBeUndefined();
+  });
+
+  it('uses the legendary table ratio for legendary monsters', () => {
+    const result = previewRescale('Legendary', 'Medium', 'Level 4 Boss', '8', '125', 'Slash deals 1d10+15 damage.')!;
+    // small attack damage 11 -> 15, ratio ~1.36
+    expect(result.damageChanges).toHaveLength(1);
+    expect(result.description).not.toBe('Slash deals 1d10+15 damage.');
   });
 });

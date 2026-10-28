@@ -48,10 +48,9 @@ export async function updateMonsterAction(id: string, formData: FormData) {
  * untouched. HP is scaled relative to the monster's own current HP
  * (see previewRescale), not snapped to the table's flat value, so a
  * hand-tuned monster keeps its relative strength as it moves levels.
- * Ability/attack damage written into the description is not rewritten
- * (it's free-form prose, not a structured field); the client shows the
- * level's reference damage numbers so the player can apply them by hand
- * via the normal edit form. */
+ * Damage dice written into the description (e.g. "1d10+5 damage") are
+ * rescaled by the same table ratio, so attacks keep their relative
+ * strength too; see scaleDamageInDescription for what counts as damage. */
 export async function rescaleMonsterAction(id: string, formData: FormData) {
   const targetLevelLabel = String(formData.get('targetLevel') ?? '').trim();
   const client = createSupabaseClient();
@@ -66,6 +65,7 @@ export async function rescaleMonsterAction(id: string, formData: FormData) {
     monster.rating_label,
     targetLevelLabel,
     monster.stats.HP,
+    monster.description,
   );
   if (!preview) {
     redirect(`/monsters/${id}?error=${encodeURIComponent('Could not rescale to that level.')}`);
@@ -82,7 +82,7 @@ export async function rescaleMonsterAction(id: string, formData: FormData) {
       race: monster.race,
       tier: monster.tier,
       tags: monster.tags,
-      description: monster.description,
+      description: preview.description ?? monster.description,
       stats: applyRescaleToStats(monster.stats, preview),
     });
   } catch (err) {
