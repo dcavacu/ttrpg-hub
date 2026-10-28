@@ -1,7 +1,6 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { rescaleMonsterAction } from '../actions';
 import {
   NORMAL_MONSTER_TABLE,
   LEGENDARY_MONSTER_TABLE,
@@ -12,14 +11,12 @@ import type { MonsterTier } from '@/lib/content/types';
 import styles from './RescaleTool.module.css';
 
 export function RescaleTool({
-  id,
   tier,
   armor,
   hp,
   ratingLabel,
   description,
 }: {
-  id: string;
   tier: MonsterTier;
   armor: string | null | undefined;
   hp: string | null | undefined;
@@ -32,7 +29,6 @@ export function RescaleTool({
   );
   const currentLevel = extractLevelLabel(ratingLabel);
   const [targetLevel, setTargetLevel] = useState(currentLevel ?? levelOptions[Math.floor(levelOptions.length / 2)]);
-  const boundAction = rescaleMonsterAction.bind(null, id);
 
   const preview = useMemo(
     () => previewRescale(tier, armor, ratingLabel, targetLevel, hp, description),
@@ -49,10 +45,10 @@ export function RescaleTool({
       <summary className={styles.toggle}>Rescale to a different level</summary>
       <div className={styles.body}>
         <p className={styles.lede}>
-          Scales HP and the damage dice in the description{isLegendary ? ' (and Armor)' : ''} to the target level, in
+          Shows HP and the damage dice in the description{isLegendary ? ' (and Armor)' : ''} at the target level, in
           proportion to the Game Master Guide&apos;s {isLegendary ? 'Legendary Monster' : 'Monster'} Builder table
-          rather than resetting them to the table&apos;s flat values — if this monster has half the table&apos;s HP
-          or damage now, it keeps half at the new level.
+          rather than the table&apos;s flat values — if this monster has half the table&apos;s HP or damage now, it
+          keeps half at the new level. Nothing is saved.
         </p>
         <label className={styles.levelLabel} htmlFor="rescale-target-level">
           Target level{currentLevel ? ` (currently ${currentLevel})` : ''}
@@ -121,13 +117,6 @@ export function RescaleTool({
             </tbody>
           </table>
         )}
-
-        <form action={boundAction}>
-          <input type="hidden" name="targetLevel" value={targetLevel} />
-          <button type="submit" disabled={!preview}>
-            Apply: set HP and damage{isLegendary ? '/Armor' : ''} for level {targetLevel}
-          </button>
-        </form>
       </div>
     </details>
   );

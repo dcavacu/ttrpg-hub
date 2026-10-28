@@ -65,7 +65,6 @@ export default async function MonsterDetailPage({
       )}
       {monster.system.name === 'Nimble' && monster.tier !== 'Minion' && (
         <RescaleTool
-          id={monster.id}
           tier={monster.tier}
           armor={monster.stats.Armor}
           hp={monster.stats.HP}
